@@ -73,21 +73,21 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
 
     private string? GetStringSafely(string name)
     {
-        return GetStringFromService(name)
-            ?? GetStringSafely(name, null)
+        return //GetStringFromService(name) ??
+            GetStringSafely(name, null)
             ?? GetStringSafelyFromJson(name);
 
         // get string from inject service
-        string? GetStringFromService(string name)
-        {
-            string? ret = null;
-            var localizer = Utility.GetStringLocalizerFromService(Assembly, typeName);
-            if (localizer != null)
-            {
-                ret = GetLocalizerValueFromCache(localizer, name);
-            }
-            return ret;
-        }
+        // string? GetStringFromService(string name)
+        // {
+        //     string? ret = null;
+        //     var localizer = Utility.GetStringLocalizerFromService(Assembly, typeName);
+        //     if (localizer != null)
+        //     {
+        //         ret = GetLocalizerValueFromCache(localizer, name);
+        //     }
+        //     return ret;
+        // }
 
         // get string from json localization file
         string? GetStringSafelyFromJson(string name)

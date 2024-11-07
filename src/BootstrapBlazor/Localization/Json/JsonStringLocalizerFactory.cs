@@ -12,7 +12,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// IStringLocalizerFactory 实现类
 /// </summary>
-internal class JsonStringLocalizerFactory : ResourceManagerStringLocalizerFactory
+public class JsonStringLocalizerFactory : ResourceManagerStringLocalizerFactory
 {
     private ILoggerFactory LoggerFactory { get; set; }
 

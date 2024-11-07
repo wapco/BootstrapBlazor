@@ -1,7 +1,6 @@
 @echo off
 if "%1" == "" (
-    echo Please provider ProjectName like: "BootstrapBlazor Debug|Release"
-    exit /B
+	set "ProjectName=BootstrapBlazor"
 )
 set config=%2
 if "%ProjectFolder%" == "" (
@@ -12,16 +11,17 @@ if "%ProjectFolder%" == "" (
     exit /B
 )
 if "%config%" == "" (
-    set "config=Debug"
+    set "config=Release"
 )
-cd %ProjectFolder%\%1
-dotnet pack -c %config% %ProjectFolder%\%1\
-copy %ProjectFolder%\%1\bin\%config%\%1*.nupkg %NugetLib% /y
-del %ProjectFolder%\%1\bin\%config%\%1*.nupkg
+
+cd %ProjectFolder%\%ProjectName%
+dotnet pack -c %config% %ProjectFolder%\%ProjectName%\
+copy %ProjectFolder%\%ProjectName%\bin\%config%\%ProjectName%*.nupkg %NugetLib% /y
+del %ProjectFolder%\%ProjectName%\bin\%config%\%ProjectName%*.nupkg
 cd %NugetLib%
 set config=
-echo Ready to DELETE %USERPROFILE%\.nuget\packages\%1 /S /F /Q
+echo Ready to DELETE %USERPROFILE%\.nuget\packages\%ProjectName% /S /F /Q
 pause
 
-del %USERPROFILE%\.nuget\packages\%1 /S /F /Q
-dir %NugetLib%\%1*.nupkg
+del %USERPROFILE%\.nuget\packages\%ProjectName% /S /F /Q
+dir %NugetLib%\%ProjectName%*.nupkg

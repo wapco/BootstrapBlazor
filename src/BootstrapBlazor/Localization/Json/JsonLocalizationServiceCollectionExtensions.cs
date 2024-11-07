@@ -22,7 +22,7 @@ internal static class JsonLocalizationServiceCollectionExtensions
     public static IServiceCollection AddJsonLocalization(this IServiceCollection services, Action<JsonLocalizationOptions>? localizationConfigure = null)
     {
         // 防止被 AddLocalization 覆盖掉
-        services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+        services.TryAddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
         services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
         services.TryAddTransient<IStringLocalizer, StringLocalizer>();
         services.TryAddSingleton<ILocalizationResolve, NullLocalizationResolve>();
