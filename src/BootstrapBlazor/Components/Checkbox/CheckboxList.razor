@@ -4,7 +4,7 @@
 
 @if (IsShowLabel)
 {
-    <BootstrapLabel required="@Required" for="@Id" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
+    <BootstrapLabel required="@Required" for="@Id" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText"/>
 }
 
 @if (IsButton)
@@ -29,8 +29,23 @@ else
                 <Checkbox TValue="bool" IsDisabled="GetDisabledState(item)"
                           ShowAfterLabel="true" ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip"
                           DisplayText="@item.Text" OnBeforeStateChanged="_onBeforeStateChangedCallback!"
-                          Value="@item.Active" OnStateChanged="@((state, v) => OnStateChanged(item, v))"></Checkbox>
+                          Value="@item.Active" OnStateChanged="@((state, v) => OnStateChanged(item, v))">
+                </Checkbox>
+            </div>
+        }
+        @if (CustomOption != null)
+        {
+            <div class="@CheckboxItemClassString">
+                <Checkbox class="w-auto me-2 d-flex align-items-center" TValue="bool" IsDisabled="GetDisabledState(CustomOption)"
+                          ShowAfterLabel="true" ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip"
+                          OnBeforeStateChanged="_onBeforeStateChangedCallback!"
+                          Value="@CustomOption.Active" OnStateChanged="@((state, v) => OnStateChanged(CustomOption, v))">
+                </Checkbox>
+                <BootstrapInput ShowLabel="false" Value="CustomOption.Text" OnValueChanged="CustomOptionTextChanged"></BootstrapInput>
             </div>
         }
     </div>
 }
+
+
+

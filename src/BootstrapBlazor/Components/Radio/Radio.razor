@@ -4,7 +4,7 @@
 
 <div @attributes="AdditionalAttributes" class="@ClassString">
     <input class="@InputClassString" type="radio" name="@GroupName" id="@Id" disabled="@Disabled" checked="@CheckedString" @onclick="@OnClickHandler">
-    @if (ShowAfterLabel && !string.IsNullOrEmpty(DisplayText))
+    @if (ShowAfterLabel && (!string.IsNullOrEmpty(DisplayText) || ChildContent != null))
     {
         <label class="form-check-label" for="@Id">
             @if (ChildContent != null)

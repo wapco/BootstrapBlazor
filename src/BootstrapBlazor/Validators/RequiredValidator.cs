@@ -53,17 +53,16 @@ public class RequiredValidator : ValidatorBase
                 ErrorMessage = l.Value;
             }
         }
-        var errorMessage = GetLocalizerErrorMessage(context, LocalizerFactory, Options);
         var memberNames = string.IsNullOrEmpty(context.MemberName) ? null : new string[] { context.MemberName };
         if (propertyValue == null)
         {
-            results.Add(new ValidationResult(errorMessage, memberNames));
+            results.Add(new ValidationResult(GetLocalizerErrorMessage(context, LocalizerFactory, Options), memberNames));
         }
         else if (propertyValue is string val)
         {
             if (!AllowEmptyString && val == string.Empty)
             {
-                results.Add(new ValidationResult(errorMessage, memberNames));
+                results.Add(new ValidationResult(GetLocalizerErrorMessage(context, LocalizerFactory, Options), memberNames));
             }
         }
         else if (propertyValue is IEnumerable v)
@@ -72,7 +71,7 @@ public class RequiredValidator : ValidatorBase
             var valid = enumerator.MoveNext();
             if (!valid)
             {
-                results.Add(new ValidationResult(errorMessage, memberNames));
+                results.Add(new ValidationResult(GetLocalizerErrorMessage(context, LocalizerFactory, Options), memberNames));
             }
         }
     }
@@ -81,7 +80,8 @@ public class RequiredValidator : ValidatorBase
     /// 获得当前验证规则资源文件中 Key 格式
     /// </summary>
     /// <returns></returns>
-    protected virtual string GetRuleKey() => GetType().Name.Split(".").Last().Replace("Validator", "");
+    // protected virtual string GetRuleKey() => GetType().Name.Split(".").Last().Replace("Validator", "");
+    protected virtual string GetRuleKey() => GetType().Name;
 
     /// <summary>
     /// 通过资源文件获取 ErrorMessage 方法
@@ -96,7 +96,7 @@ public class RequiredValidator : ValidatorBase
         if (!string.IsNullOrEmpty(context.MemberName) && !string.IsNullOrEmpty(errorMessage))
         {
             // 查找 resx 资源文件中的 ErrorMessage
-            var memberName = context.MemberName;
+            // var memberName = context.MemberName;
 
             if (localizerFactory != null)
             {
@@ -113,7 +113,7 @@ public class RequiredValidator : ValidatorBase
                 }
 
                 // 查找 json 格式资源文件
-                if (!isResx && localizerFactory.Create(context.ObjectType).TryGetLocalizerString($"{memberName}.{GetRuleKey()}", out var msg))
+                if (!isResx && localizerFactory.Create(typeof(ValidatorBase)).TryGetLocalizerString(GetRuleKey(), out var msg))
                 {
                     errorMessage = msg;
                 }

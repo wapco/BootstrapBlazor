@@ -35,13 +35,14 @@ public partial class RadioList<TValue> : CheckboxList<TValue>
     /// 获得/设置 未设置选中项时是否自动选择第一项 默认 true
     /// </summary>
     [Parameter]
-    public bool AutoSelectFirstWhenValueIsNull { get; set; } = true;
+    public bool AutoSelectFirstWhenValueIsNull { get; set; }
 
     private string? GroupName => Id;
 
     private string? ClassString => CssBuilder.Default("radio-list form-control")
         .AddClass("no-border", !ShowBorder && ValidCss != "is-invalid")
         .AddClass("is-vertical", IsVertical)
+        .AddClass("d-flex align-items-center", AllowCustom)
         .AddClass(CssClass).AddClass(ValidCss)
         .Build();
 
@@ -70,7 +71,8 @@ public partial class RadioList<TValue> : CheckboxList<TValue>
 
         NullItemText ??= "";
 
-        if (AutoSelectFirstWhenValueIsNull && !Items.Any(i => i.Value == CurrentValueAsString))
+        if (AutoSelectFirstWhenValueIsNull && Items.All(i => i.Value != CurrentValueAsString &&
+                                                             (CustomOption != null && CustomOption.Value != CurrentValueAsString)))
         {
             CurrentValueAsString = Items.FirstOrDefault()?.Value ?? "";
         }
@@ -104,12 +106,13 @@ public partial class RadioList<TValue> : CheckboxList<TValue>
                 ret = true;
             }
         }
+
         validationErrorMessage = null;
         return ret || base.TryParseValueFromString(value, out result, out validationErrorMessage);
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="typeValue"></param>
     /// <param name="list"></param>
@@ -135,6 +138,7 @@ public partial class RadioList<TValue> : CheckboxList<TValue>
             {
                 CurrentValueAsString = item.Value;
             }
+
             if (OnSelectedChanged != null)
             {
                 await OnSelectedChanged.Invoke(new SelectedItem[] { item }, Value);

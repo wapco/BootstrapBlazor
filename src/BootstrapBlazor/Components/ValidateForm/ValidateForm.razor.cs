@@ -380,10 +380,11 @@ public partial class ValidateForm
                 var index = ruleNameSpan.IndexOf(attributeSpan, StringComparison.OrdinalIgnoreCase);
                 var ruleName = ruleNameSpan[..index];
                 var find = false;
+
                 if (!string.IsNullOrEmpty(rule.ErrorMessage))
                 {
-                    var resourceType = Options.Value.ResourceManagerStringLocalizerType;
-                    if (resourceType != null && LocalizerFactory.Create(resourceType).TryGetLocalizerString(rule.ErrorMessage, out var text))
+                    // var resourceType = Options.Value.ResourceManagerStringLocalizerType;
+                    if (LocalizerFactory.Create(typeof(ValidatorBase)).TryGetLocalizerString(rule.ErrorMessage, out var text))
                     {
                         rule.ErrorMessage = text;
                         find = true;
@@ -637,12 +638,4 @@ public partial class ValidateForm
     /// </summary>
     /// <returns></returns>
     public ConcurrentDictionary<FieldIdentifier, object?> ValueChangedFields { get; } = new();
-
-    /// <summary>
-    /// 获取 当前表单值改变的属性集合
-    /// </summary>
-    /// <returns></returns>
-    [Obsolete("已弃用，单词拼写错误，请使用 ValueChangedFields，Deprecated Please use ValueChangedFields instead. wrong typo")]
-    [ExcludeFromCodeCoverage]
-    public ConcurrentDictionary<FieldIdentifier, object?> ValueChagnedFields { get; } = new();
 }

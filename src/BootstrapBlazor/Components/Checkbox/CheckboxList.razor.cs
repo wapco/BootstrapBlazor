@@ -98,6 +98,12 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     [Parameter]
     public Func<Task>? OnMaxSelectedCountExceed { get; set; }
 
+    /// <summary>
+    /// 是否允许自定义选项
+    /// </summary>
+    [Parameter]
+    public bool AllowCustom { get; set; }
+
     [Inject]
     [NotNull]
     private IStringLocalizerFactory? LocalizerFactory { get; set; }
@@ -110,6 +116,11 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     protected bool GetDisabledState(SelectedItem item) => IsDisabled || item.IsDisabled;
 
     private Func<CheckboxState, Task<bool>>? _onBeforeStateChangedCallback;
+
+    /// <summary>
+    /// 自定义选项
+    /// </summary>
+    protected SelectedItem? CustomOption { get; set; }
 
     /// <summary>
     /// OnInitialized 方法
@@ -131,11 +142,17 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
                 {
                     Rules.Add(new RequiredValidator()
                     {
-                        LocalizerFactory = LocalizerFactory,
-                        ErrorMessage = required.ErrorMessage,
-                        AllowEmptyString = required.AllowEmptyStrings
+                        LocalizerFactory = LocalizerFactory, ErrorMessage = required.ErrorMessage, AllowEmptyString = required.AllowEmptyStrings
                     });
                 }
+            }
+
+            if (AllowCustom)
+            {
+                Rules.Add(new CustomOptionValidator()
+                {
+                    LocalizerFactory = LocalizerFactory, ErrorMessage = "ValidationError_CustomOptionTextIsRequired"
+                });
             }
         }
     }
@@ -160,13 +177,20 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
             {
                 Items = innerType.ToSelectList();
             }
+
             Items ??= [];
+        }
+
+        if (AllowCustom && CustomOption == null)
+        {
+            CustomOption = new SelectedItem() { Active = false, Value = "", Text = "" };
         }
 
         InitValue();
 
         _onBeforeStateChangedCallback = MaxSelectedCount > 0 ? new Func<CheckboxState, Task<bool>>(OnBeforeStateChanged) : null;
     }
+
     private async Task<bool> OnBeforeStateChanged(CheckboxState state)
     {
         var ret = true;
@@ -180,6 +204,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             await OnMaxSelectedCountExceed();
         }
+
         return ret;
     }
 
@@ -199,6 +224,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             ret = string.Join(",", Items.Where(i => i.Active).Select(i => i.Value));
         }
+
         return ret;
     }
 
@@ -216,6 +242,18 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
                 {
                     item.Active = values.Any(v => v.Equals(item.Value, StringComparison.OrdinalIgnoreCase));
                 }
+
+                if (AllowCustom)
+                {
+                    var customValue = values.FirstOrDefault(x => x.StartsWith("\""));
+                    if (customValue != null)
+                    {
+                        CustomOption!.Value = customValue;
+                        CustomOption.Text = customValue.Trim('"');
+                        CustomOption.Active = true;
+                    }
+                }
+
                 list = values;
             }
             else if (typeValue.IsGenericType)
@@ -226,7 +264,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="typeValue"></param>
     /// <param name="list"></param>
@@ -262,13 +300,24 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     /// </summary>
     /// <param name="item"></param>
     /// <param name="v"></param>
-    private async Task OnStateChanged(SelectedItem item, bool v)
+    private Task OnStateChanged(SelectedItem item, bool v)
     {
         item.Active = v;
 
+        return InternalValueChanged();
+    }
+
+    private async Task InternalValueChanged()
+    {
         if (ValueType == typeof(string))
         {
-            CurrentValueAsString = string.Join(",", Items.Where(i => i.Active).Select(i => i.Value));
+            var selectValues = Items.Where(i => i.Active).Select(i => i.Value).ToList();
+            if (AllowCustom && CustomOption != null && CustomOption.Active)
+            {
+                selectValues.Add(CustomOption.Value);
+            }
+
+            CurrentValueAsString = string.Join(",", selectValues);
         }
         else if (ValueType.IsGenericType)
         {
@@ -282,6 +331,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
                         instance.Add(val);
                     }
                 }
+
                 CurrentValue = (TValue)instance;
             }
         }
@@ -314,5 +364,18 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             throw new NotSupportedException();
         }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    protected Task CustomOptionTextChanged(string value)
+    {
+        CustomOption!.Value = $"\"{value}\"";
+        CustomOption.Text = value;
+
+        return InternalValueChanged();
     }
 }

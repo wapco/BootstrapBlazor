@@ -97,7 +97,7 @@ public abstract class BootstrapModuleComponentBase : IdComponentBase, IAsyncDisp
                     Interop = DotNetObjectReference.Create(this);
                 }
 
-                ModulePath = attr is BootstrapModuleAutoLoaderAttribute loader ? loader.LoadModulePath(type) : attr.Path;
+                ModulePath = attr is BootstrapModuleAutoLoaderAttribute loader ? loader.LoadModulePath(type) : AssetsUtils.Path(attr.Path);
             }
         }
     }

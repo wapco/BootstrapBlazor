@@ -1,4 +1,18 @@
 ﻿{
+  "BootstrapBlazor.Components.ValidatorBase": {
+    "CustomOptionValidator": "请填写自定义选项文本",
+    "RequiredValidator": "{0}为必填项. ",
+    "MinValidator": "至少选择{0}项",
+    "MaxValidator": "至多选择{0}项",
+    "ValidationError_CustomOptionTextIsRequired": "请填写自定义选项文本",
+    "ValidationError_ThisFieldIsRequired": "{0}为必填项. ",
+    "ValidationError_StringArrayMinLength": "{0}至少选择{1}项",
+    "ValidationError_StringArrayMaxLength": "{0}至多选择{1}项",
+    "ValidationError_StringArrayLength": "{0}最少选择{1}项且最多选择{2}项",
+    "ValidationError_ThisFieldMustLessThanOrEqual": "{0}必须小于等于{1}.",
+    "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0}必须大于等于{1}.",
+    "ValidationError_ThisFieldValueOutOfRange": "{0}必须大于等于{1}且小于等于{2}"
+  },
   "BootstrapBlazor.Components.AutoComplete": {
     "NoDataTip": "无匹配数据",
     "PlaceHolder": "请输入"

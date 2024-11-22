@@ -10,7 +10,7 @@ static class BootstrapModuleAutoLoaderAttributeExtensions
     public static string LoadModulePath(this BootstrapModuleAutoLoaderAttribute loader, Type type)
     {
         var path = string.IsNullOrEmpty(loader.ModuleName) ? LoadPath() : $"modules/{loader.ModuleName}.js";
-        return $"./_content/BootstrapBlazor/{path}";
+        return AssetsUtils.Path($"./_content/BootstrapBlazor/{path}");
 
         string LoadPath()
         {
