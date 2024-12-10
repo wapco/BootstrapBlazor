@@ -193,5 +193,5 @@ public partial class Dropdown<TValue>
         }
     }
 
-    private string? ButtonText => IsFixedButtonText ? FixedButtonText : SelectedItem?.Text;
+    protected string? ButtonText => IsFixedButtonText ? FixedButtonText : SelectedItem?.Text;
 }

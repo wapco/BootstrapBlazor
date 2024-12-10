@@ -3,23 +3,17 @@
 
 <div @attributes="@AdditionalAttributes" class="@TreeClassString" role="tree" tabindex="0">
     <ul class="tree-root" role="tree">
-        <li role="treeitem" class="tree-item">
-            <div class="tree-content">
-                <i class="@Icon"></i>
-                <div class="tree-node">&nbsp;</div>
-            </div>
-        </li>
-        <li role="treeitem" class="tree-item">
-            <div class="tree-content">
-                <i class="@Icon"></i>
-                <div class="tree-node">&nbsp;</div>
-            </div>
-        </li>
-        <li role="treeitem" class="tree-item">
-            <div class="tree-content">
-                <i class="@Icon"></i>
-                <div class="tree-node">&nbsp;</div>
-            </div>
-        </li>
+        @for (int i = 0; i < Rows; i++)
+        {
+            <li role="treeitem" class="tree-item">
+                <div class="tree-content">
+                    @if (ShowLoading)
+                    {
+                        <i class="@Icon"></i>
+                    }
+                    <div class="tree-node">&nbsp;</div>
+                </div>
+            </li>
+        }
     </ul>
 </div>

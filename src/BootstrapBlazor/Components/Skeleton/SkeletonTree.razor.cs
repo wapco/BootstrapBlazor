@@ -21,6 +21,18 @@ public partial class SkeletonTree
     [Parameter]
     public string? Icon { get; set; }
 
+    /// <summary>
+    /// 是否显示 Loading 图标
+    /// </summary>
+    [Parameter]
+    public bool ShowLoading { get; set; }
+
+    /// <summary>
+    /// 获得/设置 行数
+    /// </summary>
+    [Parameter]
+    public int Rows { get; set; } = 5;
+
     [Inject]
     [NotNull]
     private IIconTheme? IconTheme { get; set; }
