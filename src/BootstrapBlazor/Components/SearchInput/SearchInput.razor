@@ -1,0 +1,146 @@
+@namespace BootstrapBlazor.Components
+@using Microsoft.Extensions.Localization
+@inherits BootstrapModuleComponentBase
+@attribute [BootstrapModuleAutoLoader("SearchInput/SearchInput.razor.js", JSObjectReference = true, AutoInvokeInit = false, AutoInvokeDispose = false)]
+
+<div class="@SearchClassString">
+    <i class="@SearchIconString"></i>
+    <input type="text" placeholder="@Placeholder" @bind="@Value" @bind:event="oninput" @onkeyup="@OnSearchValueChanged"/>
+    @if (Value is not null)
+    {
+        <i class="@ClearIcon search-clear" @onclick="ClearSearchValue"></i>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// 获得/设置 搜索框输入值
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// 获得/设置 设置搜索图标
+    /// </summary>
+    [Parameter]
+    public string? SearchIcon { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// 获得/设置 是否固定下拉框中的搜索栏 默认 false
+    /// </summary>
+    [Parameter]
+    public bool IsFixedSearch { get; set; }
+
+    /// <summary>
+    /// 自定义样式
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// 是否仅在输入框按下回车时触发 ValueChanged 事件
+    /// </summary>
+    [Parameter]
+    public bool ValueChangeOnEnter { get; set; }
+
+    /// <summary>
+    /// 获得/设置 搜索框输入值改变时回调方法
+    /// </summary>
+    [Parameter]
+    public Func<string?, Task>? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// 获得/设置 设置清除图标 默认 fa-solid fa-xmark
+    /// </summary>
+    [Parameter]
+    public string? ClearIcon { get; set; }
+
+    [Inject]
+    [NotNull]
+    private IStringLocalizer<SearchInput>? Localizer { get; set; }
+
+    private string? SearchClassString => CssBuilder.Default("search-input")
+        .AddClass("is-fixed", IsFixedSearch)
+        .AddClass(CssClass)
+        .Build();
+
+    /// <summary>
+    /// 获得 SearchIcon 图标字符串 默认增加 icon 样式
+    /// </summary>
+    private string? SearchIconString => CssBuilder.Default("search-icon")
+        .AddClass(SearchIcon)
+        .Build();
+
+    /// <summary>
+    /// 获得/设置 IIconTheme 服务实例
+    /// </summary>
+    [Inject]
+    [NotNull]
+    protected IIconTheme? IconTheme { get; set; }
+
+    /// <summary>
+    /// OnInitialized
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        SearchIcon ??= IconTheme.GetIconByKey(ComponentIcons.SelectSearchIcon);
+        ClearIcon ??= IconTheme.GetIconByKey(ComponentIcons.MultiSelectClearIcon);
+
+        if (Placeholder == null)
+        {
+            Placeholder = Localizer[ValueChangeOnEnter ? "OnEnterPlaceholder" : "PlaceHolder"];
+        }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="value"></param>
+    [JSInvokable]
+    public async Task SearchValueChanged(string? value)
+    {
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (OnValueChanged != null)
+        {
+            await OnValueChanged.Invoke(value);
+        }
+    }
+
+    private async Task OnSearchValueChanged(KeyboardEventArgs e)
+    {
+        await InvokeVoidAsync("onValueChanged", Interop, Value);
+    }
+
+    private async Task ClearSearchValue()
+    {
+        Value = null;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (OnValueChanged != null)
+        {
+            await OnValueChanged.Invoke(Value);
+        }
+    }
+}

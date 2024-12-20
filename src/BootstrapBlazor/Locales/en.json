@@ -148,6 +148,10 @@
   "BootstrapBlazor.Components.Search": {
     "SearchButtonText": "Search"
   },
+  "BootstrapBlazor.Components.SearchInput": {
+    "OnEnterPlaceholder": "Press Enter after entering a keyword to search",
+    "PlaceHolder": "Please enter a keyword to search"
+  },
   "BootstrapBlazor.Components.Select": {
     "PlaceHolder": "Please select ...",
     "NoSearchDataText": "No Result"

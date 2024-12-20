@@ -31,8 +31,8 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     /// </summary>
     private string? InputClassString => CssBuilder.Default("form-select form-control")
         .AddClass($"border-{Color.ToDescriptionString()}", Color != Color.None && !IsDisabled && !IsValid.HasValue)
-        .AddClass($"border-success", IsValid.HasValue && IsValid.Value)
-        .AddClass($"border-danger", IsValid.HasValue && !IsValid.Value)
+        .AddClass("border-success", IsValid.HasValue && IsValid.Value)
+        .AddClass("border-danger", IsValid.HasValue && !IsValid.Value)
         .AddClass(CssClass).AddClass(ValidCss)
         .Build();
 
@@ -251,6 +251,35 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     [NotNull]
     public Func<VirtualizeQueryOption, Task<QueryData<SelectedItem>>>? OnQueryAsync { get; set; }
 
+    /// <summary>
+    /// 选项数据加载方法
+    /// </summary>
+    [Parameter]
+    public Func<Task<List<SelectedItem>?>>? OnQueryItemsAsync { get; set; }
+
+    private bool ShowDropdown { get; set; }
+
+    private bool ShowLoading { get; set; }
+
+    private async Task OnInternalClickAsync()
+    {
+        if (ShowDropdown == true || OnQueryItemsAsync == null)
+        {
+            return;
+        }
+
+        ShowDropdown = true;
+        ShowLoading = true;
+        StateHasChanged();
+
+        var items = await OnQueryItemsAsync.Invoke();
+        if (items != null)
+        {
+            Items = items;
+        }
+        ShowLoading = false;
+    }
+
     private async ValueTask<ItemsProviderResult<SelectedItem>> LoadItems(ItemsProviderRequest request)
     {
         // 有搜索条件时使用原生请求数量
@@ -278,6 +307,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
             // 通过 ItemProvider 提供数据
             await VirtualizeElement.RefreshDataAsync();
         }
+
         StateHasChanged();
     }
 
@@ -288,15 +318,16 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     /// <param name="result"></param>
     /// <param name="validationErrorMessage"></param>
     /// <returns></returns>
-    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage) => ValueType == typeof(SelectedItem)
-        ? TryParseSelectItem(value, out result, out validationErrorMessage)
-        : base.TryParseValueFromString(value, out result, out validationErrorMessage);
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage) =>
+        ValueType == typeof(SelectedItem)
+            ? TryParseSelectItem(value, out result, out validationErrorMessage)
+            : base.TryParseValueFromString(value, out result, out validationErrorMessage);
 
     private bool TryParseSelectItem(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage)
     {
         SelectedItem = Items.FirstOrDefault(i => i.Value == value)
-            ?? VirtualItems?.FirstOrDefault(i => i.Value == value)
-            ?? GetVirtualizeItem();
+                       ?? VirtualItems?.FirstOrDefault(i => i.Value == value)
+                       ?? GetVirtualizeItem();
 
         // support SelectedItem? type
         result = SelectedItem != null ? (TValue)(object)SelectedItem : default;
@@ -328,15 +359,14 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
             }
 
             SelectedItem = _dataSource.Find(Match)
-                ?? _dataSource.Find(i => i.Active)
-                ?? _dataSource.Where(i => !i.IsDisabled).FirstOrDefault()
-                ?? GetVirtualizeItem();
+                           ?? _dataSource.Find(i => i.Active)
+                           ?? _dataSource.Where(i => !i.IsDisabled).FirstOrDefault()
+                           ?? GetVirtualizeItem();
 
             if (SelectedItem != null)
             {
                 if (_init && DisableItemChangedWhenFirstRender)
                 {
-
                 }
                 else
                 {
@@ -394,17 +424,13 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
             if (ret)
             {
                 // 返回 True 弹窗提示
-                var option = new SwalOption()
-                {
-                    Category = SwalCategory,
-                    Title = SwalTitle,
-                    Content = SwalContent
-                };
+                var option = new SwalOption() { Category = SwalCategory, Title = SwalTitle, Content = SwalContent };
                 if (!string.IsNullOrEmpty(SwalFooter))
                 {
                     option.ShowFooter = true;
                     option.FooterTemplate = builder => builder.AddContent(0, SwalFooter);
                 }
+
                 ret = await SwalService.ShowModal(option);
             }
             else
@@ -413,6 +439,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
                 ret = true;
             }
         }
+
         if (ret)
         {
             await SelectedItemChanged(item);
@@ -477,6 +504,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         {
             ClearSearchText();
         }
+
         if (OnClearAsync != null)
         {
             await OnClearAsync();
@@ -528,6 +556,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
                     {
                         val = await TextConvertToValueCallback(v);
                     }
+
                     item = new SelectedItem<TValue>() { Text = v, Value = val };
                 }
                 else

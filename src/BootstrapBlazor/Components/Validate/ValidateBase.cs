@@ -14,6 +14,12 @@ namespace BootstrapBlazor.Components;
 /// </summary>
 public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateComponent
 {
+    /// <summary>
+    /// 获得/设置 组件是否合规 默认为 null 未检查
+    /// </summary>
+    [Parameter]
+    public bool? IsValid { get; set; }
+
     private ValidationMessageStore? _parsingValidationMessages;
 
     /// <summary>
@@ -42,11 +48,6 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
     protected string? ValidCss => IsValid.HasValue ? GetValidString(IsValid.Value) : null;
 
     private static string GetValidString(bool valid) => valid ? "is-valid" : "is-invalid";
-
-    /// <summary>
-    /// 获得/设置 组件是否合规 默认为 null 未检查
-    /// </summary>
-    protected bool? IsValid { get; set; }
 
     /// <summary>
     /// 获得 组件是否被禁用属性值
@@ -217,7 +218,7 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     protected virtual string? FormatParsingErrorMessage() => ParsingErrorMessage;

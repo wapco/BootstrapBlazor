@@ -13,13 +13,25 @@ namespace BootstrapBlazor.Components;
 /// </summary>
 public partial class MultiSelect<TValue>
 {
+    /// <summary>
+    /// 获得/设置 是否固定下拉框中的搜索栏 默认 false
+    /// </summary>
+    [Parameter]
+    public bool IsFixedSearch { get; set; }
+
     private List<SelectedItem> SelectedItems { get; } = [];
 
-    private static string? ClassString => CssBuilder.Default("select dropdown multi-select")
+    private string? ClassString => CssBuilder.Default("select dropdown multi-select")
+        .Build();
+
+    private string? SearchClassString => CssBuilder.Default("search")
+        .AddClass("is-fixed", IsFixedSearch)
         .Build();
 
     private string? ToggleClassString => CssBuilder.Default("dropdown-toggle scroll")
         .AddClass($"border-{Color.ToDescriptionString()}", Color != Color.None && !IsDisabled)
+        .AddClass("border-success", IsValid.HasValue && IsValid.Value)
+        .AddClass("border-danger", IsValid.HasValue && !IsValid.Value)
         .AddClass("is-fixed", IsFixedHeight)
         .AddClass("is-single-line", IsSingleLine)
         .AddClass("disabled", IsDisabled)
@@ -152,6 +164,12 @@ public partial class MultiSelect<TValue>
     [NotNull]
     public string? ClearIcon { get; set; }
 
+    /// <summary>
+    /// 选项数据加载方法
+    /// </summary>
+    [Parameter]
+    public Func<Task<List<SelectedItem>?>>? OnQueryItemsAsync { get; set; }
+
     [Inject]
     [NotNull]
     private IStringLocalizer<MultiSelect<TValue>>? Localizer { get; set; }
@@ -187,6 +205,27 @@ public partial class MultiSelect<TValue>
             SelectedItems.Clear();
             SelectedItems.AddRange(GetData().Where(item => list.Any(i => i == item.Value)));
         }
+    }
+
+    private bool ShowDropdown { get; set; }
+
+    private bool ShowLoading { get; set; }
+
+    private async Task OnInternalClickAsync()
+    {
+        if (ShowDropdown || OnQueryItemsAsync == null)
+        {
+            return;
+        }
+
+        ShowDropdown = true;
+        ShowLoading = true;
+        var items = await OnQueryItemsAsync.Invoke();
+        if (items != null)
+        {
+            Items = items;
+        }
+        ShowLoading = false;
     }
 
     /// <summary>
@@ -250,6 +289,7 @@ public partial class MultiSelect<TValue>
 
     private int _min;
     private int _max;
+
     private void ResetRules()
     {
         if (Max != _max)
@@ -295,6 +335,7 @@ public partial class MultiSelect<TValue>
                     instance.Add(val);
                 }
             }
+
             CurrentValue = (TValue)(typeValue.IsGenericType ? instance : listType.GetMethod("ToArray")!.Invoke(instance, null)!);
         }
 
@@ -364,6 +405,7 @@ public partial class MultiSelect<TValue>
         {
             ret = SelectedItems.Count < Max || GetCheckedState(item);
         }
+
         return ret;
     }
 
@@ -374,6 +416,7 @@ public partial class MultiSelect<TValue>
         {
             ret = CheckCanTrigger(item);
         }
+
         return !ret;
     }
 
@@ -384,6 +427,7 @@ public partial class MultiSelect<TValue>
         {
             data = OnSearchTextChanged(SearchText);
         }
+
         return data;
     }
 
@@ -415,6 +459,7 @@ public partial class MultiSelect<TValue>
             {
                 innerType = NullableUnderlyingType ?? type;
             }
+
             if (innerType.IsEnum)
             {
                 Items = innerType.ToSelectList();

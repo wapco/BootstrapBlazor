@@ -162,6 +162,10 @@
   "BootstrapBlazor.Components.Search": {
     "SearchButtonText": "搜索"
   },
+  "BootstrapBlazor.Components.SearchInput": {
+    "OnEnterPlaceholder": "请输入关键字按回车搜索",
+    "PlaceHolder": "请输入关键字搜索"
+  },
   "BootstrapBlazor.Components.Select": {
     "PlaceHolder": "请选择 ...",
     "NoSearchDataText": "无数据"

@@ -6,7 +6,7 @@
 
 @if (IsShowLabel)
 {
-    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
+    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText"/>
 }
 <div @attributes="AdditionalAttributes" id="@Id" class="@ClassString">
     <CascadingValue Value="this" IsFixed="true">
@@ -16,7 +16,8 @@
         @{
             ResetSelectedItem();
         }
-        <div class="dropdown-toggle" data-bs-toggle="@ToggleString" data-bs-placement="@PlacementString" data-bs-offset="@OffsetString" data-bs-custom-class="@CustomClassString">
+        <div class="dropdown-toggle" @onclick="@OnInternalClickAsync" data-bs-toggle="@ToggleString" data-bs-placement="@PlacementString"
+             data-bs-offset="@OffsetString" data-bs-custom-class="@CustomClassString">
             @if (DisplayTemplate != null)
             {
                 <div id="@InputId" class="@InputClassString" tabindex="0">
@@ -25,7 +26,8 @@
             }
             else
             {
-                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedItem?.Text" @onchange="OnChange" readonly="@ReadonlyString" />
+                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedItem?.Text"
+                       @onchange="OnChange" readonly="@ReadonlyString"/>
             }
             <span class="@AppendClassString"><i class="@DropdownIcon"></i></span>
         </div>
@@ -39,18 +41,26 @@
                 @if (ShowSearch)
                 {
                     <div class="@SearchClassString">
-                        <input type="text" class="search-text form-control" autocomplete="off" value="@SearchText" @oninput="EventCallback.Factory.CreateBinder<string>(this, async v => await SearchTextChanged(v), SearchText)" aria-label="Search">
-                        <i class="@SearchIconString"></i>
+                        <SearchInput @bind-Value="SearchText" OnValueChanged="@SearchTextChanged"></SearchInput>
                     </div>
                 }
+
+                @if (ShowLoading)
+                {
+                    <div class="text-center">
+                        <Spinner Color="Color.Primary"/>
+                    </div>
+                }
+
                 <div class="dropdown-virtual">
                     @if (OnQueryAsync == null)
                     {
-                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow" />
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow"/>
                     }
                     else
                     {
-                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems" Placeholder="RenderPlaceHolderRow" ItemContent="RenderRow" @ref="VirtualizeElement" />
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems" Placeholder="RenderPlaceHolderRow"
+                                    ItemContent="RenderRow" @ref="VirtualizeElement"/>
                     }
                 </div>
             }
@@ -59,10 +69,10 @@
                 @if (ShowSearch)
                 {
                     <div class="@SearchClassString">
-                        <input type="text" class="search-text form-control" autocomplete="off" @bind-value="@SearchText" @bind-value:event="oninput" aria-label="Search">
-                        <i class="@SearchIconString"></i>
+                        <SearchInput @bind-Value="SearchText"></SearchInput>
                     </div>
                 }
+
                 @foreach (var itemGroup in _dataSource.GroupBy(i => i.GroupName))
                 {
                     if (!string.IsNullOrEmpty(itemGroup.Key))
@@ -73,14 +83,16 @@
                         }
                         else
                         {
-                            <Divider Text="@itemGroup.Key" />
+                            <Divider Text="@itemGroup.Key"/>
                         }
                     }
+
                     @foreach (var item in itemGroup)
                     {
                         @RenderRow(item)
                     }
                 }
+
                 @if (!_dataSource.Any())
                 {
                     <div class="dropdown-item">@NoSearchDataText</div>
@@ -95,24 +107,26 @@
 </div>
 
 @code {
+
     RenderFragment<SelectedItem> RenderRow => item =>
-    @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
-        @if (ItemTemplate != null)
-        {
-            @ItemTemplate(item)
-        }
-        else if (IsMarkupString)
-        {
-            @((MarkupString)item.Text) 
-        }
-        else
-        {
-            @item.Text
-        }
-    </div>;
+        @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
+            @if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+            else if (IsMarkupString)
+            {
+                @((MarkupString)item.Text)
+            }
+            else
+            {
+                @item.Text
+            }
+        </div>;
 
     RenderFragment<PlaceholderContext> RenderPlaceHolderRow => context =>
-    @<div class="dropdown-item">
-        <div class="is-ph"></div>
-    </div>;
+        @<div class="dropdown-item">
+            <div class="is-ph"></div>
+        </div>;
+
 }
