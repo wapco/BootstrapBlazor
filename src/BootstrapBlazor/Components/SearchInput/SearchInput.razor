@@ -1,18 +1,19 @@
 @namespace BootstrapBlazor.Components
 @using Microsoft.Extensions.Localization
 @inherits BootstrapModuleComponentBase
-@attribute [BootstrapModuleAutoLoader("SearchInput/SearchInput.razor.js", JSObjectReference = true, AutoInvokeInit = false, AutoInvokeDispose = false)]
+@attribute [BootstrapModuleAutoLoader("SearchInput/SearchInput.razor.js", JSObjectReference = true, AutoInvokeInit = true, AutoInvokeDispose = false)]
 
-<div class="@SearchClassString">
+<div @ref="@ElementReference" class="@SearchClassString">
     <i class="@SearchIconString"></i>
-    <input type="text" placeholder="@Placeholder" @bind="@Value" @bind:event="oninput" @onkeyup="@OnSearchValueChanged"/>
-    @if (Value is not null)
+    <input class="search-text" type="text" placeholder="@Placeholder" @bind="@Value" />
+    @if (!string.IsNullOrEmpty(Value))
     {
-        <i class="@ClearIcon search-clear" @onclick="ClearSearchValue"></i>
+        <i class="@ClearIcon search-clear"></i>
     }
 </div>
 
 @code {
+
     /// <summary>
     /// 获得/设置 搜索框输入值
     /// </summary>
@@ -71,6 +72,8 @@
     [NotNull]
     private IStringLocalizer<SearchInput>? Localizer { get; set; }
 
+    private ElementReference ElementReference { get; set; }
+
     private string? SearchClassString => CssBuilder.Default("search-input")
         .AddClass("is-fixed", IsFixedSearch)
         .AddClass(CssClass)
@@ -113,6 +116,7 @@
     [JSInvokable]
     public async Task SearchValueChanged(string? value)
     {
+        Value = value;
         if (ValueChanged.HasDelegate)
         {
             await ValueChanged.InvokeAsync(Value);
@@ -124,23 +128,9 @@
         }
     }
 
-    private async Task OnSearchValueChanged(KeyboardEventArgs e)
-    {
-        await InvokeVoidAsync("onValueChanged", Interop, Value);
-    }
-
-    private async Task ClearSearchValue()
-    {
-        Value = null;
-
-        if (ValueChanged.HasDelegate)
-        {
-            await ValueChanged.InvokeAsync(Value);
-        }
-
-        if (OnValueChanged != null)
-        {
-            await OnValueChanged.Invoke(Value);
-        }
-    }
+    /// <summary>
+    /// 初始化时调用方法
+    /// </summary>
+    /// <returns></returns>
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Interop, ElementReference, ValueChangeOnEnter);
 }
