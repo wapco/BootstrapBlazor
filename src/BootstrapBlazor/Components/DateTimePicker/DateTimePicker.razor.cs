@@ -51,19 +51,8 @@ public partial class DateTimePicker<TValue>
     /// <summary>
     /// 获得/设置 是否允许为空
     /// </summary>
-    private bool AllowNull { get; set; }
-
-    /// <summary>
-    /// 获得/设置 时间格式化字符串 默认值为 null
-    /// </summary>
     [Parameter]
-    [Obsolete("已过期，请使用 DateTimeFormat/DateFormat/TimeFormat 分别设置; Please use DateTimeFormat/DateFormat/TimeFormat")]
-    [ExcludeFromCodeCoverage]
-    public string? Format
-    {
-        get => DateFormat;
-        set => DateFormat = value;
-    }
+    public bool AllowNull { get; set; }
 
     /// <summary>
     /// 获得/设置 时间格式化字符串 默认值为 "yyyy-MM-dd HH:mm:ss"
@@ -236,7 +225,7 @@ public partial class DateTimePicker<TValue>
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<DateTimePicker<DateTime>>? Localizer { get; set; }
+    private IStringLocalizer<DateTimePicker<TValue>>? Localizer { get; set; }
 
     [Inject]
     [NotNull]
@@ -249,6 +238,10 @@ public partial class DateTimePicker<TValue>
 
     private DatePickerBody _pickerBody = default!;
 
+    private string? LastValue { get; set; }
+
+    private string DisplayValue => Value == null ? null : SelectedValue.ToString(Localizer[ViewMode.ToString()]);
+
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
@@ -257,15 +250,7 @@ public partial class DateTimePicker<TValue>
         base.OnInitialized();
 
         // 泛型设置为可为空
-        AllowNull = NullableUnderlyingType != null;
-    }
-
-    /// <summary>
-    /// OnParametersSet 方法
-    /// </summary>
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
+        // AllowNull = NullableUnderlyingType != null;
 
         DateTimePlaceHolderText ??= Localizer[nameof(DateTimePlaceHolderText)];
         DatePlaceHolderText ??= Localizer[nameof(DatePlaceHolderText)];
@@ -275,16 +260,38 @@ public partial class DateTimePicker<TValue>
         TimeFormat ??= Localizer[nameof(TimeFormat)];
 
         Icon ??= IconTheme.GetIconByKey(ComponentIcons.DateTimePickerIcon);
+    }
+
+    /// <summary>
+    /// OnParametersSet 方法
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (LastValue == CurrentValueAsString)
+        {
+            return;
+        }
 
         var type = typeof(TValue);
 
         // 判断泛型类型
         if (!type.IsDateTime())
         {
-            throw new InvalidOperationException(GenericTypeErrorMessage);
+            if (Value is string value)
+            {
+                if (!string.IsNullOrEmpty(value) && DateTime.TryParse(value, out var v))
+                {
+                    SelectedValue = v;
+                }
+                else
+                {
+                    throw new InvalidOperationException(GenericTypeErrorMessage);
+                }
+            }
         }
-
-        if (Value is DateTimeOffset v1)
+        else if (Value is DateTimeOffset v1)
         {
             SelectedValue = v1.DateTime;
         }
@@ -295,24 +302,38 @@ public partial class DateTimePicker<TValue>
 
         if (MinValue > SelectedValue)
         {
-            SelectedValue = ViewMode == DatePickerViewMode.DateTime ? MinValue.Value : MinValue.Value.Date;
-            Value = GetValue();
+            SelectedValue = ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute ? MinValue.Value : MinValue.Value.Date;
+            CurrentValue = GetValue();
         }
         else if (MaxValue < SelectedValue)
         {
-            SelectedValue = ViewMode == DatePickerViewMode.DateTime ? MaxValue.Value : MaxValue.Value.Date;
-            Value = GetValue();
+            SelectedValue = ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute ? MaxValue.Value : MaxValue.Value.Date;
+            CurrentValue = GetValue();
         }
 
-        if (MinValueToEmpty(SelectedValue))
+        if (MinValueToToday(SelectedValue))
         {
-            SelectedValue = ViewMode == DatePickerViewMode.DateTime ? DateTime.Now : DateTime.Today;
-            Value = default;
+            InitSelectedValue();
+            CurrentValue = GetValue();
         }
-        else if (MinValueToToday(SelectedValue))
+        else if (MinValueToEmpty(SelectedValue))
         {
-            SelectedValue = ViewMode == DatePickerViewMode.DateTime ? DateTime.Now : DateTime.Today;
-            Value = GetValue();
+            InitSelectedValue();
+            CurrentValue = default;
+        }
+
+        LastValue = CurrentValueAsString;
+    }
+
+    private void InitSelectedValue()
+    {
+        if (ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute)
+        {
+            SelectedValue = DateTime.Now.AddSeconds(-DateTime.Now.Second);
+        }
+        else
+        {
+            SelectedValue = DateTime.Today;
         }
     }
 
@@ -355,8 +376,13 @@ public partial class DateTimePicker<TValue>
     /// <summary>
     /// 格式化数值方法
     /// </summary>
-    protected override string FormatValueAsString(TValue value)
+    protected override string? FormatValueAsString(TValue value)
     {
+        if (ValueType == typeof(string))
+        {
+            return value?.ToString();
+        }
+
         var ret = "";
         DateTime? d = value switch
         {
@@ -367,14 +393,15 @@ public partial class DateTimePicker<TValue>
 
         if (d.HasValue && !_disabledDaysList.Contains(d.Value))
         {
-            ret = d.Value.ToString(ViewMode == DatePickerViewMode.DateTime ? DateTimeFormat : DateFormat);
+            ret = d.Value.ToString(ViewMode.ToDescriptionString());
         }
+
         return ret;
     }
 
     private bool MinValueToEmpty(DateTime val) => val == DateTime.MinValue && AllowNull && DisplayMinValueAsEmpty;
 
-    private bool MinValueToToday(DateTime val) => val == DateTime.MinValue && !AllowNull && AutoToday;
+    private bool MinValueToToday(DateTime val) => val == DateTime.MinValue && AutoToday;
 
     /// <summary>
     /// 清除内部缓存方法
@@ -410,7 +437,11 @@ public partial class DateTimePicker<TValue>
     {
         TValue? ret = default;
 
-        if (ValueType == typeof(DateTime))
+        if (ValueType == typeof(string))
+        {
+            ret = (TValue)(object)SelectedValue.ToString(ViewMode.ToDescriptionString());
+        }
+        else if (ValueType == typeof(DateTime))
         {
             ret = (TValue)(object)SelectedValue;
         }
@@ -419,6 +450,7 @@ public partial class DateTimePicker<TValue>
             DateTimeOffset d = new DateTimeOffset(SelectedValue);
             ret = (TValue)(object)d;
         }
+
         return ret;
     }
 
@@ -439,6 +471,7 @@ public partial class DateTimePicker<TValue>
         {
             result = (TValue)(object)val;
         }
+
         return ret;
     }
 

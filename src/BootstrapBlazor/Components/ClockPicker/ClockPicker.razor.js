@@ -32,9 +32,9 @@ const setTime = picker => {
 
     if (mode === "Hour") {
         let hour = Math.round(val.Hour)
-        if (hour > 12) {
-            hour = hour - 12;
-        }
+        // if (hour > 12) {
+        //     hour = hour - 12;
+        // }
         hourEl.textContent = hour.toString().padStart(2, '0');
     }
     if (mode === "Minute") {
@@ -58,6 +58,7 @@ const setPoint = (picker, point) => {
 }
 
 const setDeg = (point, value, rate) => {
+    if(!point) return;
     const deg = value * rate;
     point.style.setProperty('transform', `rotate(${deg}deg)`);
 }

@@ -59,10 +59,21 @@
             </div>
         }
         <div class="@HourClass">
-            <div><span>12</span></div>
-            @for (var index = 1; index < 12; index++)
+            @if (IsAM)
             {
-                <div><span>@index</span></div>
+                <div><span>12</span></div>
+                for (var index = 1; index < 12; index++)
+                {
+                    <div><span>@index</span></div>
+                }
+            }
+            else
+            {
+                <div><span>24</span></div>
+                for (var index = 13; index < 24; index++)
+                {
+                    <div><span>@index</span></div>
+                }
             }
             @RenderClockPoint
         </div>

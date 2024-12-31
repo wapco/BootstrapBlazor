@@ -468,6 +468,12 @@ public partial class DatePickerBody
     {
         base.OnParametersSet();
 
+        if (ViewMode == DatePickerViewMode.DateMinute)
+        {
+            TimePickerOption.ShowSecond = false;
+            ViewMode = DatePickerViewMode.DateTime;
+        }
+
         CurrentViewMode = ViewMode;
         CurrentDate = Value.Date;
         CurrentTime = Value.TimeOfDay;
@@ -532,6 +538,7 @@ public partial class DatePickerBody
             {
                 _monthDisabledDaysCache.Remove(key);
             }
+
             if (!_monthDisabledDaysCache.TryGetValue(key, out var disabledDays))
             {
                 disabledDays = await OnGetDisabledDaysCallback(StartDate, EndDate);
@@ -552,6 +559,7 @@ public partial class DatePickerBody
         {
             ret = disabledDays.Contains(val);
         }
+
         return ret;
     }
 
@@ -689,6 +697,7 @@ public partial class DatePickerBody
                 // update disabled days cache
                 await UpdateDisabledDaysCache(false);
             }
+
             StateHasChanged();
         }
         else if (AutoClose)
@@ -817,6 +826,7 @@ public partial class DatePickerBody
             Value = CurrentDate + CurrentTime;
             await OnValueChanged();
         }
+
         if (OnConfirm != null)
         {
             await OnConfirm();

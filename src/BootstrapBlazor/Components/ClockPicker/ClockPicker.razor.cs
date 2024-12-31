@@ -80,7 +80,7 @@ public partial class ClockPicker
 
     private bool IsAM => Value.Hours < 12;
 
-    private string HourValue => (Value.Hours > 12 ? (Value.Hours - 12) : Value.Hours).ToString("D2");
+    private string HourValue => Value.Hours.ToString("D2");
 
 #if NET6_0
     private string _version = "NET6.0";

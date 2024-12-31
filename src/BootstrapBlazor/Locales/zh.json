@@ -72,7 +72,11 @@
     "GenericTypeErroMessage": "DateTimePicker 组件仅支持绑定泛型为 DateTime DateTime? DateTimeOffset DateTimeOffset?",
     "Today": "今天",
     "Yesterday": "昨天",
-    "Week": "一周前"
+    "Week": "一周前",
+    "Month": "yyyy-MM",
+    "Date": "yyyy-MM-dd",
+    "DateMinute": "yyyy-MM-dd HH:mm",
+    "DateTime": "yyyy-MM-dd HH:mm:ss"
   },
   "BootstrapBlazor.Components.DateTimeRange": {
     "SeparateText": "至",
