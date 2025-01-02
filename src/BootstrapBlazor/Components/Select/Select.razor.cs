@@ -278,6 +278,9 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         if (items != null)
         {
             Items = items;
+
+            IsVirtualize = items.Count > 50;
+            ShowSearch = items.Count > 20;
         }
 
         ShowLoading = false;
@@ -503,14 +506,13 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     /// <summary>
     /// 清空搜索栏文本内容
     /// </summary>
-    public void ClearSearchText() => SearchText = null;
-
+    // public void ClearSearchText() => SearchText = null;
     private async Task OnClearValue()
     {
-        if (ShowSearch)
-        {
-            ClearSearchText();
-        }
+        // if (ShowSearch)
+        // {
+        //     ClearSearchText();
+        // }
 
         if (OnClearAsync != null)
         {

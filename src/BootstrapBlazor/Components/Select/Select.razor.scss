@@ -238,3 +238,8 @@
 .btn-popover-confirm.dropdown-toggle:after {
     content: none;
 }
+
+.select.cls .dropdown-menu .dropdown-item:empty,
+.select.cls .dropdown-virtual .dropdown-item:empty {
+  display: none;
+}
