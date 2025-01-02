@@ -118,7 +118,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     /// 获得/设置 是否可清除 默认 false
     /// </summary>
     [Parameter]
-    public bool IsClearable { get; set; }
+    public bool IsClearable { get; set; } = true;
 
     /// <summary>
     /// 获得/设置 选项模板支持静态数据
@@ -211,6 +211,8 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
 
     private string _lastSelectedValueString = string.Empty;
 
+    private SelectedItem NullItem => new("", "");
+
     private bool _init = true;
 
     /// <summary>
@@ -277,6 +279,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         {
             Items = items;
         }
+
         ShowLoading = false;
     }
 
@@ -347,6 +350,10 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     private void ResetSelectedItem()
     {
         _dataSource.Clear();
+        if (IsClearable)
+        {
+            _dataSource.Add(NullItem);
+        }
 
         if (string.IsNullOrEmpty(SearchText))
         {
@@ -360,7 +367,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
 
             SelectedItem = _dataSource.Find(Match)
                            ?? _dataSource.Find(i => i.Active)
-                           ?? _dataSource.Where(i => !i.IsDisabled).FirstOrDefault()
+                           ?? _dataSource.FirstOrDefault(i => !i.IsDisabled)
                            ?? GetVirtualizeItem();
 
             if (SelectedItem != null)
@@ -511,22 +518,29 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         }
 
         SelectedItem? item;
-        if (IsVirtualize)
+        if (IsClearable)
         {
-            if (VirtualizeElement != null)
-            {
-                await VirtualizeElement.RefreshDataAsync();
-                item = VirtualItems!.FirstOrDefault();
-            }
-            else
-            {
-                VirtualItems = Items;
-                item = Items.FirstOrDefault();
-            }
+            item = NullItem;
         }
         else
         {
-            item = Items.FirstOrDefault();
+            if (IsVirtualize)
+            {
+                if (VirtualizeElement != null)
+                {
+                    await VirtualizeElement.RefreshDataAsync();
+                    item = VirtualItems!.FirstOrDefault();
+                }
+                else
+                {
+                    VirtualItems = Items;
+                    item = Items.FirstOrDefault();
+                }
+            }
+            else
+            {
+                item = Items.FirstOrDefault();
+            }
         }
 
         if (item != null)
