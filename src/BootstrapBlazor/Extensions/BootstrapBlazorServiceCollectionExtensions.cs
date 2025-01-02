@@ -73,6 +73,7 @@ public static class BootstrapBlazorServiceCollectionExtensions
         services.TryAddScoped<IBluetooth, DefaultBluetooth>();
         services.AddScoped<TabItemTextOptions>();
         services.AddScoped<DialogService>();
+        services.AddScoped<LoadingService>();
         services.AddScoped<MaskService>();
         services.AddScoped<MessageService>();
         services.AddScoped<ToastService>();
