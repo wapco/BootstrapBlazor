@@ -279,11 +279,22 @@ public partial class DateTimePicker<TValue>
         // 判断泛型类型
         if (!type.IsDateTime())
         {
-            if (Value is string value)
+            if (Value == null)
             {
-                if (!string.IsNullOrEmpty(value) && DateTime.TryParse(value, out var v))
+                SelectedValue = DateTime.MinValue;
+            }
+            else
+            {
+                if (Value is string value)
                 {
-                    SelectedValue = v;
+                    if (!string.IsNullOrEmpty(value) && DateTime.TryParse(value, out var v))
+                    {
+                        SelectedValue = v;
+                    }
+                    else
+                    {
+                        SelectedValue = DateTime.MinValue;
+                    }
                 }
                 else
                 {

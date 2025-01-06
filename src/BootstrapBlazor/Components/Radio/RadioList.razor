@@ -8,7 +8,7 @@
 }
 @if (IsButton)
 {
-    <div @attributes="@AdditionalAttributes" class="radio-list-group">
+    <div @attributes="@AdditionalAttributes" id="@Id" class="radio-list-group">
         <div class="@ButtonClassString" role="group">
             @foreach (var item in Items)
             {
@@ -21,7 +21,7 @@
 }
 else
 {
-    <div @attributes="@AdditionalAttributes" class="@ClassString" role="group">
+    <div @attributes="@AdditionalAttributes" id="@Id" class="@ClassString" role="group">
         @foreach (var item in Items)
         {
             var content = GetChildContent(item);

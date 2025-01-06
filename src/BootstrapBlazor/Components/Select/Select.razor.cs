@@ -259,18 +259,15 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     [Parameter]
     public Func<Task<List<SelectedItem>?>>? OnQueryItemsAsync { get; set; }
 
-    private bool ShowDropdown { get; set; }
-
     private bool ShowLoading { get; set; }
 
     private async Task OnInternalClickAsync()
     {
-        if (ShowDropdown == true || OnQueryItemsAsync == null)
+        if (OnQueryItemsAsync == null)
         {
             return;
         }
 
-        ShowDropdown = true;
         ShowLoading = true;
         StateHasChanged();
 
@@ -280,7 +277,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
             Items = items;
 
             IsVirtualize = items.Count > 50;
-            ShowSearch = items.Count > 20;
+            ShowSearch = items.Count > 10;
         }
 
         ShowLoading = false;

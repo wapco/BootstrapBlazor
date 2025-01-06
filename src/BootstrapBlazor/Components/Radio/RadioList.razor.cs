@@ -49,6 +49,7 @@ public partial class RadioList<TValue> : CheckboxList<TValue>
     private string? ButtonClassString => CssBuilder.Default("radio-list btn-group")
         .AddClass("disabled", IsDisabled)
         .AddClass("btn-group-vertical", IsVertical)
+        .AddClass(CssClass).AddClass(ValidCss)
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
