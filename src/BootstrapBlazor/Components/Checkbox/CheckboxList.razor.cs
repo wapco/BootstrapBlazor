@@ -183,7 +183,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
 
         if (AllowCustom && CustomOption == null)
         {
-            CustomOption = new SelectedItem() { Active = false, Value = "", Text = "" };
+            CustomOption = new SelectedItem() { Active = false, Value = "\"\"", Text = "" };
         }
 
         InitValue();
