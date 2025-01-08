@@ -19,7 +19,7 @@
             <PaginationItem OnClick="MovePrev" Index="1">
                 <i class="@PrevPageIcon"></i>
             </PaginationItem>
-            <PaginationItem OnClick="OnClick" Index="1" IsActive="InternalPageIndex == 1" />
+            <PaginationItem OnClick="OnClick" Index="1" IsActive="InternalPageIndex == 1"/>
             @if (InternalPageCount > MaxPageLinkCount)
             {
                 @if (StartPageIndex != 2)
@@ -31,7 +31,7 @@
             }
             @for (int i = StartPageIndex; i <= EndPageIndex; i++)
             {
-                <PaginationItem @key="i" OnClick="OnClick" Index="i" IsActive="InternalPageIndex == i" />
+                <PaginationItem @key="i" OnClick="OnClick" Index="i" IsActive="InternalPageIndex == i"/>
             }
             @if (InternalPageCount > MaxPageLinkCount)
             {
@@ -42,7 +42,7 @@
                     </PaginationItem>
                 }
             }
-            <PaginationItem OnClick="OnClick" Index="InternalPageCount" IsActive="InternalPageIndex == InternalPageCount" />
+            <PaginationItem OnClick="OnClick" Index="InternalPageCount" IsActive="InternalPageIndex == InternalPageCount"/>
             <PaginationItem OnClick="MoveNext" Index="1">
                 <i class="@NextPageIcon"></i>
             </PaginationItem>
@@ -55,8 +55,12 @@
             }
             else
             {
-                <GotoNavigator Index="InternalPageIndex" GotoText="@GotoNavigatorLabelText" OnNavigation="OnGoto" />
+                <GotoNavigator Index="InternalPageIndex" GotoText="@GotoNavigatorLabelText" OnNavigation="OnGoto"/>
             }
         }
+    }
+    else
+    {
+        <ul class="@PaginationClassString"></ul>
     }
 </nav>

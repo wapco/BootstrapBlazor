@@ -118,7 +118,7 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
     /// 获得/设置 是否可清除 默认 false
     /// </summary>
     [Parameter]
-    public bool IsClearable { get; set; } = true;
+    public bool IsClearable { get; set; }
 
     /// <summary>
     /// 获得/设置 选项模板支持静态数据

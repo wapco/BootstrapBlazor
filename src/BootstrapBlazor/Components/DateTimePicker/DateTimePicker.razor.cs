@@ -132,11 +132,11 @@ public partial class DateTimePicker<TValue>
     public bool IsEditable { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否自动设置值为当前时间 默认 true
+    /// 获得/设置 是否自动设置值为当前时间
     /// </summary>
     /// <remarks>当 Value 值为 <see cref="DateTime.MinValue"/> 时自动设置时间为 <see cref="DateTime.Today"/> 不为空类型时此参数生效</remarks>
     [Parameter]
-    public bool AutoToday { get; set; } = true;
+    public bool AutoToday { get; set; }
 
     /// <summary>
     /// 获得/设置 是否将 <see cref="DateTime.MinValue"/> 显示为空字符串 默认 true
