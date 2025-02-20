@@ -237,6 +237,24 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         }
     }
 
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (!string.IsNullOrEmpty(CurrentValueAsString) && OnQueryItemsAsync != null && (Items == null))
+        {
+            var items = await OnQueryItemsAsync.Invoke();
+            if (items != null)
+            {
+                Items = items;
+
+                IsVirtualize = items.Count > 50;
+                ShowSearch = items.Count > 10;
+            }
+        }
+    }
+
     /// <summary>
     /// 获得/设置 数据总条目
     /// </summary>
@@ -268,8 +286,11 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
             return;
         }
 
-        ShowLoading = true;
-        StateHasChanged();
+        if (!Items.Any())
+        {
+            ShowLoading = true;
+            StateHasChanged();
+        }
 
         var items = await OnQueryItemsAsync.Invoke();
         if (items != null)

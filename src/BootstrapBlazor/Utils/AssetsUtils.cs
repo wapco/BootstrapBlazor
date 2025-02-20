@@ -16,7 +16,8 @@ public static class AssetsUtils
             if (string.IsNullOrEmpty(_version))
             {
 #if DEBUG
-                return DateTime.Now.ToString("yyyyMMddHHmmss");
+                _version = DateTime.Now.ToString("yyyyMMddHHmmss");
+                return _version;
 #endif
                 try
                 {

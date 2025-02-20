@@ -73,6 +73,13 @@
                     </div>
                 }
 
+                @if (ShowLoading)
+                {
+                    <div class="text-center">
+                        <Spinner Color="Color.Primary"/>
+                    </div>
+                }
+
                 @foreach (var itemGroup in _dataSource.GroupBy(i => i.GroupName))
                 {
                     if (!string.IsNullOrEmpty(itemGroup.Key))

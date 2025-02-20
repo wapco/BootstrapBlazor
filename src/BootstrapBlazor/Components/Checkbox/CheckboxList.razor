@@ -36,7 +36,7 @@ else
         @if (CustomOption != null)
         {
             <div class="@CheckboxItemClassString">
-                <Checkbox class="w-auto me-2 d-flex align-items-center" TValue="bool" IsDisabled="GetDisabledState(CustomOption)"
+                <Checkbox class="checkbox-item-custom d-flex align-items-center" TValue="bool" IsDisabled="GetDisabledState(CustomOption)"
                           ShowAfterLabel="true" ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip"
                           OnBeforeStateChanged="_onBeforeStateChangedCallback!"
                           Value="@CustomOption.Active" OnStateChanged="@((state, v) => OnStateChanged(CustomOption, v))">
