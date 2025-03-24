@@ -15,7 +15,7 @@ public class Loading : ComponentBase
     /// <summary>
     /// 获得 class 样式集合
     /// </summary>
-    private string? ClassName => CssBuilder.Default("form-loader")
+    private string? ClassName => CssBuilder.Default("form-loader form-loader-service")
         .AddClass("show", ShowLoading)
         .AddClass("fade", !ShowLoading)
         .Build();
