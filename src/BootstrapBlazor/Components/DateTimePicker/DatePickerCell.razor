@@ -19,11 +19,11 @@
     {
         if (CalendarHolidays.IsHoliday(Value))
         {
-            <span class="is-holiday">休</span>
+            <span class="is-holiday">@Localizer["R"]</span>
         }
         else if (CalendarHolidays.IsWorkday(Value))
         {
-            <span class="is-workday">班</span>
+            <span class="is-workday">@Localizer["W"]</span>
         }
     }
 </span>

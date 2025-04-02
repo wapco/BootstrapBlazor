@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.Extensions.Localization;
+
 namespace BootstrapBlazor.Components;
 
 /// <summary>
@@ -73,6 +75,10 @@ public sealed partial class DatePickerCell
     [Inject]
     [NotNull]
     private ICalendarHolidays? CalendarHolidays { get; set; }
+
+    [Inject]
+    [NotNull]
+    private IStringLocalizer<DatePickerCell>? Localizer { get; set; }
 
     private string GetLunarText(DateTime dateTime) => dateTime.ToLunarText(ShowSolarTerm, ShowFestivals ? CalendarFestivals : null);
 }

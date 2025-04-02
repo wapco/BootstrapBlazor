@@ -26,8 +26,8 @@ public interface ICalendarHolidays
     /// 初始化数据
     /// </summary>
     /// <returns></returns>
-    Task InitDateAsync()
+    Task<bool> InitDateAsync(DateOnly startDate, DateOnly endData)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(false);
     }
 }
