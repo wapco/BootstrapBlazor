@@ -10,7 +10,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// DateTime 扩展方法
 /// </summary>
-internal static class DateTimeExtensions
+public static class DateTimeExtensions
 {
     /// <summary>
     /// 获得安全的月份时间

@@ -21,4 +21,13 @@ public interface ICalendarHolidays
     /// </summary>
     /// <returns></returns>
     bool IsWorkday(DateTime dt);
+
+    /// <summary>
+    /// 初始化数据
+    /// </summary>
+    /// <returns></returns>
+    Task InitDateAsync()
+    {
+        return Task.CompletedTask;
+    }
 }
