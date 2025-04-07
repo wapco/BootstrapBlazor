@@ -198,7 +198,7 @@ public partial class MultiSelect<TValue>
         ResetRules();
 
         // 通过 Value 对集合进行赋值
-        if (PreviousValue != CurrentValueAsString)
+        if (PreviousValue != CurrentValueAsString || (SelectedItems.Count == 0 && !string.IsNullOrEmpty(CurrentValueAsString)))
         {
             PreviousValue = CurrentValueAsString;
             var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -211,6 +211,26 @@ public partial class MultiSelect<TValue>
 
     private bool ShowLoading { get; set; }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (!string.IsNullOrEmpty(CurrentValueAsString) && OnQueryItemsAsync != null && (Items == null))
+        {
+            var items = await OnQueryItemsAsync.Invoke();
+            if (items != null)
+            {
+                Items = items;
+            }
+        }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
     private async Task OnInternalClickAsync()
     {
         if (ShowDropdown || OnQueryItemsAsync == null)
@@ -225,6 +245,7 @@ public partial class MultiSelect<TValue>
         {
             Items = items;
         }
+
         ShowLoading = false;
     }
 

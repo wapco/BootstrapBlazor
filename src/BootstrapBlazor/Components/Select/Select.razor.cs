@@ -237,7 +237,9 @@ public partial class Select<TValue> : ISelect, IModelEqualityComparer<TValue>
         }
     }
 
-
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

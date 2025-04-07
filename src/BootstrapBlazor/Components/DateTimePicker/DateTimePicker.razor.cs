@@ -262,7 +262,7 @@ public partial class DateTimePicker<TValue>
         Icon ??= IconTheme.GetIconByKey(ComponentIcons.DateTimePickerIcon);
 
         ShowHolidays = true;
-        ShowLunar = ShowSolarTerm = ShowFestivals = CultureInfo.CurrentUICulture.Name == "zh-Hans";
+        ShowLunar = ShowSolarTerm = ShowFestivals = CultureInfo.CurrentUICulture.Name.StartsWith("zh");
     }
 
     /// <summary>
