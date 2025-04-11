@@ -11,6 +11,12 @@ namespace BootstrapBlazor.Components;
 public class TabItem : ComponentBase
 {
     /// <summary>
+    ///
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
     /// 获得/设置 文本文字
     /// </summary>
     [Parameter]
