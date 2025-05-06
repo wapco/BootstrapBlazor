@@ -26,7 +26,6 @@ public static class BootstrapBlazorServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddHttpClient();
 
-        services.AddAuthorizationCore();
         services.AddJsonLocalization(localizationConfigure);
 
         services.AddConfiguration();
@@ -37,8 +36,20 @@ public static class BootstrapBlazorServiceCollectionExtensions
         services.TryAddSingleton<IZipArchiveService, DefaultZipArchiveService>();
         services.TryAddSingleton(typeof(IDispatchService<>), typeof(DefaultDispatchService<>));
 
+        // 增加 OtpOptions 配置支持
+        services.AddOptionsMonitor<OtpOptions>();
+
+        // 增加 ITotpService
+        services.TryAddSingleton<ITotpService, DefaultTotpService>();
+
+        // BootstrapBlazorRootRegisterService 服务
+        services.AddScoped<BootstrapBlazorRootRegisterService>();
+
         // Html2Pdf 服务
         services.TryAddSingleton<IHtml2Pdf, DefaultHtml2PdfService>();
+
+        // Html2Image 服务
+        services.TryAddScoped<IHtml2Image, DefaultHtml2ImageService>();
 
         // Table 导出服务
         services.TryAddScoped<ITableExport, DefaultTableExport>();
@@ -48,9 +59,13 @@ public static class BootstrapBlazorServiceCollectionExtensions
 
         // IP 地理位置定位服务
         services.TryAddSingleton<IIpLocatorFactory, DefaultIpLocatorFactory>();
-        services.AddSingleton<IIpLocatorProvider, JuHeIpLocatorProvider>();
         services.AddSingleton<IIpLocatorProvider, BaiduIpLocatorProvider>();
         services.AddSingleton<IIpLocatorProvider, BaiduIpLocatorProviderV2>();
+
+#if NET8_0_OR_GREATER
+        services.AddKeyedSingleton<IIpLocatorProvider, BaiduIpLocatorProvider>(nameof(BaiduIpLocatorProvider));
+        services.AddKeyedSingleton<IIpLocatorProvider, BaiduIpLocatorProviderV2>(nameof(BaiduIpLocatorProviderV2));
+#endif
 
         // 节日服务
         services.TryAddSingleton<ICalendarFestivals, DefaultCalendarFestivals>();
@@ -71,6 +86,9 @@ public static class BootstrapBlazorServiceCollectionExtensions
         services.TryAddScoped<IBrowserFingerService, DefaultBrowserFingerService>();
         services.TryAddScoped<ISerialService, DefaultSerialService>();
         services.TryAddScoped<IBluetooth, DefaultBluetooth>();
+        services.TryAddScoped<IMediaDevices, DefaultMediaDevices>();
+        services.TryAddScoped<IVideoDevice, DefaultVideoDevice>();
+        services.TryAddScoped<IAudioDevice, DefaultAudioDevice>();
         services.AddScoped<TabItemTextOptions>();
         services.AddScoped<DialogService>();
         services.AddScoped<LoadingService>();
@@ -219,9 +237,12 @@ public static class BootstrapBlazorServiceCollectionExtensions
     /// <param name="services"></param>
     /// <param name="configureOptions"></param>
     /// <returns></returns>
-    public static IServiceCollection ConfigureIconThemeOptions(this IServiceCollection services, Action<IconThemeOptions> configureOptions)
+    public static IServiceCollection ConfigureIconThemeOptions(this IServiceCollection services, Action<IconThemeOptions>? configureOptions = null)
     {
-        services.Configure(configureOptions);
+        if (configureOptions != null)
+        {
+            services.Configure(configureOptions);
+        }
         return services;
     }
 }

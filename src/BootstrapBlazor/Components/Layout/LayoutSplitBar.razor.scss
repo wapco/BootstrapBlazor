@@ -1,0 +1,44 @@
+﻿.layout-split-bar {
+    width: 1px;
+    position: absolute;
+    top: 0;
+    right: -1px;
+    bottom: 0;
+    background-color: var(--bs-border-color);
+    display: none;
+
+    .layout-split-bar-body {
+        --bb-split-bar-body-hover-bg: #{$bb-split-bar-body-hover-bg};
+        --bb-split-bar-body-drag-hover-bg: #{$bb-split-bar-body-drag-hover-bg};
+        position: absolute;
+        inset: 0px -2px;
+        cursor: col-resize;
+        background-color: transparent;
+        border-radius: 4px;
+        transition: background .3s linear;
+
+        &:hover {
+            background-color: var(--bb-split-bar-body-hover-bg);
+        }
+    }
+}
+
+.drag {
+    .layout-split-bar {
+        .layout-split-bar-body:hover {
+            background-color: var(--bb-split-bar-body-drag-hover-bg);
+        }
+    }
+}
+
+.is-collapsed {
+    .layout-split-bar-body {
+        display: none;
+    }
+}
+
+@media(min-width: 768px) {
+    .layout-split-bar {
+        display: block;
+    }
+}

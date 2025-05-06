@@ -3,35 +3,31 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.Extensions.Localization;
 using System.Collections;
 
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// MultiSelect 组件
+/// MultiSelect component
 /// </summary>
 public partial class MultiSelect<TValue>
 {
-    /// <summary>
-    /// 获得/设置 是否固定下拉框中的搜索栏 默认 false
-    /// </summary>
-    [Parameter]
-    public bool IsFixedSearch { get; set; }
-
     private List<SelectedItem> SelectedItems { get; } = [];
 
     private string? ClassString => CssBuilder.Default("select dropdown multi-select")
+        .AddClass("is-clearable", IsClearable)
         .Build();
 
-    private string? SearchClassString => CssBuilder.Default("search")
-        .AddClass("is-fixed", IsFixedSearch)
+    private string? DropdownMenuClassString => CssBuilder.Default("dropdown-menu")
+        .AddClass("is-fixed-toolbar", ShowToolbar)
         .Build();
+
+    private string? EditSubmitKeyString => EditSubmitKey == EditSubmitKey.Space ? EditSubmitKey.ToDescriptionString() : null;
 
     private string? ToggleClassString => CssBuilder.Default("dropdown-toggle scroll")
         .AddClass($"border-{Color.ToDescriptionString()}", Color != Color.None && !IsDisabled)
-        .AddClass("border-success", IsValid.HasValue && IsValid.Value)
-        .AddClass("border-danger", IsValid.HasValue && !IsValid.Value)
         .AddClass("is-fixed", IsFixedHeight)
         .AddClass("is-single-line", IsSingleLine)
         .AddClass("disabled", IsDisabled)
@@ -49,17 +45,22 @@ public partial class MultiSelect<TValue>
         .Build();
 
     /// <summary>
-    /// 获得/设置 组件 PlaceHolder 文字 默认为 点击进行多选 ...
+    /// 获得/设置 显示部分模板 默认 null
     /// </summary>
     [Parameter]
-    [NotNull]
-    public string? PlaceHolder { get; set; }
+    public RenderFragment<List<SelectedItem>>? DisplayTemplate { get; set; }
 
     /// <summary>
     /// 获得/设置 是否显示关闭按钮 默认为 true 显示
     /// </summary>
     [Parameter]
     public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// 获得/设置 关闭按钮图标 默认为 null
+    /// </summary>
+    [Parameter]
+    public string? CloseButtonIcon { get; set; }
 
     /// <summary>
     /// 获得/设置 是否显示功能按钮 默认为 false 不显示
@@ -86,29 +87,36 @@ public partial class MultiSelect<TValue>
     public bool IsSingleLine { get; set; }
 
     /// <summary>
+    /// 获得/设置 编辑模式下输入选项更新后回调方法 默认 null
+    /// <para>返回 <see cref="SelectedItem"/> 实例时输入选项生效，返回 null 时选项不生效进行舍弃操作，建议在回调方法中自行提示</para>
+    /// </summary>
+    /// <remarks>Effective when <see cref="SimpleSelectBase{TValue}.IsEditable"/> is set.</remarks>
+    [Parameter]
+    public Func<string, Task<SelectedItem>>? OnEditCallback { get; set; }
+
+    /// <summary>
+    /// 获得/设置 编辑提交按键 默认 Enter
+    /// </summary>
+    [Parameter]
+    public EditSubmitKey EditSubmitKey { get; set; }
+
+    /// <summary>
     /// 获得/设置 扩展按钮模板
     /// </summary>
     [Parameter]
     public RenderFragment? ButtonTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 显示部分模板 默认 null
-    /// </summary>
-    [Parameter]
-    public RenderFragment<List<SelectedItem>>? DisplayTemplate { get; set; }
-
-    /// <summary>
-    /// 获得/设置 搜索文本发生变化时回调此方法
-    /// </summary>
-    [Parameter]
-    [NotNull]
-    public Func<string, IEnumerable<SelectedItem>>? OnSearchTextChanged { get; set; }
-
-    /// <summary>
     /// 获得/设置 选中项集合发生改变时回调委托方法
     /// </summary>
     [Parameter]
     public Func<IEnumerable<SelectedItem>, Task>? OnSelectedItemsChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the default virtualize items text.
+    /// </summary>
+    [Parameter]
+    public string? DefaultVirtualizeItemText { get; set; }
 
     /// <summary>
     /// 获得/设置 全选按钮显示文本
@@ -157,27 +165,16 @@ public partial class MultiSelect<TValue>
     [NotNull]
     public string? MinErrorMessage { get; set; }
 
-    /// <summary>
-    /// 获得/设置 设置清除图标 默认 fa-solid fa-xmark
-    /// </summary>
-    [Parameter]
-    [NotNull]
-    public string? ClearIcon { get; set; }
-
-    /// <summary>
-    /// 选项数据加载方法
-    /// </summary>
-    [Parameter]
-    public Func<Task<List<SelectedItem>?>>? OnQueryItemsAsync { get; set; }
-
     [Inject]
     [NotNull]
     private IStringLocalizer<MultiSelect<TValue>>? Localizer { get; set; }
 
-    private string? PreviousValue { get; set; }
+    private string? PlaceholderString => SelectedItems.Count == 0 ? PlaceHolder : null;
+
+    private string? ScrollIntoViewBehaviorString => ScrollIntoViewBehavior == ScrollIntoViewBehavior.Smooth ? null : ScrollIntoViewBehavior.ToDescriptionString();
 
     /// <summary>
-    /// OnParametersSet 方法
+    /// <inheritdoc/>
     /// </summary>
     protected override void OnParametersSet()
     {
@@ -189,64 +186,34 @@ public partial class MultiSelect<TValue>
         ClearText ??= Localizer[nameof(ClearText)];
         MinErrorMessage ??= Localizer[nameof(MinErrorMessage)];
         MaxErrorMessage ??= Localizer[nameof(MaxErrorMessage)];
+        NoSearchDataText ??= Localizer[nameof(NoSearchDataText)];
 
         DropdownIcon ??= IconTheme.GetIconByKey(ComponentIcons.MultiSelectDropdownIcon);
+        CloseButtonIcon ??= IconTheme.GetIconByKey(ComponentIcons.MultiSelectCloseIcon);
         ClearIcon ??= IconTheme.GetIconByKey(ComponentIcons.MultiSelectClearIcon);
 
         ResetItems();
-        OnSearchTextChanged ??= text => Items.Where(i => i.Text.Contains(text, StringComparison.OrdinalIgnoreCase));
         ResetRules();
 
+        _itemsCache = null;
+
         // 通过 Value 对集合进行赋值
-        if (PreviousValue != CurrentValueAsString || (SelectedItems.Count == 0 && !string.IsNullOrEmpty(CurrentValueAsString)))
+        var _currentValue = CurrentValueAsString;
+        if (_lastSelectedValueString != _currentValue)
         {
-            PreviousValue = CurrentValueAsString;
-            var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            _lastSelectedValueString = _currentValue;
+
             SelectedItems.Clear();
-            SelectedItems.AddRange(GetData().Where(item => list.Any(i => i == item.Value)));
-        }
-    }
-
-    private bool ShowDropdown { get; set; }
-
-    private bool ShowLoading { get; set; }
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        if (!string.IsNullOrEmpty(CurrentValueAsString) && OnQueryItemsAsync != null && (Items == null))
-        {
-            var items = await OnQueryItemsAsync.Invoke();
-            if (items != null)
+            if (IsVirtualize)
             {
-                Items = items;
+                SelectedItems.AddRange(GetItemsByVirtualize());
+            }
+            else
+            {
+                var list = _currentValue.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                SelectedItems.AddRange(Rows.Where(item => list.Any(i => i.Trim() == item.Value)));
             }
         }
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    private async Task OnInternalClickAsync()
-    {
-        if (ShowDropdown || OnQueryItemsAsync == null)
-        {
-            return;
-        }
-
-        ShowDropdown = true;
-        ShowLoading = true;
-        var items = await OnQueryItemsAsync.Invoke();
-        if (items != null)
-        {
-            Items = items;
-        }
-
-        ShowLoading = false;
     }
 
     /// <summary>
@@ -264,18 +231,107 @@ public partial class MultiSelect<TValue>
     /// <inheritdoc/>
     /// </summary>
     /// <returns></returns>
-    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, nameof(ToggleRow));
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
+    {
+        ConfirmMethodCallback = nameof(ConfirmSelectedItem),
+        SearchMethodCallback = nameof(TriggerOnSearch),
+        TriggerEditTag = nameof(TriggerEditTag),
+        ToggleRow = nameof(ToggleRow)
+    });
+
+    private List<SelectedItem> GetItemsByVirtualize()
+    {
+        var ret = new List<SelectedItem>();
+        var texts = new List<string>();
+        if (!string.IsNullOrEmpty(DefaultVirtualizeItemText))
+        {
+            texts.AddRange(DefaultVirtualizeItemText.Split(',', StringSplitOptions.RemoveEmptyEntries));
+        }
+        var values = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        for (int i = 0; i < values.Count; i++)
+        {
+            var text = i < texts.Count ? texts[i] : values[i];
+            ret.Add(new SelectedItem(values[i].Trim(), text.Trim()));
+        }
+        return ret;
+    }
+
+    private int _totalCount;
+    private ItemsProviderResult<SelectedItem> _result;
+
+    private List<SelectedItem> GetVirtualItems() => [.. FilterBySearchText(GetRowsByItems())];
+
+    private async ValueTask<ItemsProviderResult<SelectedItem>> LoadItems(ItemsProviderRequest request)
+    {
+        // 有搜索条件时使用原生请求数量
+        // 有总数时请求剩余数量
+        var count = !string.IsNullOrEmpty(SearchText) ? request.Count : GetCountByTotal();
+        var data = await OnQueryAsync(new() { StartIndex = request.StartIndex, Count = count, SearchText = SearchText });
+
+        _itemsCache = null;
+        _totalCount = data.TotalCount;
+        var items = data.Items ?? [];
+        _result = new ItemsProviderResult<SelectedItem>(items, _totalCount);
+        return _result;
+
+        int GetCountByTotal() => _totalCount == 0 ? request.Count : Math.Min(request.Count, _totalCount - request.StartIndex);
+    }
 
     /// <summary>
-    /// FormatValueAsString 方法
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnClearValue()
+    {
+        await base.OnClearValue();
+
+        SelectedItems.Clear();
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    protected override string? FormatValueAsString(TValue value) => value == null
+    protected override string? FormatValueAsString(TValue? value) => value == null
         ? null
         : Utility.ConvertValueToString(value);
 
     private bool _isToggle;
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override List<SelectedItem> GetRowsByItems()
+    {
+        var items = new List<SelectedItem>();
+        if (_result.Items != null)
+        {
+            items.AddRange(_result.Items);
+        }
+        else if (Items != null)
+        {
+            items.AddRange(Items);
+        }
+        return items;
+    }
+
+    /// <summary>
+    /// 客户端回车回调方法
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    [JSInvokable]
+    public async Task ConfirmSelectedItem(int index)
+    {
+        var rows = Rows;
+        if (index < rows.Count)
+        {
+            await ToggleRow(rows[index].Value);
+            StateHasChanged();
+        }
+    }
 
     /// <summary>
     /// 切换当前选项方法
@@ -293,7 +349,7 @@ public partial class MultiSelect<TValue>
             }
             else
             {
-                var d = GetData().FirstOrDefault(i => i.Value == val);
+                var d = Rows.FirstOrDefault(i => i.Value == val);
                 if (d != null)
                 {
                     SelectedItems.Add(d);
@@ -306,11 +362,41 @@ public partial class MultiSelect<TValue>
         }
     }
 
+    /// <summary>
+    /// 客户端编辑提交数据回调方法
+    /// </summary>
+    /// <param name="val"></param>
+    /// <returns></returns>
+    [JSInvokable]
+    public async Task<bool> TriggerEditTag(string val)
+    {
+        SelectedItem? ret = null;
+        val = val.Trim();
+        if (OnEditCallback != null)
+        {
+            ret = await OnEditCallback(val);
+        }
+        else if (!string.IsNullOrEmpty(val))
+        {
+            ret = Rows.Find(i => i.Text.Equals(val, StringComparison.OrdinalIgnoreCase)) ?? new SelectedItem(val, val);
+        }
+        if (ret != null)
+        {
+            if (SelectedItems.Find(i => i.Text.Equals(val, StringComparison.OrdinalIgnoreCase)) == null)
+            {
+                SelectedItems.Add(ret);
+            }
+            // 更新选中值
+            _isToggle = true;
+            await SetValue();
+        }
+        return ret != null;
+    }
+
     private string? GetValueString(SelectedItem item) => IsPopover ? item.Value : null;
 
     private int _min;
     private int _max;
-
     private void ResetRules()
     {
         if (Max != _max)
@@ -338,14 +424,13 @@ public partial class MultiSelect<TValue>
 
     private async Task SetValue()
     {
-        var typeValue = NullableUnderlyingType ?? typeof(TValue);
-        if (typeValue == typeof(string))
+        if (ValueType == typeof(string))
         {
             CurrentValueAsString = string.Join(",", SelectedItems.Select(i => i.Value));
         }
-        else if (typeValue.IsGenericType || typeValue.IsArray)
+        else if (ValueType.IsGenericType || ValueType.IsArray)
         {
-            var t = typeValue.IsGenericType ? typeValue.GenericTypeArguments[0] : typeValue.GetElementType()!;
+            var t = ValueType.IsGenericType ? ValueType.GenericTypeArguments[0] : ValueType.GetElementType()!;
             var listType = typeof(List<>).MakeGenericType(t);
             var instance = (IList)Activator.CreateInstance(listType, SelectedItems.Count)!;
 
@@ -356,8 +441,11 @@ public partial class MultiSelect<TValue>
                     instance.Add(val);
                 }
             }
-
-            CurrentValue = (TValue)(typeValue.IsGenericType ? instance : listType.GetMethod("ToArray")!.Invoke(instance, null)!);
+            CurrentValue = (TValue)(ValueType.IsGenericType ? instance : listType.GetMethod("ToArray")!.Invoke(instance, null)!);
+        }
+        else if (ValueType.IsFlagEnum())
+        {
+            CurrentValue = (TValue?)SelectedItems.ParseFlagEnum<TValue>(ValueType);
         }
 
         if (ValidateForm == null && (Min > 0 || Max > 0))
@@ -374,8 +462,7 @@ public partial class MultiSelect<TValue>
             await OnSelectedItemsChanged.Invoke(SelectedItems);
         }
 
-        PreviousValue = CurrentValueAsString;
-
+        _lastSelectedValueString = CurrentValueAsString;
         if (!ValueChanged.HasDelegate)
         {
             StateHasChanged();
@@ -399,7 +486,7 @@ public partial class MultiSelect<TValue>
     public async Task SelectAll()
     {
         SelectedItems.Clear();
-        SelectedItems.AddRange(GetData());
+        SelectedItems.AddRange(Rows);
         await SetValue();
     }
 
@@ -409,7 +496,7 @@ public partial class MultiSelect<TValue>
     /// <returns></returns>
     public async Task InvertSelect()
     {
-        var items = GetData().Where(item => !SelectedItems.Any(i => i.Value == item.Value)).ToList();
+        var items = Rows.Where(item => !SelectedItems.Any(i => i.Value == item.Value)).ToList();
         SelectedItems.Clear();
         SelectedItems.AddRange(items);
         await SetValue();
@@ -426,7 +513,6 @@ public partial class MultiSelect<TValue>
         {
             ret = SelectedItems.Count < Max || GetCheckedState(item);
         }
-
         return ret;
     }
 
@@ -437,19 +523,22 @@ public partial class MultiSelect<TValue>
         {
             ret = CheckCanTrigger(item);
         }
-
         return !ret;
     }
 
-    private IEnumerable<SelectedItem> GetData()
+    private bool CheckCanEdit()
     {
-        var data = Items;
-        if (ShowSearch && !string.IsNullOrEmpty(SearchText))
+        var ret = IsEditable;
+        if (ret == false)
         {
-            data = OnSearchTextChanged(SearchText);
+            return false;
         }
 
-        return data;
+        if (Max > 0)
+        {
+            ret = SelectedItems.Count < Max;
+        }
+        return ret;
     }
 
     /// <summary>
@@ -480,7 +569,6 @@ public partial class MultiSelect<TValue>
             {
                 innerType = NullableUnderlyingType ?? type;
             }
-
             if (innerType.IsEnum)
             {
                 Items = innerType.ToSelectList();

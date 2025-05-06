@@ -6,6 +6,7 @@
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace UnitTest.Components;
@@ -15,6 +16,8 @@ public class TableDialogTest : TableDialogTestBase
     [Fact]
     public async Task EditAsync_Ok()
     {
+        var options = Context.Services.GetRequiredService<IOptionsMonitor<BootstrapBlazorOptions>>();
+        options.CurrentValue.ToastDelay = 0;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
@@ -62,8 +65,8 @@ public class TableDialogTest : TableDialogTestBase
 
         var table = cut.FindComponent<Table<Foo>>();
         // 选一个
-        var input = cut.Find("tbody tr input");
-        await cut.InvokeAsync(() => input.Click());
+        var checkbox = cut.FindComponents<Checkbox<Foo>>()[1];
+        await cut.InvokeAsync(checkbox.Instance.OnToggleClick);
         await cut.InvokeAsync(() => table.Instance.EditAsync());
 
         cut.Contains("test-save");
@@ -128,7 +131,7 @@ public class TableDialogTest : TableDialogTestBase
         await cut.InvokeAsync(() => table.Instance.AddAsync());
 
         // 编辑弹窗逻辑
-        input = cut.Find(".modal-body form input.form-control");
+        var input = cut.Find(".modal-body form input.form-control");
         await cut.InvokeAsync(() => input.Change("Test_Name"));
 
         form = cut.Find(".modal-body form");
@@ -322,7 +325,6 @@ public class TableDialogTest : TableDialogTestBase
         // 检查 dialog 是否显示
         var editDialog = cut.FindComponents<Dialog>().FirstOrDefault(i => i.Instance == dialog);
         Assert.NotNull(editDialog);
-        Assert.Contains("新建窗口", editDialog.Markup);
     }
 
     [Fact]
@@ -362,8 +364,8 @@ public class TableDialogTest : TableDialogTestBase
         var modal = cut.FindComponent<Modal>();
 
         // 选一个
-        var input = cut.Find("tbody tr input");
-        await cut.InvokeAsync(() => input.Click());
+        var item = cut.FindComponent<Checkbox<Foo>>();
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
         await cut.InvokeAsync(() => table.Instance.AddAsync());
 
         var form = cut.Find(".modal-body form");

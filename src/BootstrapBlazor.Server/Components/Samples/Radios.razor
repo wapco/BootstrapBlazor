@@ -13,6 +13,12 @@
     <ConsoleLogger @ref="Logger" />
 </DemoBlock>
 
+<DemoBlock Title="@Localizer["RadiosAutoSelectFirstWhenValueIsNullTitle"]"
+           Introduction="@Localizer["RadiosAutoSelectFirstWhenValueIsNullIntro"]"
+           Name="AutoSelectFirstWhenValueIsNull">
+    <RadioList TValue="string" Items="@AutoSelectValues" AutoSelectFirstWhenValueIsNull="false" />
+</DemoBlock>
+
 <DemoBlock Title="@Localizer["RadiosDisableTitle"]"
            Introduction='@Localizer["RadiosDisableIntro"]'
            Name="Disable">
@@ -61,10 +67,8 @@
         <ItemTemplate>
             @if (context is IconSelectedItem item)
             {
-                <div>
-                    <i class="@item.Icon"></i>
-                    <span>@item.Text</span>
-                </div>
+                <i class="@item.Icon"></i>
+                <span>@item.Text</span>
             }
         </ItemTemplate>
     </RadioList>
@@ -123,6 +127,13 @@
             </div>
         </div>
     </ValidateForm>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["RadioListGenericTitle"]" Introduction="@Localizer["RadioListGenericIntro"]" Name="Generic">
+    <RadioListGeneric @bind-Value="@_selectedFoo" Items="@GenericItems" />
+    <section ignore>
+        <div>@_selectedFoo.Name</div>
+    </section>
 </DemoBlock>
 
 <AttributeTable Items="@GetAttributes()" />

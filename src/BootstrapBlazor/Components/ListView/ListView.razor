@@ -2,7 +2,7 @@
 @typeparam TItem
 @inherits BootstrapComponentBase
 
-<div @attributes="@AdditionalAttributes" class="@ClassString">
+<div @attributes="@AdditionalAttributes" class="@ClassString" style="@StyleString">
     @if (HeaderTemplate != null)
     {
         <div class="listview-header">
@@ -10,70 +10,81 @@
         </div>
     }
     <div class="@BodyClassString">
-        @if (BodyTemplate != null)
+        @if (Rows.Count > 0)
         {
-            if (GroupName == null)
+            if (BodyTemplate != null)
             {
-                foreach (var item in Rows)
+                if (GroupName == null)
                 {
-                    <div class="listview-item" @onclick="@(e => OnClick(item))">
-                        @BodyTemplate(item)
-                    </div>
+                    foreach (var item in Rows)
+                    {
+                        @RenderItem(item)
+                    }
                 }
-            }
-            else if (Collapsible)
-            {
-                <Collapse IsAccordion="IsAccordion" OnCollapseChanged="OnCollapseChanged!">
-                    <CollapseItems>
-                        @RenderCollapsibleItems(GroupName)
-                    </CollapseItems>
-                </Collapse>
-            }
-            else
-            {
-                foreach (var key in GetGroupItems(GroupName))
+                else if (Collapsible)
                 {
-                    <div @key="@key.GroupName" class="accordion-item">
-                        <div class="accordion-header">@key.GroupName</div>
-                        <div class="accordion-body">
-                            @foreach (var item in key.Items)
-                            {
-                                <div class="listview-item" @onclick="@(e => OnClick(item))">
-                                    @BodyTemplate(item)
-                                </div>
-                            }
+                    <Collapse IsAccordion="IsAccordion" OnCollapseChanged="OnCollapseChanged!">
+                        <CollapseItems>
+                            @RenderCollapsibleItems(GroupName)
+                        </CollapseItems>
+                    </Collapse>
+                }
+                else
+                {
+                    foreach (var key in GetGroupItems(GroupName))
+                    {
+                        <div @key="@key.GroupName" class="accordion-item">
+                            <div class="accordion-header">@key.GroupName</div>
+                            <div class="accordion-body">
+                                @foreach (var item in key.Items)
+                                {
+                                    @RenderItem(item)
+                                }
+                            </div>
                         </div>
-                    </div>
+                    }
                 }
             }
         }
+        else if (EmptyTemplate != null)
+        {
+            @EmptyTemplate
+        }
+        else
+        {
+            @EmptyText
+        }
     </div>
-    @if (FooterTemplate != null || Pageable)
+    @if (FooterTemplate != null || IsPagination)
     {
         <div class="listview-footer">
             @if (FooterTemplate != null)
             {
                 @FooterTemplate
             }
-            else if (Pageable)
+            else if (IsPagination)
             {
-                <Pagination PageCount="@PageCount" PageIndex="@PageIndex" OnPageLinkClick="@OnPageLinkClick"></Pagination>
+                <Pagination PageCount="@PageCount" PageIndex="@_pageIndex" OnPageLinkClick="@OnPageLinkClick"></Pagination>
             }
         </div>
     }
 </div>
 
 @code {
-    RenderFragment RenderItem((object? GroupName, IOrderedEnumerable<TItem> Items) key, int index) =>
-    @<CollapseItem Text="@GetGroupName(key.GroupName)" IsCollapsed="IsCollapsed(index, key.GroupName)">
-        @foreach (var item in key.Items)
-        {
-            <div class="listview-item" @onclick="@(e => OnClick(item))">
-                @if(BodyTemplate != null)
-                {
-                    @BodyTemplate(item)
-                }
-            </div>
-        }
-    </CollapseItem>;
+
+    RenderFragment RenderGroupItem((object? GroupName, IOrderedEnumerable<TItem> Items) key, int index) =>
+        @<CollapseItem Text="@GetGroupName(key.GroupName)" IsCollapsed="IsCollapsed(index, key.GroupName)">
+            @foreach (var item in key.Items)
+            {
+                @RenderItem(item)
+            }
+        </CollapseItem>;
+
+    RenderFragment<TItem> RenderItem => item =>
+        @<div @key="item" class="listview-item" @onclick="@(e => OnClick(item))">
+            @if(BodyTemplate != null)
+            {
+                @BodyTemplate(item)
+            }
+        </div>;
 }

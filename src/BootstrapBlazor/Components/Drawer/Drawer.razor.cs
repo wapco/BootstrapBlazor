@@ -6,7 +6,7 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Drawer 组件基类
+/// Drawer component
 /// </summary>
 public partial class Drawer
 {
@@ -19,7 +19,8 @@ public partial class Drawer
         .Build();
 
     private string? StyleString => CssBuilder.Default()
-        .AddClass($"--bb-drawer-position: {Position};", !string.IsNullOrEmpty(Position))
+        .AddStyle("--bb-drawer-position", Position)
+        .AddClass($"--bb-drawer-zindex: {ZIndex};", ZIndex.HasValue)
         .AddStyleFromAttributes(AdditionalAttributes)
         .Build();
 
@@ -27,8 +28,8 @@ public partial class Drawer
     /// 获得 抽屉 Style 字符串
     /// </summary>
     private string? DrawerStyleString => CssBuilder.Default()
-        .AddClass($"--bb-drawer-width: {Width};", !string.IsNullOrEmpty(Width) && Placement != Placement.Top && Placement != Placement.Bottom)
-        .AddClass($"--bb-drawer-height: {Height};", !string.IsNullOrEmpty(Height) && (Placement == Placement.Top || Placement == Placement.Bottom))
+        .AddStyle("--bb-drawer-width", Width, Placement != Placement.Top && Placement != Placement.Bottom)
+        .AddStyle("--bb-drawer-height", Height, Placement == Placement.Top || Placement == Placement.Bottom)
         .Build();
 
     /// <summary>
@@ -108,10 +109,46 @@ public partial class Drawer
     public bool AllowResize { get; set; }
 
     /// <summary>
+    /// 获得/设置 z-index 参数值 默认 null 未设置
+    /// </summary>
+    [Parameter]
+    public int? ZIndex { get; set; }
+
+    /// <summary>
     /// 获得/设置 关闭抽屉回调委托 默认 null
     /// </summary>
     [Parameter]
     public Func<Task>? OnCloseAsync { get; set; }
+
+    /// <summary>
+    /// 获得/设置 抽屉内容相关数据 多用于传值
+    /// </summary>
+    [Parameter]
+    public object? BodyContext { get; set; }
+
+    /// <summary>
+    /// 获得/设置 是否支持键盘 ESC 关闭当前弹窗 默认 false
+    /// </summary>
+    [Parameter]
+    public bool IsKeyboard { get; set; }
+
+    /// <summary>
+    /// 获得/设置 抽屉显示时是否允许滚动 body 默认为 false 不滚动
+    /// </summary>
+    [Parameter]
+    public bool BodyScroll { get; set; }
+
+    private string? KeyboardString => IsKeyboard ? "true" : null;
+
+    private string? BodyScrollString => BodyScroll ? "true" : null;
+
+    private bool _render = true;
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override bool ShouldRender() => _render;
 
     /// <summary>
     /// <inheritdoc/>
@@ -129,27 +166,49 @@ public partial class Drawer
     }
 
     /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, nameof(Close));
+
+    private RenderFragment RenderBackdrop() => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(10, "class", "drawer-backdrop modal-backdrop fade");
+        if (IsBackdrop)
+        {
+            builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, OnContainerClick));
+        }
+        builder.CloseElement();
+    };
+
+    /// <summary>
     /// 点击背景遮罩方法
     /// </summary>
     public async Task OnContainerClick()
     {
-        if (IsBackdrop)
+        if (OnClickBackdrop != null)
         {
-            if (OnClickBackdrop != null)
-            {
-                await OnClickBackdrop();
-            }
-            await Close();
+            await OnClickBackdrop();
         }
+        _render = false;
+        await Close();
+        _render = true;
     }
 
     /// <summary>
     /// 关闭抽屉方法
     /// </summary>
     /// <returns></returns>
+    [JSInvokable]
     public async Task Close()
     {
         IsOpen = false;
+        var animation = await InvokeAsync<bool>("execute", Id, false);
+        if (animation)
+        {
+            await Task.Delay(300);
+        }
         if (OnCloseAsync != null)
         {
             await OnCloseAsync();

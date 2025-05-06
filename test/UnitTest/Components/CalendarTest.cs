@@ -58,6 +58,33 @@ public class CalendarTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void HeaderTemplate_Ok()
+    {
+        var cut = Context.RenderComponent<Calendar>(builder =>
+        {
+            builder.Add(a => a.ViewMode, CalendarViewMode.Month);
+            builder.Add(a => a.HeaderTemplate, builder =>
+            {
+                builder.AddContent(0, "HeaderTemplate");
+            });
+            builder.Add(a => a.BodyTemplate, context => builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "data-bb-value", context.Values.Count);
+                builder.CloseElement();
+            });
+        });
+
+        Assert.Contains("HeaderTemplate", cut.Markup);
+        Assert.Contains("data-bb-value=\"7\"", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.ViewMode, CalendarViewMode.Week);
+        });
+    }
+
+    [Fact]
     public async Task ButtonClick_Ok()
     {
         var v = DateTime.MinValue;
@@ -205,5 +232,18 @@ public class CalendarTest : BootstrapBlazorTestBase
             buttons[0].Click();
         });
         Assert.NotEqual(v, DateTime.MinValue);
+    }
+
+    [Fact]
+    public void FirstDayOfWeek_Ok()
+    {
+        var cut = Context.RenderComponent<Calendar>(pb =>
+        {
+            pb.Add(a => a.Value, new DateTime(2025, 02, 20));
+            pb.Add(a => a.FirstDayOfWeek, DayOfWeek.Monday);
+        });
+        var labels = cut.FindAll(".calendar-table thead > tr > th");
+        Assert.Equal("一", labels[0].TextContent);
+        Assert.Equal("日", labels[6].TextContent);
     }
 }

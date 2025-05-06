@@ -6,18 +6,18 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// SweetAlert 组件
+/// SweetAlert component
 /// </summary>
 public partial class SweetAlert : IAsyncDisposable
 {
     /// <summary>
-    /// 获得/设置 Modal 容器组件实例
+    /// Gets or sets the Modal container component instance
     /// </summary>
     [NotNull]
     private Modal? ModalContainer { get; set; }
 
     /// <summary>
-    /// DialogServices 服务实例
+    /// Gets or sets the DialogServices service instance
     /// </summary>
     [Inject]
     [NotNull]
@@ -46,10 +46,10 @@ public partial class SweetAlert : IAsyncDisposable
     {
         base.OnInitialized();
 
-        // 注册 Swal 弹窗事件
+        // Register Swal popup event
         SwalService.Register(this, Show);
 
-        // 设置 OnCloseAsync 回调方法
+        // Set OnCloseAsync callback method
         OnCloseAsync = () =>
         {
             IsShowDialog = false;
@@ -78,20 +78,26 @@ public partial class SweetAlert : IAsyncDisposable
 
         if (IsShowDialog)
         {
-            // 打开弹窗
+            // Open popup
             await ModalContainer.Show();
 
-            // 自动关闭处理逻辑
+            // Auto close handling logic
             if (AutoHideCheck())
             {
                 try
                 {
                     if (DelayToken.IsCancellationRequested)
                     {
+                        DelayToken.Dispose();
                         DelayToken = new();
                     }
                     await Task.Delay(Delay, DelayToken.Token);
                     await ModalContainer.Close();
+
+                    if (OnCloseCallbackAsync != null)
+                    {
+                        await OnCloseCallbackAsync();
+                    }
                 }
                 catch (TaskCanceledException) { }
             }
@@ -100,11 +106,13 @@ public partial class SweetAlert : IAsyncDisposable
 
     private bool AutoHideCheck() => IsAutoHide && Delay > 0;
 
+    private Func<Task>? OnCloseCallbackAsync = null;
+
     private async Task Show(SwalOption option)
     {
         if (!IsShowDialog)
         {
-            // 保证仅打开一个弹窗
+            // Ensure only one popup is opened
             IsShowDialog = true;
 
             IsAutoHide = option.IsAutoHide;
@@ -121,7 +129,9 @@ public partial class SweetAlert : IAsyncDisposable
 
             DialogParameter = parameters;
 
-            // 渲染 UI 准备弹窗 Dialog
+            OnCloseCallbackAsync = AutoHideCheck() ? option.OnCloseAsync : null;
+
+            // Render UI to prepare popup Dialog
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -141,7 +151,7 @@ public partial class SweetAlert : IAsyncDisposable
     private bool disposed;
 
     /// <summary>
-    /// Dispose 方法
+    /// Dispose method
     /// </summary>
     /// <param name="disposing"></param>
     protected virtual async ValueTask DisposeAsync(bool disposing)
@@ -152,22 +162,22 @@ public partial class SweetAlert : IAsyncDisposable
 
             if (IsShowDialog)
             {
-                // 关闭弹窗
+                // Close popup
                 DelayToken.Cancel();
                 await ModalContainer.Close();
                 IsShowDialog = false;
             }
 
-            // 释放 Token
+            // Release Token
             DelayToken.Dispose();
 
-            // 注销服务
+            // Unregister service
             SwalService.UnRegister(this);
         }
     }
 
     /// <summary>
-    /// Dispose 方法
+    /// <inheritdoc/>
     /// </summary>
     public async ValueTask DisposeAsync()
     {

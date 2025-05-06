@@ -52,18 +52,28 @@ public static class Utility
     /// <summary>
     /// 获得 RangeAttribute 标签值
     /// </summary>
-    /// <param name="modelType">模型类型</param>
-    /// <param name="fieldName">字段名称</param>
-    /// <returns></returns>
-    public static RangeAttribute? GetRange(Type modelType, string fieldName) => CacheManager.GetRange(Nullable.GetUnderlyingType(modelType) ?? modelType, fieldName);
-
-    /// <summary>
-    /// 获得 RangeAttribute 标签值
-    /// </summary>
     /// <typeparam name="TModel">模型</typeparam>
     /// <param name="fieldName">字段名称</param>
     /// <returns></returns>
     public static RangeAttribute? GetRange<TModel>(string fieldName) => GetRange(typeof(TModel), fieldName);
+
+    /// <summary>
+    /// 获得 RangeAttribute 标签值
+    /// </summary>
+    /// <param name="modelType">模型类型</param>
+    /// <param name="fieldName">字段名称</param>
+    /// <returns></returns>
+    public static RangeAttribute? GetRange(Type modelType, string fieldName)
+    {
+        var type = Nullable.GetUnderlyingType(modelType) ?? modelType;
+
+        RangeAttribute? dn = null;
+        if (TryGetProperty(type, fieldName, out var propertyInfo))
+        {
+            dn = propertyInfo.GetCustomAttribute<RangeAttribute>(true);
+        }
+        return dn;
+    }
 
     /// <summary>
     /// 获取资源文件中 NullableBoolItemsAttribute 标签名称方法
@@ -109,7 +119,9 @@ public static class Utility
     /// <returns></returns>
     public static object? GetPropertyValue(object model, string fieldName)
     {
-        return model.GetType().Assembly.IsDynamic ? ReflectionInvoke() : LambdaInvoke();
+        return model.GetType().Assembly.IsDynamic
+            ? ReflectionInvoke()
+            : GetPropertyValue<object, object?>(model, fieldName);
 
         object? ReflectionInvoke()
         {
@@ -121,8 +133,6 @@ public static class Utility
             }
             return ret;
         }
-
-        object? LambdaInvoke() => GetPropertyValue<object, object?>(model, fieldName);
     }
 
     /// <summary>
@@ -156,7 +166,6 @@ public static class Utility
     /// <param name="typeName">类名称</param>
     /// <param name="cultureName">cultureName 未空时使用 CultureInfo.CurrentUICulture.Name</param>
     /// <param name="forceLoad">默认 false 使用缓存值 设置 true 时内部强制重新加载</param>
-    /// <returns></returns>
     public static IEnumerable<LocalizedString> GetJsonStringByTypeName(JsonLocalizationOptions option, Assembly assembly, string typeName, string? cultureName = null, bool forceLoad = false) => CacheManager.GetJsonStringByTypeName(option, assembly, typeName, cultureName, forceLoad) ?? [];
 
     /// <summary>
@@ -367,7 +376,7 @@ public static class Utility
         return defaultOrderCallback?.Invoke(cols) ?? cols;
     }
 
-    internal static IEnumerable<ITableColumn> OrderFunc(this IEnumerable<ITableColumn> cols) => cols
+    internal static IEnumerable<ITableColumn> OrderFunc(this List<ITableColumn> cols) => cols
         .Where(a => a.Order > 0).OrderBy(a => a.Order)
         .Concat(cols.Where(a => a.Order == 0))
         .Concat(cols.Where(a => a.Order < 0).OrderBy(a => a.Order));
@@ -389,7 +398,7 @@ public static class Utility
     {
         var fieldType = item.PropertyType;
         var fieldName = item.GetFieldName();
-        var displayName = item.GetDisplayName() ?? GetDisplayName(model, fieldName);
+        var displayName = item.GetDisplayName();
         var fieldValue = GenerateValue(model, fieldName);
         var type = (Nullable.GetUnderlyingType(fieldType) ?? fieldType);
         if (type == typeof(bool) || fieldValue?.GetType() == typeof(bool))
@@ -404,7 +413,6 @@ public static class Utility
                 builder.AddAttribute(50, "class", col.CssClass);
             }
             builder.AddMultipleAttributes(60, item.ComponentParameters);
-            builder.CloseComponent();
         }
         else if (item.ComponentType == typeof(Textarea) || item.Rows > 0)
         {
@@ -422,17 +430,18 @@ public static class Utility
                 builder.AddAttribute(60, "class", col.CssClass);
             }
             builder.AddMultipleAttributes(70, item.ComponentParameters);
-            builder.CloseComponent();
         }
         else
         {
             builder.OpenComponent(0, typeof(Display<>).MakeGenericType(fieldType));
             builder.AddAttribute(10, nameof(Display<string>.DisplayText), displayName);
             builder.AddAttribute(20, nameof(Display<string>.Value), fieldValue);
-            builder.AddAttribute(30, nameof(Display<string>.LookupServiceKey), item.LookupServiceKey);
-            builder.AddAttribute(40, nameof(Display<string>.LookupServiceData), item.LookupServiceData);
-            builder.AddAttribute(50, nameof(Display<string>.Lookup), item.Lookup);
-            builder.AddAttribute(60, nameof(Display<string>.ShowLabelTooltip), item.ShowLabelTooltip);
+            builder.AddAttribute(30, nameof(Display<string>.Lookup), item.Lookup);
+            builder.AddAttribute(30, nameof(Display<string>.LookupService), item.LookupService);
+            builder.AddAttribute(40, nameof(Display<string>.LookupServiceKey), item.LookupServiceKey);
+            builder.AddAttribute(50, nameof(Display<string>.LookupServiceData), item.LookupServiceData);
+            builder.AddAttribute(60, nameof(Display<string>.LookupStringComparison), item.LookupStringComparison);
+            builder.AddAttribute(65, nameof(Display<string>.ShowLabelTooltip), item.ShowLabelTooltip);
             if (item is ITableColumn col)
             {
                 if (col.Formatter != null)
@@ -446,8 +455,9 @@ public static class Utility
                 builder.AddAttribute(90, "class", col.CssClass);
             }
             builder.AddMultipleAttributes(100, item.ComponentParameters);
-            builder.CloseComponent();
         }
+
+        builder.CloseComponent();
     }
 
     /// <summary>
@@ -459,18 +469,17 @@ public static class Utility
     /// <param name="item"></param>
     /// <param name="changedType"></param>
     /// <param name="isSearch"></param>
-    /// <param name="lookUpService"></param>
-    public static void CreateComponentByFieldType(this RenderTreeBuilder builder, ComponentBase component, IEditorItem item, object model, ItemChangedType changedType = ItemChangedType.Update, bool isSearch = false, ILookupService? lookUpService = null)
+    /// <param name="lookupService"></param>
+    public static void CreateComponentByFieldType(this RenderTreeBuilder builder, ComponentBase component, IEditorItem item, object model, ItemChangedType changedType = ItemChangedType.Update, bool isSearch = false, ILookupService? lookupService = null)
     {
         var fieldType = item.PropertyType;
         var fieldName = item.GetFieldName();
-        var displayName = item.GetDisplayName() ?? GetDisplayName(model, fieldName);
+        var displayName = item.GetDisplayName();
 
         var fieldValue = GenerateValue(model, fieldName);
         var fieldValueChanged = GenerateValueChanged(component, model, fieldName, fieldType);
         var valueExpression = GenerateValueExpression(model, fieldName, fieldType);
-        var lookup = item.Lookup ?? lookUpService?.GetItemsByKey(item.LookupServiceKey, item.LookupServiceData);
-        var componentType = item.ComponentType ?? GenerateComponentType(fieldType, item.Rows != 0, lookup);
+        var componentType = item.ComponentType ?? GenerateComponentType(item);
         builder.OpenComponent(0, componentType);
         if (componentType.IsSubclassOf(typeof(ValidateBase<>).MakeGenericType(fieldType)))
         {
@@ -514,20 +523,23 @@ public static class Utility
         }
 
         // Nullable<bool?>
-        if (item.ComponentType == typeof(Select<bool?>) && fieldType == typeof(bool?) && lookup == null && item.Items == null)
+        if (item.ComponentType == typeof(Select<bool?>) && fieldType == typeof(bool?) && !item.IsLookup() && item.Items == null)
         {
             builder.AddAttribute(100, nameof(Select<bool?>.Items), GetNullableBoolItems(model, fieldName));
         }
 
         // Lookup
-        if (lookup != null && item.Items == null)
+        if (item.IsLookup() && item.Items == null)
         {
             builder.AddAttribute(110, nameof(Select<SelectedItem>.ShowSearch), item.ShowSearchWhenSelect);
-            builder.AddAttribute(120, nameof(Select<SelectedItem>.Items), lookup.Clone());
+            builder.AddAttribute(115, nameof(Select<SelectedItem>.Items), item.Lookup);
+            builder.AddAttribute(120, nameof(Select<SelectedItem>.LookupService), lookupService);
+            builder.AddAttribute(121, nameof(Select<SelectedItem>.LookupServiceKey), item.LookupServiceKey);
+            builder.AddAttribute(122, nameof(Select<SelectedItem>.LookupServiceData), item.LookupServiceData);
             builder.AddAttribute(130, nameof(Select<SelectedItem>.StringComparison), item.LookupStringComparison);
         }
 
-        // 增加非枚举类,手动设定 ComponentType 为 Select 并且 Data 有值 自动生成下拉框
+        // 增加非枚举类,手动设定 ComponentType 为 Select 并且 Items 有值 自动生成下拉框
         if (item.Items != null && item.ComponentType == typeof(Select<>).MakeGenericType(fieldType))
         {
             builder.AddAttribute(140, nameof(Select<SelectedItem>.Items), item.Items.Clone());
@@ -562,12 +574,12 @@ public static class Utility
         return ret;
     }
 
-    private static List<SelectedItem> Clone(this IEnumerable<SelectedItem> source) => source.Select(d => new SelectedItem(d.Value, d.Text)
+    private static List<SelectedItem> Clone(this IEnumerable<SelectedItem> source) => [.. source.Select(d => new SelectedItem(d.Value, d.Text)
     {
         Active = d.Active,
         IsDisabled = d.IsDisabled,
         GroupName = d.GroupName
-    }).ToList();
+    })];
 
     private static object? GenerateValue(object model, string fieldName) => GetPropertyValue<object, object?>(model, fieldName);
 
@@ -616,15 +628,13 @@ public static class Utility
     /// <summary>
     /// 通过指定类型生成组件类型
     /// </summary>
-    /// <param name="fieldType"></param>
-    /// <param name="hasRows">是否为 TextArea 组件</param>
-    /// <param name="lookup"></param>
-    /// <returns></returns>
-    private static Type GenerateComponentType(Type fieldType, bool hasRows, IEnumerable<SelectedItem>? lookup)
+    /// <param name="item"></param>
+    private static Type GenerateComponentType(IEditorItem item)
     {
+        var fieldType = item.PropertyType;
         Type? ret = null;
         var type = (Nullable.GetUnderlyingType(fieldType) ?? fieldType);
-        if (type.IsEnum || lookup != null)
+        if (type.IsEnum || item.IsLookup())
         {
             ret = typeof(Select<>).MakeGenericType(fieldType);
         }
@@ -636,7 +646,7 @@ public static class Utility
         {
             ret = typeof(NullSwitch);
         }
-        else if (fieldType.IsNumber())
+        else if (fieldType.IsNumberWithDotSeparator())
         {
             ret = typeof(BootstrapInputNumber<>).MakeGenericType(fieldType);
         }
@@ -650,7 +660,7 @@ public static class Utility
         }
         else if (fieldType == typeof(string))
         {
-            ret = hasRows ? typeof(Textarea) : typeof(BootstrapInput<>).MakeGenericType(typeof(string));
+            ret = item.Rows > 0 ? typeof(Textarea) : typeof(BootstrapInput<>).MakeGenericType(typeof(string));
         }
         return ret ?? typeof(BootstrapInput<>).MakeGenericType(fieldType);
     }
@@ -661,7 +671,7 @@ public static class Utility
     /// <param name="fieldType"></param>
     /// <param name="componentType">组件类型</param>
     /// <returns></returns>
-    private static bool IsCheckboxList(Type fieldType, Type? componentType = null)
+    public static bool IsCheckboxList(Type fieldType, Type? componentType = null)
     {
         var ret = false;
         if (componentType != null)
@@ -702,7 +712,7 @@ public static class Utility
                 ret.Add("rows", item.Rows);
             }
         }
-        else if (type.IsNumber())
+        else if (type.IsNumberWithDotSeparator())
         {
             if (!string.IsNullOrEmpty(item.Step))
             {
@@ -819,6 +829,10 @@ public static class Utility
                     }
                 }
             }
+        }
+        else if (typeValue.IsFlagEnum())
+        {
+            ret = value!.ToString();
         }
         return ret;
     }

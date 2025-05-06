@@ -1,5 +1,4 @@
 ﻿@page "/bs-icon"
-@layout MainLayout
 @inject IStringLocalizer<BootstrapIcons> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -13,5 +12,11 @@
 </Tips>
 
 <Pre>&lt;link href="_content/BootstrapBlazor.BootstrapIcon/css/bootstrap.min.css" rel="stylesheet"&gt;</Pre>
+
+<div class="mb-2">
+    <i class="bi bi-github"></i>
+</div>
+
+<Pre>&lt;i class="bi bi-github"&gt;&lt;/i&gt;</Pre>
 
 <div>@((MarkupString)Localizer["Icons"].Value)</div>

@@ -23,10 +23,23 @@ public partial class BootstrapLabel
     [Parameter]
     public bool? ShowLabelTooltip { get; set; }
 
+    /// <summary>
+    /// 获得/设置 标签宽度 默认 null 未设置使用全局设置 <code>--bb-row-label-width</code> 值
+    /// </summary>
+    [Parameter]
+    public int? LabelWidth { get; set; }
+
+    [CascadingParameter]
+    private BootstrapLabelSetting? Setting { get; set; }
+
     private bool _showTooltip;
 
     private string? ClassString => CssBuilder.Default("form-label")
         .AddClassFromAttributes(AdditionalAttributes)
+        .Build();
+
+    private string? StyleString => CssBuilder.Default()
+        .AddStyle($"--bb-row-label-width", $"{LabelWidth}px", LabelWidth.HasValue)
         .Build();
 
     /// <summary>
@@ -42,5 +55,8 @@ public partial class BootstrapLabel
             _showTooltip = ShowLabelTooltip.Value;
         }
         Value ??= "";
+
+        // 获得级联参数的 LabelWidth
+        LabelWidth ??= Setting?.LabelWidth;
     }
 }

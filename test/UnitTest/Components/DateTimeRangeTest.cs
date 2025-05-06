@@ -78,13 +78,34 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
     [Fact]
     public async Task RangeValue_Ok()
     {
-        var cut = Context.RenderComponent<DateTimeRange>();
+        var val = DateTime.Today;
+        var confirmValue = new DateTimeRangeValue();
+        var cut = Context.RenderComponent<DateTimeRange>(pb =>
+        {
+            pb.Add(a => a.OnConfirm, v =>
+            {
+                confirmValue = v;
+                return Task.CompletedTask;
+            });
+            pb.Add(a => a.AutoClose, true);
+            pb.Add(a => a.ShowSelectedValue, true);
+            pb.Add(a => a.OnDateClick, d =>
+            {
+                val = d;
+                return Task.CompletedTask;
+            });
+        });
         var cells = cut.FindAll(".date-table tbody span");
         var end = cells.First(i => i.TextContent == "7");
         await cut.InvokeAsync(() =>
         {
             end.Click();
         });
+        Assert.Equal(7, val.Day);
+        var inputs = cut.FindAll(".datetime-range-input");
+        var input = inputs[0];
+        var start = val;
+        Assert.Equal(start.ToString("yyyy-MM-dd"), input.GetAttribute("value"));
 
         cells = cut.FindAll(".date-table tbody span");
         var first = cells.First(i => i.TextContent == "1");
@@ -92,13 +113,16 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
         {
             first.Click();
         });
+        inputs = cut.FindAll(".datetime-range-input");
+        input = inputs[0];
+        Assert.Equal(val.ToString("yyyy-MM-dd"), input.GetAttribute("value"));
 
-        // confirm
-        var confirm = cut.FindAll(".is-confirm")[cut.FindAll(".is-confirm").Count - 1];
-        await cut.InvokeAsync(() =>
-        {
-            confirm.Click();
-        });
+        input = inputs[1];
+        Assert.Equal(start.ToString("yyyy-MM-dd"), input.GetAttribute("value"));
+
+        // 由于设置了 AutoClose 属性所以这里不需要点击确定按钮
+        Assert.Equal(val, confirmValue.Start);
+        Assert.Equal(start, confirmValue.End.Date);
 
         var value = cut.Instance.Value;
         var startDate = DateTime.Today.AddDays(1 - DateTime.Today.Day).AddMonths(-1);
@@ -285,7 +309,7 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
         //Assert.True(input.ClassList.Contains("datetime"));
         //Assert.True(DateTime.TryParseExact(input.GetAttribute("Value"), "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var _));
 
-        // timeformat
+        // time format
         //cut.SetParametersAndRender(pb =>
         //{
         //    pb.Add(a => a.TimeFormat, "hhmmss");
@@ -332,7 +356,7 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
         var cut = Context.RenderComponent<DateTimeRange>(builder =>
         {
             builder.Add(a => a.Value, new DateTimeRangeValue { Start = DateTime.Now, End = DateTime.Now.AddDays(30) });
-            builder.Add(a => a.ValueChanged, EventCallback.Factory.Create<DateTimeRangeValue>(this, v => { value = v; }));
+            builder.Add(a => a.ValueChanged, EventCallback.Factory.Create<DateTimeRangeValue?>(this, v => { value = v; }));
         });
         cut.FindAll(".is-confirm").First(s => s.TextContent == "清空").Click();
     }
@@ -435,7 +459,7 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void InValidateForm_Ok()
+    public async Task InValidateForm_Ok()
     {
         var foo = new Dummy
         {
@@ -456,7 +480,7 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
 
         // 验证
         var validate = true;
-        cut.InvokeAsync(() => validate = cut.Instance.Validate());
+        await cut.InvokeAsync(() => validate = cut.Instance.Validate());
         Assert.False(validate);
 
         var range = cut.FindComponent<DateTimeRange>();
@@ -468,7 +492,21 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
             pb.Add(a => a.IsDisabled, true);
             pb.Add(a => a.ShowClearButton, true);
         });
-        clear.Click();
+        await cut.InvokeAsync(() => clear.Click());
+
+        foo.Value.Start = DateTime.Now;
+        foo.Value.End = DateTime.Now;
+        range.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.IsDisabled, false);
+        });
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.Model, foo);
+        });
+        validate = false;
+        await cut.InvokeAsync(() => validate = cut.Instance.Validate());
+        Assert.True(validate);
     }
 
     [Fact]
@@ -651,5 +689,15 @@ public class DateTimeRangeTest : BootstrapBlazorTestBase
         cells = cut.FindAll(".month-table .current > span");
         await cut.InvokeAsync(() => cells[0].Click());
         await cut.InvokeAsync(() => cells[1].Click());
+    }
+
+    [Fact]
+    public async Task TriggerHideCallback_Ok()
+    {
+        var cut = Context.RenderComponent<DateTimeRange>(pb =>
+        {
+            pb.Add(a => a.Value, new DateTimeRangeValue());
+        });
+        await cut.InvokeAsync(() => cut.Instance.TriggerHideCallback());
     }
 }

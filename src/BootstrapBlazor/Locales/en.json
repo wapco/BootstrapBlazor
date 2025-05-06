@@ -119,7 +119,7 @@
     "Text": "Logout"
   },
   "BootstrapBlazor.Components.Menu": {
-    "InvalidOperationExceptionMessage": "Sidemenu component cannot be used independently. Please use Menu component to set IsVertical = true"
+    "InvalidOperationExceptionMessage": "SideMenu component cannot be used independently. Please use Menu component to set IsVertical = true"
   },
   "BootstrapBlazor.Components.ModalDialog": {
     "CloseButtonText": "Close",
@@ -133,7 +133,8 @@
     "ReverseSelectText": "Reverse",
     "ClearText": "Clear",
     "MinErrorMessage": "Select at least {0} items",
-    "MaxErrorMessage": "At most {0} items can be selected"
+    "MaxErrorMessage": "At most {0} items can be selected",
+    "NoSearchDataText": "No Result"
   },
   "BootstrapBlazor.Components.Pagination": {
     "GotoNavigatorLabelText": "Goto"
@@ -150,7 +151,8 @@
     "EmptyText": "No Data"
   },
   "BootstrapBlazor.Components.Search": {
-    "SearchButtonText": "Search"
+    "SearchButtonText": "Search",
+    "NoDataTip": "No records found"
   },
   "BootstrapBlazor.Components.SearchInput": {
     "OnEnterPlaceholder": "Press Enter after entering a keyword to search",
@@ -179,7 +181,17 @@
     "CloseCurrentTabText": "Close",
     "CloseOtherTabsText": "Close Other",
     "CloseAllTabsText": "Close All",
-    "NotFoundTabText": "NotFound"
+    "NotFoundTabText": "NotFound",
+    "RefreshToolbarTooltipText": "Refresh",
+    "FullscreenToolbarTooltipText": "Fullscreen",
+    "PrevTabNavLinkTooltipText": "Prev Tab",
+    "NextTabNavLinkTooltipText": "Next Tab",
+    "CloseTabNavLinkTooltipText": "Close",
+    "ContextRefresh": "Refresh",
+    "ContextClose": "Close",
+    "ContextCloseOther": "Close Other Tabs",
+    "ContextCloseAll": "Close All Tabs",
+    "ContextFullScreen": "Full screen"
   },
   "BootstrapBlazor.Components.MultiFilter": {
     "MultiFilterSearchPlaceHolderText": "Please enter ...",
@@ -211,7 +223,7 @@
     "EditModalTitle": "Edit",
     "AddModalTitle": "New",
     "LineNoText": "No.",
-    "ColumnButtonTemplateHeaderText": "",
+    "ColumnButtonTemplateHeaderText": "Actions",
     "SearchTooltip": "<div class='search-input-tooltip'>Please input ...</br><kbd>Enter</kbd> Search <kbd>ESC</kbd> Clear</div>",
     "SearchModalTitle": "Searching",
     "AddButtonToastTitle": "Add Data",
@@ -312,13 +324,17 @@
     "NotSetOnTreeExpandErrorMessage": "not set OnExpandNodeAsync parameter"
   },
   "BootstrapBlazor.Components.TreeView": {
-    "NotSetOnTreeExpandErrorMessage": "not set OnExpandNodeAsync parameter"
+    "NotSetOnTreeExpandErrorMessage": "not set OnExpandNodeAsync parameter",
+    "ToolbarEditTitle": "Edit Tree Node",
+    "ToolbarEditLabelText": "Rename"
   },
   "BootstrapBlazor.Components.UploadBase": {
     "DeleteButtonText": "Delete",
     "BrowserButtonText": "Browser",
     "FileExtensions": "File must have one of the following extensions: {0}",
-    "FileSizeValidation": "File size must less than {0}"
+    "FileSizeValidation": "File size must less than {0}",
+    "DropUploadText": "Drop files here or <em>click to upload</em>",
+    "DropFooterText": ""
   },
   "BootstrapBlazor.Components.Handwritten": {
     "SaveButtonText": "Save",

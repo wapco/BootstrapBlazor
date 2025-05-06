@@ -28,6 +28,26 @@ public class CheckboxListTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void ChildContent_Ok()
+    {
+        var cut = Context.RenderComponent<Checkbox<string>>(builder =>
+        {
+            builder.Add(a => a.ChildContent, pb => pb.AddContent(0, "test-childcontent"));
+        });
+        cut.MarkupMatches("<div class=\"form-check\"><input type=\"checkbox\" diff:ignore class=\"form-check-input\" blazor:onclick=\"1\" /><label class=\"form-check-label\" diff:ignore>test-childcontent</label></div>");
+    }
+
+    [Fact]
+    public void StopPropagation_Ok()
+    {
+        var cut = Context.RenderComponent<Checkbox<string>>(builder =>
+        {
+            builder.Add(a => a.StopPropagation, true);
+        });
+        Assert.Contains("blazor:onclick:stopPropagation", cut.Markup);
+    }
+
+    [Fact]
     public void ShowAfterLabel_Ok()
     {
         var cut = Context.RenderComponent<Checkbox<string>>(builder =>
@@ -59,12 +79,26 @@ public class CheckboxListTest : BootstrapBlazorTestBase
         });
         Assert.False(cut.Instance.Value);
 
-        await cut.InvokeAsync(cut.Instance.TriggerOnBeforeStateChanged);
+        await cut.InvokeAsync(cut.Instance.OnToggleClick);
         Assert.True(cut.Instance.Value);
 
         confirm = false;
-        await cut.InvokeAsync(cut.Instance.TriggerOnBeforeStateChanged);
+        await cut.InvokeAsync(cut.Instance.OnToggleClick);
         Assert.True(cut.Instance.Value);
+    }
+
+    [Fact]
+    public async Task Checkbox_OnTriggerClickAsync()
+    {
+        var cut = Context.RenderComponent<Checkbox<bool>>();
+        Assert.False(cut.Instance.Value);
+
+        // JavaScript 调用 OnStateChangedAsync 方法
+        await cut.Instance.OnStateChangedAsync(CheckboxState.UnChecked);
+        Assert.Equal(CheckboxState.UnChecked, cut.Instance.State);
+
+        await cut.Instance.OnStateChangedAsync(CheckboxState.Checked);
+        Assert.Equal(CheckboxState.Checked, cut.Instance.State);
     }
 
     [Fact]
@@ -81,7 +115,7 @@ public class CheckboxListTest : BootstrapBlazorTestBase
 
         var methodInfo = checkbox.GetType().GetMethod("DisposeAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         Assert.NotNull(methodInfo);
-        methodInfo.Invoke(checkbox, new object[] { false });
+        methodInfo.Invoke(checkbox, [false]);
     }
 
     [Fact]
@@ -208,7 +242,7 @@ public class CheckboxListTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void StringValue_Ok()
+    public async Task StringValue_Ok()
     {
         var cut = Context.RenderComponent<CheckboxList<string>>(builder =>
         {
@@ -236,13 +270,13 @@ public class CheckboxListTest : BootstrapBlazorTestBase
             });
         });
         // 字符串值选中事件
-        var item = cut.Find(".form-check-input");
-        item.Click();
+        var item = cut.FindComponent<Checkbox<bool>>();
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
         Assert.True(selected);
     }
 
     [Fact]
-    public void OnSelectedChanged_Ok()
+    public async Task OnSelectedChanged_Ok()
     {
         var selected = false;
         var foo = Foo.Generate(Localizer);
@@ -257,8 +291,8 @@ public class CheckboxListTest : BootstrapBlazorTestBase
             });
         });
 
-        var item = cut.Find(".form-check-input");
-        item.Click();
+        var item = cut.FindComponent<Checkbox<bool>>();
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
         Assert.True(selected);
     }
 
@@ -274,7 +308,7 @@ public class CheckboxListTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void IntValue_Ok()
+    public async Task IntValue_Ok()
     {
         var ret = new List<int>();
         var selectedIntValues = new List<int> { 1, 2 };
@@ -292,8 +326,8 @@ public class CheckboxListTest : BootstrapBlazorTestBase
                 return Task.CompletedTask;
             });
         });
-        var item = cut.Find(".form-check-input");
-        item.Click();
+        var item = cut.FindComponent<Checkbox<bool>>();
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
 
         // 选中 2 
         Assert.Equal(2, ret.First());
@@ -387,20 +421,20 @@ public class CheckboxListTest : BootstrapBlazorTestBase
 
         await cut.InvokeAsync(async () =>
         {
-            await checkboxes[0].Instance.TriggerOnBeforeStateChanged();
+            await checkboxes[0].Instance.OnToggleClick();
         });
         Assert.Equal(CheckboxState.Checked, checkboxes[0].Instance.State);
 
         await cut.InvokeAsync(async () =>
         {
-            await checkboxes[1].Instance.TriggerOnBeforeStateChanged();
+            await checkboxes[1].Instance.OnToggleClick();
         });
         Assert.Equal(CheckboxState.Checked, checkboxes[1].Instance.State);
 
         // 选中第三个由于限制无法选中
         await cut.InvokeAsync(async () =>
         {
-            await checkboxes[2].Instance.TriggerOnBeforeStateChanged();
+            await checkboxes[2].Instance.OnToggleClick();
         });
         Assert.Equal(CheckboxState.Checked, checkboxes[0].Instance.State);
         Assert.Equal(CheckboxState.Checked, checkboxes[1].Instance.State);
@@ -411,12 +445,32 @@ public class CheckboxListTest : BootstrapBlazorTestBase
         max = false;
         await cut.InvokeAsync(async () =>
         {
-            await checkboxes[0].Instance.TriggerOnBeforeStateChanged();
+            await checkboxes[0].Instance.OnToggleClick();
         });
         Assert.Equal(CheckboxState.UnChecked, checkboxes[0].Instance.State);
         Assert.Equal(CheckboxState.Checked, checkboxes[1].Instance.State);
         Assert.Equal(CheckboxState.UnChecked, checkboxes[2].Instance.State);
         Assert.False(max);
+    }
+
+    [Fact]
+    public void ItemTemplate_Ok()
+    {
+        var items = new List<SelectedItem>()
+        {
+            new("1", "Test 1"),
+            new("2", "Test 2"),
+            new("3", "Test 3")
+        };
+        var cut = Context.RenderComponent<CheckboxList<string>>(pb =>
+        {
+            pb.Add(a => a.Items, items);
+            pb.Add(a => a.ItemTemplate, item => b =>
+            {
+                b.AddContent(0, item.Text);
+            });
+        });
+        cut.MarkupMatches("<div diff:ignore class=\"checkbox-list form-control\" tabindex=\"0\" hidefocus=\"true\"><div class=\"checkbox-item\"><div class=\"form-check is-label\"><input type=\"checkbox\" diff:ignore class=\"form-check-input\" blazor:onclick=\"1\" /><label class=\"form-check-label\" diff:ignore>Test 1</label></div></div><div class=\"checkbox-item\"><div class=\"form-check is-label\"><input type=\"checkbox\" diff:ignore class=\"form-check-input\" blazor:onclick=\"2\" /><label class=\"form-check-label\" diff:ignore>Test 2</label></div></div><div class=\"checkbox-item\"><div class=\"form-check is-label\"><input type=\"checkbox\" diff:ignore class=\"form-check-input\" blazor:onclick=\"3\" /><label class=\"form-check-label\" diff:ignore>Test 3</label></div></div></div>");
     }
 
     private class CheckboxListGenericMock<T>

@@ -59,6 +59,20 @@
     </div>
 </DemoBlock>
 
+<DemoBlock Title="@Localizer["ItemTemplateTitle"]"
+           Introduction="@Localizer["ItemTemplateIntro"]"
+           Name="ItemTemplate">
+    <CheckboxList TValue="string" Items="@IconDemoValues">
+        <ItemTemplate>
+            @if (context is IconSelectedItem item)
+            {
+                <i class="@item.Icon"></i>
+                <span>@item.Text</span>
+            }
+        </ItemTemplate>
+    </CheckboxList>
+</DemoBlock>
+
 <DemoBlock Title="@Localizer["EnumTitle"]" Introduction="@Localizer["EnumIntro"]" Name="Enum">
     <section ignore>@((MarkupString)Localizer["EnumTip"].Value)</section>
     <div class="row g-3">
@@ -118,6 +132,19 @@
             </div>
         </div>
     </ValidateForm>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["CheckboxListGenericTitle"]" Introduction="@Localizer["CheckboxListGenericIntro"]" Name="Generic">
+    <CheckboxListGeneric @bind-Value="@_selectedFoos" Items="@GenericItems" />
+    <section ignore>
+        @if (_selectedFoos != null)
+        {
+            foreach (var item in _selectedFoos)
+            {
+                <div>@item.Name</div>
+            }
+        }
+    </section>
 </DemoBlock>
 
 <AttributeTable Items="@GetAttributes()" />

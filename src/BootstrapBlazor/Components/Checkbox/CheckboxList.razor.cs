@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
-using Microsoft.Extensions.Localization;
 using System.Collections;
-using System.Reflection;
 
 namespace BootstrapBlazor.Components;
 
@@ -104,9 +102,16 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     [Parameter]
     public bool AllowCustom { get; set; }
 
-    [Inject]
-    [NotNull]
-    private IStringLocalizerFactory? LocalizerFactory { get; set; }
+    /// <summary>
+    /// 获得/设置 项模板
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SelectedItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// 自定义选项
+    /// </summary>
+    protected SelectedItem? CustomOption { get; set; }
 
     /// <summary>
     /// 获得 当前选项是否被禁用
@@ -118,11 +123,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     private Func<CheckboxState, Task<bool>>? _onBeforeStateChangedCallback;
 
     /// <summary>
-    /// 自定义选项
-    /// </summary>
-    protected SelectedItem? CustomOption { get; set; }
-
-    /// <summary>
     /// OnInitialized 方法
     /// </summary>
     protected override void OnInitialized()
@@ -132,28 +132,14 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         EnsureParameterValid();
 
         // 处理 Required 标签
-        if (EditContext != null && FieldIdentifier != null)
-        {
-            var pi = FieldIdentifier.Value.Model.GetType().GetPropertyByName(FieldIdentifier.Value.FieldName);
-            if (pi != null)
-            {
-                var required = pi.GetCustomAttribute<RequiredAttribute>(true);
-                if (required != null)
-                {
-                    Rules.Add(new RequiredValidator()
-                    {
-                        LocalizerFactory = LocalizerFactory, ErrorMessage = required.ErrorMessage, AllowEmptyString = required.AllowEmptyStrings
-                    });
-                }
-            }
+        AddRequiredValidator();
 
-            if (AllowCustom)
+        if (AllowCustom)
+        {
+            Rules.Add(new CustomOptionValidator()
             {
-                Rules.Add(new CustomOptionValidator()
-                {
-                    LocalizerFactory = LocalizerFactory, ErrorMessage = "ValidationError_CustomOptionTextIsRequired"
-                });
-            }
+                LocalizerFactory = LocalizerFactory, ErrorMessage = "ValidationError_CustomOptionTextIsRequired"
+            });
         }
     }
 
@@ -177,7 +163,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
             {
                 Items = innerType.ToSelectList();
             }
-
             Items ??= [];
         }
 
@@ -190,7 +175,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
 
         _onBeforeStateChangedCallback = MaxSelectedCount > 0 ? new Func<CheckboxState, Task<bool>>(OnBeforeStateChanged) : null;
     }
-
     private async Task<bool> OnBeforeStateChanged(CheckboxState state)
     {
         var ret = true;
@@ -204,7 +188,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             await OnMaxSelectedCountExceed();
         }
-
         return ret;
     }
 
@@ -213,7 +196,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    protected override string? FormatValueAsString(TValue value)
+    protected override string? FormatValueAsString(TValue? value)
     {
         string? ret = null;
         if (ValueType == typeof(string))
@@ -224,7 +207,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             ret = string.Join(",", Items.Where(i => i.Active).Select(i => i.Value));
         }
-
         return ret;
     }
 
@@ -300,7 +282,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     /// </summary>
     /// <param name="item"></param>
     /// <param name="v"></param>
-    private Task OnStateChanged(SelectedItem item, bool v)
+    private  Task OnStateChanged(SelectedItem item, bool v)
     {
         item.Active = v;
 
@@ -318,6 +300,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
             }
 
             CurrentValueAsString = string.Join(",", selectValues);
+
         }
         else if (ValueType.IsGenericType)
         {
@@ -331,7 +314,6 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
                         instance.Add(val);
                     }
                 }
-
                 CurrentValue = (TValue)instance;
             }
         }
@@ -341,6 +323,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
             await OnSelectedChanged.Invoke(Items, Value);
         }
     }
+
 
     /// <summary>
     /// 点击选择框方法
@@ -378,4 +361,8 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
 
         return InternalValueChanged();
     }
+
+    private RenderFragment? GetChildContent(SelectedItem item) => ItemTemplate == null
+        ? null
+        : ItemTemplate(item);
 }

@@ -606,6 +606,7 @@ public class UploadTest : BootstrapBlazorTestBase
     [Fact]
     public async Task ButtonUpload_IsDirectory_Ok()
     {
+        var fileCount = 0;
         var fileNames = new List<string>();
         List<UploadFile> fileList = [];
         var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
@@ -613,6 +614,7 @@ public class UploadTest : BootstrapBlazorTestBase
             pb.Add(a => a.IsDirectory, true);
             pb.Add(a => a.OnChange, file =>
             {
+                fileCount = file.FileCount;
                 fileNames.Add(file.OriginFileName!);
                 return Task.CompletedTask;
             });
@@ -628,6 +630,7 @@ public class UploadTest : BootstrapBlazorTestBase
             new(),
             new("UploadTestFile2")
         })));
+        Assert.Equal(2, fileCount);
         Assert.Equal(2, fileNames.Count);
         Assert.Equal(2, fileList.Count);
     }
@@ -1029,6 +1032,72 @@ public class UploadTest : BootstrapBlazorTestBase
             pb.Add(a => a.Capture, "camera");
         });
         cut.Contains("capture=\"camera\"");
+    }
+
+    [Fact]
+    public void DropUpload_BodyTemplate_Ok()
+    {
+        var cut = Context.RenderComponent<DropUpload>(pb =>
+        {
+            pb.Add(a => a.BodyTemplate, b => b.AddContent(0, "drop-upload-body-template"));
+        });
+        cut.MarkupMatches("<div class=\"upload is-drop\" diff:ignore><div class=\"upload-drop-body\">drop-upload-body-template</div><ul class=\"upload-drop-list\"></ul><input hidden=\"hidden\" type=\"file\" diff:ignore></input></div>");
+    }
+
+    [Fact]
+    public void DropUpload_IconTemplate_Ok()
+    {
+        var cut = Context.RenderComponent<DropUpload>(pb =>
+        {
+            pb.Add(a => a.IconTemplate, b => b.AddContent(0, "drop-upload-icon-template"));
+        });
+        cut.Contains("<div class=\"upload-drop-icon\">drop-upload-icon-template</div>");
+    }
+
+    [Fact]
+    public void DropUpload_TextTemplate_Ok()
+    {
+        var cut = Context.RenderComponent<DropUpload>(pb =>
+        {
+            pb.Add(a => a.TextTemplate, b => b.AddContent(0, "drop-upload-text-template"));
+        });
+        cut.Contains("<div class=\"upload-drop-text\">drop-upload-text-template</div>");
+    }
+
+    [Fact]
+    public void DropUpload_Footer_Ok()
+    {
+        var cut = Context.RenderComponent<DropUpload>(pb =>
+        {
+            pb.Add(a => a.ShowFooter, true);
+        });
+        cut.Contains("<div class=\"upload-drop-footer\"></div>");
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.FooterTemplate, b => b.AddContent(0, "drop-upload-footer-text"));
+        });
+        cut.Contains("<div class=\"upload-drop-footer\">drop-upload-footer-text</div>");
+    }
+
+    [Fact]
+    public async Task DropUpload_OnChanged_Ok()
+    {
+        var cut = Context.RenderComponent<DropUpload>(pb =>
+        {
+            pb.Add(a => a.ShowLabel, true);
+            pb.Add(a => a.ShowProgress, true);
+            pb.Add(a => a.OnChange, async files =>
+            {
+                await files.SaveToFileAsync("1.text");
+            });
+        });
+
+        var input = cut.FindComponent<InputFile>();
+        await cut.InvokeAsync(() => input.Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs(new List<MockBrowserFile>()
+        {
+            new()
+        })));
     }
 
     private class Person

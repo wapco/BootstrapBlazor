@@ -1,5 +1,6 @@
 ﻿import Data from "../../modules/data.js"
 import Drag from "../../modules/drag.js"
+import EventHandler from "../../modules/event-handler.js"
 
 const initDrag = el => {
     let originX = 0
@@ -60,7 +61,7 @@ const initDrag = el => {
     )
 }
 
-export function init(id) {
+export function init(id, invoke, method) {
     const el = document.getElementById(id);
     if (el === null) {
         return;
@@ -73,12 +74,23 @@ export function init(id) {
     Data.set(id, dw)
 
     initDrag(el);
+
+    EventHandler.on(el, 'keyup', async e => {
+        if (e.key === 'Escape') {
+            const supportESC = el.getAttribute('data-bb-keyboard') === 'true';
+            if (supportESC) {
+                await invoke.invokeMethodAsync(method);
+            }
+        }
+    });
 }
 
 export function execute(id, open) {
     const dw = Data.get(id)
     const { el, body } = dw
     const drawerBody = el.querySelector('.drawer-body')
+    const drawerBackdrop = el.querySelector('.drawer-backdrop')
+    const animationFrame = getComputedStyle(drawerBody).getPropertyValue('transition') !== 'none';
 
     let start = void 0
     const show = ts => {
@@ -90,8 +102,16 @@ export function execute(id, open) {
             requestAnimationFrame(show);
         }
         else {
-            drawerBody.classList.add('show')
+            showDrawer();
         }
+    }
+    
+    const showDrawer = () => {
+        drawerBody.classList.add('show');
+        if (drawerBackdrop) {
+            drawerBackdrop.classList.add('show');
+        }
+        el.focus();
     }
 
     const hide = ts => {
@@ -103,29 +123,48 @@ export function execute(id, open) {
             requestAnimationFrame(hide);
         }
         else {
-            el.classList.remove('show')
-            body.classList.remove('overflow-hidden')
+            el.classList.remove('show');
         }
     }
 
     if (open) {
         el.classList.add('show')
-        body.classList.add('overflow-hidden')
-        requestAnimationFrame(show)
-    }
-    else {
-        if (el.classList.contains('show')) {
-            drawerBody.classList.remove('show')
-            requestAnimationFrame(hide)
+
+        const scroll = el.getAttribute('data-bb-scroll') === "true";
+        if (scroll === false) {
+            body.classList.add('drawer-overflow-hidden');
+        }
+
+        if (animationFrame) {
+            requestAnimationFrame(show)
+        }
+        else {
+            showDrawer();
         }
     }
+    else if (el.classList.contains('show')) {
+        drawerBody.classList.remove('show');
+        if (drawerBackdrop) {
+            drawerBackdrop.classList.remove('show');
+        }
+        body.classList.remove('drawer-overflow-hidden');
+        if (animationFrame) {
+            requestAnimationFrame(hide)
+        }
+        else {
+            el.classList.remove('show');
+        }
+    }
+    return animationFrame;
 }
 
 export function dispose(id) {
     const dw = Data.get(id)
     Data.remove(id);
 
-    const { el, body } = dw
+    const { el, body } = dw;
+    EventHandler.off(el, 'keyup');
+
     if (el.classList.contains('show')) {
         el.classList.remove('show')
 

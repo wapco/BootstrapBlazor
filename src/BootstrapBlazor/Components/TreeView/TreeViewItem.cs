@@ -13,6 +13,8 @@ public class TreeViewItem<TItem> : TreeNodeBase<TItem>, ICheckableNode<TItem>
     /// <summary>
     /// 获得/设置 是否显示正在加载动画 默认为 false
     /// </summary>
+    [Obsolete("已弃用；Deprecated")]
+    [ExcludeFromCodeCoverage]
     public bool ShowLoading { get; set; }
 
     /// <summary>
@@ -28,7 +30,7 @@ public class TreeViewItem<TItem> : TreeNodeBase<TItem>, ICheckableNode<TItem>
     /// <summary>
     /// 获得/设置 子节点集合
     /// </summary>
-    IEnumerable<IExpandableNode<TItem>> IExpandableNode<TItem>.Items { get => Items; set => Items = value.OfType<TreeViewItem<TItem>>().ToList(); }
+    IEnumerable<IExpandableNode<TItem>> IExpandableNode<TItem>.Items { get => Items; set => Items = [.. value.OfType<TreeViewItem<TItem>>()]; }
 
     /// <summary>
     /// 获得/设置 父级节点

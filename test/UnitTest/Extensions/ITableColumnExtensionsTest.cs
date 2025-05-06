@@ -53,11 +53,13 @@ public class ITableColumnExtensionsTest
             Lookup = new List<SelectedItem>(),
             LookupStringComparison = StringComparison.Ordinal,
             LookupServiceKey = "test-key",
+            LookupService = new LookupService(),
             LookupServiceData = true,
             IsReadonlyWhenAdd = true,
             IsReadonlyWhenEdit = true,
             Readonly = true,
             Rows = 3,
+            Cols = 6,
             SkipValidate = true,
             Text = "Test",
             ValidateRules = [new RequiredValidator()],
@@ -129,6 +131,7 @@ public class ITableColumnExtensionsTest
         Assert.False(col.IsVisibleWhenEdit);
         Assert.True(col.Readonly);
         Assert.Equal(3, col.Rows);
+        Assert.Equal(6, col.Cols);
         Assert.True(col.SkipValidate);
         Assert.Equal("Test", col.Text);
         Assert.NotNull(col.ValidateRules);
@@ -176,6 +179,10 @@ public class ITableColumnExtensionsTest
         Assert.True(col.IsRequiredWhenEdit);
         Assert.True(col.IsRequiredWhenAdd);
         Assert.Equal("test", col.RequiredErrorMessage);
+
+        Assert.NotNull(col.LookupService);
+        Assert.Equal("test-key", col.LookupServiceKey);
+        Assert.Equal(true, col.LookupServiceData);
     }
 
     [Fact]
@@ -226,5 +233,10 @@ public class ITableColumnExtensionsTest
         Assert.Equal(2, filters.Count(f => f.GetFilterConditions().FieldValue?.GetType() == typeof(float)));
         Assert.Equal(2, filters.Count(f => f.GetFilterConditions().FieldValue?.GetType() == typeof(double)));
         Assert.Equal(2, filters.Count(f => f.GetFilterConditions().FieldValue?.GetType() == typeof(decimal)));
+    }
+
+    class LookupService : LookupServiceBase
+    {
+        public override IEnumerable<SelectedItem>? GetItemsByKey(string? key, object? data) => null;
     }
 }

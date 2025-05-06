@@ -19,10 +19,8 @@ public partial class Notifications
 
     private bool Permission { get; set; }
 
-    private NotificationItem Model { get; set; } = new()
-    {
-        Icon = "./images/Argo-C.png"
-    };
+    [NotNull]
+    private NotificationItem? Model { get; set; }
 
     /// <summary>
     /// <inheritdoc/>
@@ -30,9 +28,14 @@ public partial class Notifications
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Model.Title ??= Localizer["NotificationsNormalTitleSampleText"];
-        Model.Message ??= Localizer["NotificationsNormalMessageSampleText"];
-        Model.OnClick = OnClickNotificationCallback;
+
+        Model = new()
+        {
+            Icon = $"{WebsiteOption.CurrentValue.AssetRootPath}images/Argo-C.png",
+            Title = Localizer["NotificationsNormalTitleSampleText"],
+            Message = Localizer["NotificationsNormalMessageSampleText"],
+            OnClick = OnClickNotificationCallback
+        };
     }
 
     /// <summary>

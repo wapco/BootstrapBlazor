@@ -1,9 +1,11 @@
-﻿.main {
-    padding: var(--bb-main-pading);
+﻿.section {
+    position: relative;
 }
 
-.section {
-    --bb-sidebar-width: 0;
+.main {
+    padding: var(--bb-main-pading);
+    position: relative;
+    z-index: 5;
 }
 
 .sidebar-title {
@@ -76,12 +78,83 @@
             background-color: var(--bb-sidebar-body-drag-hover-bg);
         }
 
+::deep .bb-dial-gear {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    right: 1rem;
+    bottom: 1rem;
+}
+
+::deep .btn-fade {
+    opacity: 0.7;
+    box-shadow: var(--bb-layout-button-shadow);
+    transition: opacity .3s linear;
+}
+
+    ::deep .btn-fade:hover {
+        opacity: 1;
+    }
+
+::deep .btn-update {
+    --bs-btn-bg: var(--bb-layout-button-update-bg);
+    --bs-btn-hover-bg: var(--bs-btn-bg);
+    --bs-btn-active-bg: var(--bs-btn-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    ::deep .btn-update img {
+        width: 55%;
+        margin-inline-start: 2px;
+    }
+
+::deep .btn-chat {
+    --bs-btn-bg: var(--bb-layout-button-bg);
+    --bs-btn-hover-bg: var(--bb-layout-button-hover-bg);
+    --bs-btn-active-bg: var(--bb-layout-button-active-bg);
+    box-shadow: var(--bb-layout-button-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bb-button-chat-color);
+}
+
+::deep .btn-theme-mode {
+    --bs-btn-bg: var(--bb-layout-button-bg);
+    --bs-btn-hover-bg: var(--bb-layout-button-hover-bg);
+    --bs-btn-active-bg: var(--bb-layout-button-active-bg);
+    box-shadow: var(--bb-layout-button-shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--bb-button-chat-color);
+}
+
+.dial-button-gear {
+    background-color: var(--bb-primary-color);
+    border-radius: 50%;
+    padding: 4px;
+    cursor: pointer;
+}
+
+    .dial-button-gear img {
+        width: 100%;
+    }
+
 @media (min-width: 768px) {
     .section {
-        --bb-sidebar-width: 300px;
+        --bb-layout-sidebar-width: 300px;
         display: flex;
         flex-direction: row;
         -webkit-font-smoothing: antialiased;
+    }
+
+    .main {
+        flex: 1;
+        width: 1%;
+        min-width: 0;
     }
 
     .sidebar-title {
@@ -89,7 +162,7 @@
     }
 
     .sidebar {
-        width: var(--bb-sidebar-width);
+        width: var(--bb-layout-sidebar-width);
         height: calc(100vh);
         position: sticky;
         top: 0;
@@ -97,12 +170,11 @@
         margin-top: calc(var(--bs-header-height) * -1);
     }
 
-    .main {
-        height: 100%;
-        width: calc(100% - var(--bb-sidebar-width));
+    .sidebar-bar {
+        display: block;
     }
 
-    .sidebar-bar {
+    ::deep .bb-dial-gear {
         display: block;
     }
 }

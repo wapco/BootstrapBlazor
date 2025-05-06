@@ -76,6 +76,12 @@ public partial class DateTimePicker<TValue>
     public string? TimeFormat { get; set; }
 
     /// <summary>
+    /// 获得/设置 星期第一天 默认 <see cref="DayOfWeek.Sunday"/>
+    /// </summary>
+    [Parameter]
+    public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
+
+    /// <summary>
     /// 获得/设置 组件图标 默认 fa-regular fa-calendar-days
     /// </summary>
     [Parameter]
@@ -136,7 +142,7 @@ public partial class DateTimePicker<TValue>
     /// </summary>
     /// <remarks>当 Value 值为 <see cref="DateTime.MinValue"/> 时自动设置时间为 <see cref="DateTime.Today"/> 不为空类型时此参数生效</remarks>
     [Parameter]
-    public bool AutoToday { get; set; }
+    public bool AutoToday { get; set; } = true;
 
     /// <summary>
     /// 获得/设置 是否将 <see cref="DateTime.MinValue"/> 显示为空字符串 默认 true
@@ -390,7 +396,7 @@ public partial class DateTimePicker<TValue>
     /// <summary>
     /// 格式化数值方法
     /// </summary>
-    protected override string? FormatValueAsString(TValue value)
+    protected override string FormatValueAsString(TValue value)
     {
         if (ValueType == typeof(string))
         {
@@ -412,6 +418,15 @@ public partial class DateTimePicker<TValue>
 
         return ret;
     }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
+    {
+        TriggerHideCallback = nameof(TriggerHideCallback)
+    });
 
     private bool MinValueToEmpty(DateTime val) => val == DateTime.MinValue && AllowNull && DisplayMinValueAsEmpty;
 
@@ -500,5 +515,16 @@ public partial class DateTimePicker<TValue>
         {
             await OnBlurAsync(Value);
         }
+    }
+
+    /// <summary>
+    /// 客户端弹窗关闭后由 Javascript 调用此方法
+    /// </summary>
+    /// <returns></returns>
+    [JSInvokable]
+    public Task TriggerHideCallback()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 }

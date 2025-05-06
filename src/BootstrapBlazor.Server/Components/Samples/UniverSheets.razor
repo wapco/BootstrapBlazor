@@ -1,0 +1,37 @@
+﻿@page "/univer-sheet"
+@inherits WebSiteModuleComponentBase
+@attribute [JSModuleAutoLoader("Samples/UniverSheets.razor.js")]
+
+<h3>@Localizer["UniverSheetTitle"]</h3>
+
+<h4>@Localizer["UniverSheetIntro"]</h4>
+
+<PackageTips Name="BootstrapBlazor.UniverSheet" />
+
+<DemoBlock Title="@Localizer["NormalTitle"]"
+           Introduction="@Localizer["NormalIntro"]"
+           Name="Normal">
+    <section ignore>
+        <p>@((MarkupString)Localizer["NormalDesc1"].Value)</p>
+        <Button OnClickWithoutRender="OnPushExcelData" Text="@Localizer["PushButtonText"]"></Button>
+        <Button OnClickWithoutRender="OnSaveExcelData" Text="@Localizer["SaveButtonText"]"></Button>
+    </section>
+    <div class="bb-sheet-demo">
+        <UniverSheet @ref="_sheetExcel" OnReadyAsync="OnReadyAsync"></UniverSheet>
+    </div>
+    <section ignore>
+        <Textarea rows="3" readonly Value="@_jsonData"></Textarea>
+    </section>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["PluginTitle"]"
+           Introduction="@Localizer["PluginIntro"]"
+           Name="Plugin">
+    <section ignore>
+        <p>@((MarkupString)Localizer["NormalDesc2"].Value)</p>
+        <Button OnClickWithoutRender="OnPushPluginData" Text="@Localizer["PushButtonText"]"></Button>
+    </section>
+    <div class="bb-sheet-demo">
+        <UniverSheet @ref="_sheetPlugin" Plugins="_plugins" OnPostDataAsync="OnPostDataAsync"></UniverSheet>
+    </div>
+</DemoBlock>

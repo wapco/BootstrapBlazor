@@ -39,18 +39,21 @@ public class WebClientService(IIpLocatorFactory ipLocatorFactory,
         {
             RequestUrl = navigation.Uri
         };
-        _jsModule ??= await runtime.LoadModule("./_content/BootstrapBlazor/modules/client.js");
-        _interop ??= DotNetObjectReference.Create(this);
-        await _jsModule.InvokeVoidAsync("ping", "ip.axd", _interop, nameof(SetData));
 
-        // 等待 SetData 方法执行完毕
         try
         {
-            await _taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            _jsModule ??= await runtime.LoadModuleByName("client");
+            if (_jsModule != null)
+            {
+                _interop ??= DotNetObjectReference.Create(this);
+                await _jsModule.InvokeVoidAsync("ping", "ip.axd", _interop, nameof(SetData));
+                // 等待 SetData 方法执行完毕
+                await _taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "method GetClientInfo failed");
+            logger.LogError(ex, "{GetClientInfo} throw exception", nameof(GetClientInfo));
         }
 
         // 补充 IP 地址信息

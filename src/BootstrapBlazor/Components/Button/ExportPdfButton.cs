@@ -83,7 +83,6 @@ public class ExportPdfButton : Button
         base.OnParametersSet();
 
         Icon ??= IconTheme.GetIconByKey(ComponentIcons.TableExportPdfIcon);
-        ButtonIcon = Icon;
     }
 
     /// <summary>
@@ -118,7 +117,10 @@ public class ExportPdfButton : Button
                 """;
 
             // 增加网页所需样式表文件
-            List<string> styles = [$"{NavigationManager.BaseUri}_content/BootstrapBlazor/css/bootstrap.blazor.bundle.min.css"];
+            List<string> styles = [
+                $"{NavigationManager.BaseUri}_content/BootstrapBlazor.FontAwesome/css/font-awesome.min.css",
+                $"{NavigationManager.BaseUri}_content/BootstrapBlazor/css/bootstrap.blazor.bundle.min.css"
+            ];
             if (StyleTags != null)
             {
                 styles.AddRange(StyleTags);

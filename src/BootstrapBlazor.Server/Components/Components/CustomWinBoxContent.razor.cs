@@ -49,7 +49,7 @@ public partial class CustomWinBoxContent
     {
         if (Option != null)
         {
-            Option.Icon = "./images/Argo-C.png";
+            Option.Icon = $"{WebsiteOption.CurrentValue.AssetRootPath}images/Argo-C.png";
             await WinBoxService.SetIcon(Option);
         }
     }

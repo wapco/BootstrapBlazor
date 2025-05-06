@@ -6,7 +6,6 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace UnitTest.Components;
@@ -14,7 +13,7 @@ namespace UnitTest.Components;
 public class SelectTest : BootstrapBlazorTestBase
 {
     [Fact]
-    public void OnSearchTextChanged_Null()
+    public async Task OnSearchTextChanged_Null()
     {
         var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
         {
@@ -30,12 +29,12 @@ public class SelectTest : BootstrapBlazorTestBase
         });
 
         var ctx = cut.FindComponent<Select<string>>();
-        ctx.InvokeAsync(async () =>
+        await ctx.InvokeAsync(async () =>
         {
             await ctx.Instance.ConfirmSelectedItem(0);
 
             // 搜索 T
-            ctx.Find(".search-text").Input("T");
+            await ctx.Instance.TriggerOnSearch("T");
             await ctx.Instance.ConfirmSelectedItem(0);
         });
 
@@ -44,9 +43,28 @@ public class SelectTest : BootstrapBlazorTestBase
             pb.Add(a => a.OnBeforeSelectedItemChange, item => Task.FromResult(false));
             pb.Add(a => a.OnSelectedItemChanged, item => Task.CompletedTask);
         });
-        ctx.InvokeAsync(() => ctx.Instance.ConfirmSelectedItem(0));
+        await ctx.InvokeAsync(() => ctx.Instance.ConfirmSelectedItem(0));
 
         ctx.Instance.ClearSearchText();
+
+        ctx.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.OnBeforeSelectedItemChange, null);
+            pb.Add(a => a.OnSelectedItemChanged, null);
+            pb.Add(a => a.OnSearchTextChanged, text =>
+            {
+                return new List<SelectedItem>()
+                {
+                    new("1", "Test1")
+                };
+            });
+        });
+
+        await ctx.InvokeAsync(async () =>
+        {
+            await ctx.Instance.TriggerOnSearch("T");
+        });
+        cut.DoesNotContain("Test2");
     }
 
     [Fact]
@@ -88,7 +106,34 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void IsClearable_Ok()
+    public void LookupService_Ok()
+    {
+        // 不给 Items 时走 LookupService
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.LookupServiceKey, "FooLookup");
+        });
+        cut.WaitForAssertion(() => cut.Contains("LookupService-Test-1"));
+        Assert.Equal(2, cut.Instance.Items.Count());
+    }
+
+    [Fact]
+    public void Select_Lookup()
+    {
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.LookupServiceKey, "FooLookup");
+        });
+        ILookup lookup = cut.Instance;
+        lookup.Lookup = [new SelectedItem("", "test")];
+        Assert.Single(lookup.Lookup);
+
+        lookup.LookupStringComparison = StringComparison.Ordinal;
+        Assert.Equal(StringComparison.Ordinal, lookup.LookupStringComparison);
+    }
+
+    [Fact]
+    public async Task IsClearable_Ok()
     {
         var val = "Test2";
         var cut = Context.RenderComponent<Select<string>>(pb =>
@@ -108,8 +153,8 @@ public class SelectTest : BootstrapBlazorTestBase
             });
         });
         var clearButton = cut.Find(".clear-icon");
-        cut.InvokeAsync(() => clearButton.Click());
-        Assert.Empty(val);
+        await cut.InvokeAsync(() => clearButton.Click());
+        Assert.Null(val);
 
         // 提高代码覆盖率
         var select = cut;
@@ -128,6 +173,97 @@ public class SelectTest : BootstrapBlazorTestBase
         validPi.SetValue(select.Instance, false);
         val = pi.GetValue(select.Instance, null)!.ToString();
         Assert.Contains("text-danger", val);
+
+        // 更改数据类型为不可为空 int
+        // IsClearable 参数无效
+        var cut1 = Context.RenderComponent<Select<int>>(pb =>
+        {
+            pb.Add(a => a.IsClearable, true);
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("1", "Test1"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+            pb.Add(a => a.Value, 1);
+        });
+        cut1.DoesNotContain("clear-icon");
+    }
+
+    [Fact]
+    public void IsNullable_Ok()
+    {
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.True(IsNullable(cut.Instance));
+
+        var cut1 = Context.RenderComponent<Select<string?>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.True(IsNullable(cut1.Instance));
+
+        var cut2 = Context.RenderComponent<Select<Foo>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.True(IsNullable(cut2.Instance));
+
+        var cut3 = Context.RenderComponent<Select<Foo?>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.True(IsNullable(cut3.Instance));
+
+        var cut4 = Context.RenderComponent<Select<int>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.False(IsNullable(cut4.Instance));
+
+        var cut5 = Context.RenderComponent<Select<int?>>(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>()
+            {
+                new("", "请选择"),
+                new("2", "Test2"),
+                new("3", "Test3")
+            });
+        });
+        Assert.True(IsNullable(cut5.Instance));
+    }
+
+    private static bool IsNullable(object select)
+    {
+        var mi = select.GetType().BaseType!.BaseType!.GetMethod("IsNullable", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        return (bool)mi.Invoke(select, null)!;
     }
 
     [Fact]
@@ -235,39 +371,7 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public async Task OnSelectedItemChanged_Generic()
-    {
-        Foo? selectedValue = null;
-        var cut = Context.RenderComponent<Select<Foo>>(pb =>
-        {
-            pb.Add(a => a.Items, new SelectedItem<Foo>[]
-            {
-                new() { Value = new Foo() { Id = 1, Address = "Foo1" }, Text = "test1" },
-                new() { Value = new Foo() { Id = 2, Address = "Foo2" }, Text = "test2" }
-            });
-            pb.Add(a => a.Value, new Foo() { Id = 1, Address = "Foo1" });
-            pb.Add(a => a.OnSelectedItemChanged, v =>
-            {
-                if (v is SelectedItem<Foo> d)
-                {
-                    selectedValue = d.Value;
-                }
-                return Task.CompletedTask;
-            });
-            pb.Add(a => a.CustomKeyAttribute, typeof(KeyAttribute));
-        });
-
-        IModelEqualityComparer<Foo> comparer = cut.Instance as IModelEqualityComparer<Foo>;
-        Assert.NotNull(comparer);
-        comparer.ModelEqualityComparer = (x, y) => x.Id == y.Id;
-
-        var items = cut.FindAll(".dropdown-item");
-        await cut.InvokeAsync(() => items[1].Click());
-        Assert.NotNull(selectedValue);
-    }
-
-    [Fact]
-    public void DisableItemChangedWhenFirstRender_Ok()
+    public void DisableItemChangedWhenFirstRender_False()
     {
         var triggered = false;
 
@@ -288,6 +392,30 @@ public class SelectTest : BootstrapBlazorTestBase
             pb.Add(a => a.DisableItemChangedWhenFirstRender, true);
         });
         Assert.False(triggered);
+    }
+
+    [Fact]
+    public void DisableItemChangedWhenFirstRender_True()
+    {
+        var triggered = false;
+
+        // 空值时，不触发 OnSelectedItemChanged 回调
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "Test"),
+                new("2", "Test2")
+            });
+            pb.Add(a => a.Value, "");
+            pb.Add(a => a.OnSelectedItemChanged, item =>
+            {
+                triggered = true;
+                return Task.CompletedTask;
+            });
+            pb.Add(a => a.DisableItemChangedWhenFirstRender, false);
+        });
+        Assert.True(triggered);
     }
 
     [Fact]
@@ -420,8 +548,7 @@ public class SelectTest : BootstrapBlazorTestBase
         });
 
         // 值为 null
-        // 候选项中无，导致默认选择第一个 Value 被更改为 true
-        Assert.True(cut.Instance.Value);
+        Assert.Null(cut.Instance.Value);
     }
 
     [Fact]
@@ -436,7 +563,7 @@ public class SelectTest : BootstrapBlazorTestBase
                 new("2", "Text2"),
             });
             pb.Add(a => a.Value, v);
-            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<SelectedItem>(this, i => v = i));
+            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<SelectedItem?>(this, i => v = i));
         });
         Assert.Equal("2", cut.Instance.Value.Value);
 
@@ -462,7 +589,7 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void IsFixedSearch_Ok()
+    public void ScrollIntoViewBehavior_Ok()
     {
         var cut = Context.RenderComponent<Select<string>>(pb =>
         {
@@ -472,11 +599,15 @@ public class SelectTest : BootstrapBlazorTestBase
                 new("2", "Test2")
             });
             pb.Add(a => a.Value, "2");
-            pb.Add(a => a.ShowSearch, true);
-            pb.Add(a => a.IsFixedSearch, true);
+            pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Auto);
         });
-        Assert.Contains("search is-fixed", cut.Markup);
-        Assert.Contains("class=\"icon", cut.Markup);
+        Assert.Contains("data-bb-scroll-behavior=\"auto\"", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Smooth);
+        });
+        Assert.DoesNotContain("data-bb-scroll-behavior", cut.Markup);
     }
 
     [Fact]
@@ -630,6 +761,51 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void DefaultVirtualizeItemText_Null()
+    {
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "Test1"),
+                new("2", "Test2")
+            });
+            pb.Add(a => a.Value, "3");
+            pb.Add(a => a.IsVirtualize, true);
+        });
+
+        var input = cut.Find(".form-select");
+        Assert.Contains("value=\"3\"", input.OuterHtml);
+    }
+
+    [Fact]
+    public async Task DefaultVirtualizeItemText_Ok()
+    {
+        var cut = Context.RenderComponent<Select<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "Test1"),
+                new("2", "Test2")
+            });
+            pb.Add(a => a.Value, "3");
+            pb.Add(a => a.IsVirtualize, true);
+            pb.Add(a => a.DefaultVirtualizeItemText, "Test3");
+        });
+
+        var input = cut.Find(".form-select");
+        Assert.Contains("value=\"Test3\"", input.OuterHtml);
+
+        var items = cut.FindAll(".dropdown-item");
+        Assert.Equal(2, items.Count);
+
+        var item = items[1];
+        await cut.InvokeAsync(() => item.Click());
+        input = cut.Find(".form-select");
+        Assert.Contains("value=\"Test2\"", input.OuterHtml);
+    }
+
+    [Fact]
     public void IsVirtualize_Items()
     {
         var cut = Context.RenderComponent<Select<string>>(pb =>
@@ -676,7 +852,7 @@ public class SelectTest : BootstrapBlazorTestBase
         // 期望 UI 显示值为默认值
         // 期望 下拉框为全数据
         var input = cut.Find(".search-text");
-        await cut.InvokeAsync(() => input.Input("2"));
+        await cut.InvokeAsync(() => cut.Instance.TriggerOnSearch("2"));
 
         // 下拉框仅显示一个选项 Test2
         var items = cut.FindAll(".dropdown-item");
@@ -686,15 +862,15 @@ public class SelectTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => items[0].Click());
         var el = cut.Find(".form-select") as IHtmlInputElement;
         Assert.NotNull(el);
-        Assert.Equal("Test2", el.Value);
+        Assert.Equal("2", el.Value);
         Assert.Equal("2", cut.Instance.Value);
 
         // 点击 Clear 按钮
         var button = cut.Find(".clear-icon");
         await cut.InvokeAsync(() => button.Click());
 
-        // UI 恢复 Test1
-        Assert.Equal("Test1", el.Value);
+        // 可为空数据类型 UI 为 ""
+        Assert.Equal("", el.Value);
 
         // 下拉框显示所有选项
         items = cut.FindAll(".dropdown-item");
@@ -719,12 +895,8 @@ public class SelectTest : BootstrapBlazorTestBase
                 return Task.FromResult(new QueryData<SelectedItem>()
                 {
                     Items = string.IsNullOrEmpty(searchText)
-                        ? new SelectedItem[]
-                        {
-                            new("", "All"),
-                            new("1", "Test1"),
-                            new("2", "Test2")
-                        } : [new("2", "Test2")],
+                        ? [new("", "All"), new("1", "Test1"), new("2", "Test2")]
+                        : [new("2", "Test2")],
                     TotalCount = string.IsNullOrEmpty(searchText) ? 2 : 1
                 });
             });
@@ -738,7 +910,7 @@ public class SelectTest : BootstrapBlazorTestBase
         // 期望 UI 显示值为默认值
         // 期望 下拉框为全数据
         var input = cut.Find(".search-text");
-        await cut.InvokeAsync(() => input.Input("2"));
+        await cut.InvokeAsync(() => cut.Instance.TriggerOnSearch("2"));
 
         // 下拉框仅显示一个选项 Test2
         var items = cut.FindAll(".dropdown-item");
@@ -756,22 +928,22 @@ public class SelectTest : BootstrapBlazorTestBase
         var button = cut.Find(".clear-icon");
         await cut.InvokeAsync(() => button.Click());
 
-        // UI 恢复 Test1
-        Assert.Equal("All", el.Value);
+        // 可为空数据类型 UI 为 ""
+        Assert.Equal("", el.Value);
 
         // 下拉框显示所有选项
         Assert.True(query);
     }
 
     [Fact]
-    public void IsVirtualize_BindValue()
+    public async Task IsVirtualize_BindValue()
     {
         var value = new SelectedItem("3", "Test 3");
         var cut = Context.RenderComponent<Select<SelectedItem>>(pb =>
         {
             pb.Add(a => a.Value, value);
             pb.Add(a => a.IsVirtualize, true);
-            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<SelectedItem>(this, new Action<SelectedItem>(item =>
+            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create(this, new Action<SelectedItem?>(item =>
             {
                 value = item;
             })));
@@ -789,58 +961,21 @@ public class SelectTest : BootstrapBlazorTestBase
             });
         });
 
-        cut.InvokeAsync(() =>
-        {
-            var input = cut.Find(".form-select");
-            Assert.Equal("Test 3", input.GetAttribute("value"));
-        });
-        cut.Contains("Test 3");
+        var input = cut.Find(".form-select");
+        Assert.Equal("3", input.GetAttribute("value"));
+
         var select = cut.Instance;
         Assert.Equal("3", select.Value?.Value);
 
-        cut.InvokeAsync(() =>
+        var item = cut.Find(".dropdown-item");
+        await cut.InvokeAsync(() =>
         {
-            var item = cut.Find(".dropdown-item");
             item.Click();
-            Assert.Equal("1", value.Value);
-
-            var input = cut.Find(".form-select");
-            Assert.Equal("Test1", input.GetAttribute("value"));
         });
-    }
+        Assert.Equal("1", value.Value);
 
-    [Fact]
-    public void IsVirtualize_DefaultVirtualizeItemText()
-    {
-        string value = "3";
-        var cut = Context.RenderComponent<Select<string>>(pb =>
-        {
-            pb.Add(a => a.IsVirtualize, true);
-            pb.Add(a => a.DefaultVirtualizeItemText, "Test 3");
-            pb.Add(a => a.Value, value);
-            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<string>(this, new Action<string>(item =>
-            {
-                value = item;
-            })));
-            pb.Add(a => a.OnQueryAsync, option =>
-            {
-                return Task.FromResult(new QueryData<SelectedItem>()
-                {
-                    Items = new SelectedItem[]
-                    {
-                        new("1", "Test1"),
-                        new("2", "Test2")
-                    },
-                    TotalCount = 2
-                });
-            });
-        });
-
-        cut.InvokeAsync(() =>
-        {
-            var input = cut.Find(".form-select");
-            Assert.Equal("Test 3", input.GetAttribute("value"));
-        });
+        input = cut.Find(".form-select");
+        Assert.Equal("Test1", input.GetAttribute("value"));
     }
 
     [Fact]
@@ -944,33 +1079,6 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public async Task IsEditable_Generic()
-    {
-        var items = new List<SelectedItem<Foo>>()
-        {
-            new() { Value = new Foo() { Id = 1, Address = "Foo1" }, Text = "test1" },
-            new() { Value = new Foo() { Id = 2, Address = "Foo2" }, Text = "test2" }
-        };
-        var cut = Context.RenderComponent<Select<Foo>>(pb =>
-        {
-            pb.Add(a => a.Items, items);
-            pb.Add(a => a.Value, new Foo() { Id = 1, Address = "Foo1" });
-            pb.Add(a => a.IsEditable, true);
-            pb.Add(a => a.TextConvertToValueCallback, v =>
-            {
-                return Task.FromResult(new Foo() { Id = 3, Address = "Foo3" });
-            });
-        });
-
-        var input = cut.Find(".form-select");
-        await cut.InvokeAsync(() => { input.Change("test2"); });
-        Assert.Equal("Foo2", cut.Instance.Value.Address);
-
-        await cut.InvokeAsync(() => { input.Change("test3"); });
-        Assert.Equal("Foo3", cut.Instance.Value.Address);
-    }
-
-    [Fact]
     public async Task OnClearAsync_Ok()
     {
         var clear = false;
@@ -1017,24 +1125,42 @@ public class SelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void GenericValue_Ok()
+    public async Task OnBeforeSelectedItemChange_OK()
     {
-        var items = new List<SelectedItem<Foo>>()
+        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
         {
-            new()
+            pb.AddChildContent<Select<string>>(pb =>
             {
-                Value = new Foo() { Id = 1, Name = "Foo1" },
-                Text = "Foo1"
-            },
-            new()
-            {
-                Value = new Foo() { Id = 2, Name = "Foo2" },
-                Text = "Foo2"
-            }
-        };
-        var cut = Context.RenderComponent<Select<Foo>>(pb =>
-        {
-            pb.Add(a => a.Items, items);
+                pb.Add(a => a.Items, new List<SelectedItem>()
+                {
+                    new("1", "Test1"),
+                    new("2", "Test2") { IsDisabled = true }
+                });
+                pb.Add(a => a.SwalCategory, SwalCategory.Question);
+                pb.Add(a => a.SwalTitle, "Swal-Title");
+                pb.Add(a => a.SwalContent, "Swal-Content");
+                pb.Add(a => a.OnBeforeSelectedItemChange, item => Task.FromResult(true));
+                pb.Add(a => a.OnSelectedItemChanged, item => Task.CompletedTask);
+                pb.Add(a => a.SwalFooter, "test-swal-footer");
+            });
         });
+        var modals = cut.FindComponents<Modal>();
+        var modal = modals[modals.Count - 1];
+        _ = Task.Run(() => cut.InvokeAsync(() => cut.FindComponent<Select<string>>().Instance.ConfirmSelectedItem(0)));
+        var tick = DateTime.Now;
+        while (!cut.Markup.Contains("test-swal-footer"))
+        {
+            Thread.Sleep(100);
+            if (DateTime.Now > tick.AddSeconds(2))
+            {
+                break;
+            }
+        }
+        var button = cut.Find(".btn-danger");
+        await cut.InvokeAsync(() =>
+        {
+            button.Click();
+        });
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
     }
 }

@@ -1,5 +1,4 @@
 ﻿@page "/md-icon"
-@layout MainLayout
 @inject IStringLocalizer<MaterialDesignIcons> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -13,5 +12,11 @@
 </Tips>
 
 <Pre>&lt;link href="_content/BootstrapBlazor.MaterialDesign/css/md.min.css" rel="stylesheet"&gt;</Pre>
+
+<div class="mb-2">
+    <i class="mdi mdi-github"></i>
+</div>
+
+<Pre>&lt;i class="mdi mdi-github"&gt;&lt;/i&gt;</Pre>
 
 <div>@((MarkupString)Localizer["Icons"].Value)</div>

@@ -10,9 +10,7 @@
             <span class="sidebar-text">Bootstrap Blazor</span>
         </div>
         <NavMenu />
-        <div class="sidebar-bar">
-            <div class="sidebar-body"></div>
-        </div>
+        <LayoutSplitBar Min="250" Max="380" ContainerSelector=".section"></LayoutSplitBar>
     </aside>
 
     <section class="main">
@@ -20,11 +18,25 @@
         @Body
     </section>
 
-    <ThemeMode />
-
-    <LinkButton TooltipPlacement="Placement.Left" ButtonStyle="ButtonStyle.Circle" Color="Color.None" TooltipText="@ChatTooltip" class="btn-fade btn-chat" Url="./ai-chat" Icon="fa-solid fa-comments"></LinkButton>
-
-    <ThemeChooser></ThemeChooser>
-
-    <LinkButton TooltipPlacement="Placement.Left" ButtonStyle="ButtonStyle.Circle" Color="Color.None" TooltipText="@Title" class="btn-fade btn-update" Url="@WebsiteOption.CurrentValue.WikiUrl" Target="_blank" ImageUrl="./images/log.svg"></LinkButton>
+    <DialButton DialMode="DialMode.Radial" Icon="fa-solid fa-gear" Radius="100" Placement="Placement.BottomEnd" class="bb-dial-gear">
+        <ButtonTemplate>
+            <div class="btn-circle btn-fade dial-button-gear">
+                <img src="./images/logo.png" />
+            </div>
+        </ButtonTemplate>
+        <ChildContent>
+            <DialButtonItem>
+                <ThemeMode></ThemeMode>
+            </DialButtonItem>
+            <DialButtonItem>
+                <LinkButton TooltipPlacement="Placement.Left" ButtonStyle="ButtonStyle.Circle" Color="Color.None" TooltipText="@ChatTooltip" class="btn-fade btn-chat" Url="./ai-chat" Icon="fa-solid fa-comments"></LinkButton>
+            </DialButtonItem>
+            <DialButtonItem>
+                <ThemeChooser></ThemeChooser>
+            </DialButtonItem>
+            <DialButtonItem>
+                <LinkButton TooltipPlacement="Placement.Left" ButtonStyle="ButtonStyle.Circle" Color="Color.None" TooltipText="@Title" class="btn-fade btn-update" Url="@WebsiteOption.CurrentValue.WikiUrl" Target="_blank" ImageUrl="@WebsiteOption.CurrentValue.GetAssetUrl("images/log.svg")"></LinkButton>
+            </DialButtonItem>
+        </ChildContent>
+    </DialButton>
 </section>

@@ -95,12 +95,42 @@ public class BootstrapBlazorOptionsTest
         exportOptions.AutoMergeArray = false;
         exportOptions.ArrayDelimiter = ",";
         exportOptions.UseEnumDescription = false;
+        exportOptions.EnableAutoFilter = false;
+        exportOptions.EnableAutoWidth = false;
 
         Assert.False(exportOptions.EnableLookup);
         Assert.False(exportOptions.EnableFormat);
         Assert.False(exportOptions.AutoMergeArray);
         Assert.False(exportOptions.UseEnumDescription);
+        Assert.False(exportOptions.EnableAutoFilter);
+        Assert.False(exportOptions.EnableAutoWidth);
 
         Assert.Equal(",", exportOptions.ArrayDelimiter);
+    }
+
+    [Fact]
+    public void CacheManagerOptions_Ok()
+    {
+        var options = new BootstrapBlazorOptions();
+        Assert.NotNull(options.CacheManagerOptions);
+
+        options.CacheManagerOptions.Enable = true;
+        options.CacheManagerOptions.SlidingExpiration = TimeSpan.FromSeconds(1);
+        options.CacheManagerOptions.AbsoluteExpiration = TimeSpan.FromSeconds(1);
+
+        Assert.Equal(TimeSpan.FromSeconds(1), options.CacheManagerOptions.AbsoluteExpiration);
+        Assert.Equal(TimeSpan.FromSeconds(1), options.CacheManagerOptions.SlidingExpiration);
+        Assert.True(options.CacheManagerOptions.Enable);
+    }
+
+    [Fact]
+    public void ModalSettings_Ok()
+    {
+        var options = new BootstrapBlazorOptions();
+        Assert.NotNull(options.ModalSettings);
+
+        options.ModalSettings.IsFade = true;
+
+        Assert.True(options.ModalSettings.IsFade);
     }
 }

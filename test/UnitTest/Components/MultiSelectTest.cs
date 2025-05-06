@@ -3,10 +3,57 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.AspNetCore.Components.Web.Virtualization;
+using System.Reflection;
+
 namespace UnitTest.Components;
 
 public class MultiSelectTest : BootstrapBlazorTestBase
 {
+    [Fact]
+    public async Task OnSearchTextChanged_Null()
+    {
+        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<MultiSelect<string>>(pb =>
+            {
+                pb.Add(a => a.ShowSearch, true);
+                pb.Add(a => a.Items, new List<SelectedItem>()
+                {
+                    new("1", "Test1"),
+                    new("2", "Test2") { IsDisabled = true }
+                });
+            });
+        });
+
+        var ctx = cut.FindComponent<MultiSelect<string>>();
+        await ctx.InvokeAsync(async () =>
+        {
+            await ctx.Instance.ConfirmSelectedItem(0);
+
+            // 搜索 T
+            await ctx.Instance.TriggerOnSearch("T");
+            await ctx.Instance.ConfirmSelectedItem(0);
+        });
+
+        ctx.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.OnSearchTextChanged, text =>
+            {
+                return new List<SelectedItem>()
+                {
+                    new("1", "Test1")
+                };
+            });
+        });
+
+        await ctx.InvokeAsync(async () =>
+        {
+            await ctx.Instance.TriggerOnSearch("T");
+        });
+        cut.DoesNotContain("Test2");
+    }
+
     [Fact]
     public void MinMax_Ok()
     {
@@ -31,6 +78,54 @@ public class MultiSelectTest : BootstrapBlazorTestBase
             items[1].Click();
             items[2].Click();
         });
+    }
+
+    [Fact]
+    public async Task IsEditable_Ok()
+    {
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.Max, 2);
+            pb.Add(a => a.Items, new List<SelectedItem>
+            {
+                new("1", "Test 1"),
+                new("2", "Test 2"),
+                new("3", "Test 3"),
+                new("4", "Test 4"),
+            });
+        });
+        Assert.DoesNotContain("class=\"multi-select-input\"", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.IsEditable, true);
+        });
+        Assert.Contains("class=\"multi-select-input\"", cut.Markup);
+        Assert.DoesNotContain("data-bb-trigger-key", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.EditSubmitKey, EditSubmitKey.Space);
+        });
+        Assert.Contains("data-bb-trigger-key=\"space\"", cut.Markup);
+
+        await cut.InvokeAsync(() => cut.Instance.TriggerEditTag("123"));
+        Assert.Equal("123", cut.Instance.Value);
+
+        await cut.InvokeAsync(() => cut.Instance.TriggerEditTag("123"));
+        Assert.Equal("123", cut.Instance.Value);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.OnEditCallback, async v =>
+            {
+                await Task.Delay(10);
+                return new SelectedItem("test", "456");
+            });
+        });
+        await cut.InvokeAsync(() => cut.Instance.TriggerEditTag("456"));
+        Assert.Equal("123,test", cut.Instance.Value);
+        Assert.DoesNotContain("class=\"multi-select-input\"", cut.Markup);
     }
 
     [Fact]
@@ -59,6 +154,34 @@ public class MultiSelectTest : BootstrapBlazorTestBase
     {
         var cut = Context.RenderComponent<MultiSelect<EnumEducation>>();
         Assert.Contains("multi-select", cut.Markup);
+    }
+
+    [Fact]
+    public async Task FlagEnum_Ok()
+    {
+        var value = MockFlagEnum.One | MockFlagEnum.Two;
+        var cut = Context.RenderComponent<MultiSelect<MockFlagEnum>>(pb =>
+        {
+            pb.Add(a => a.Value, value);
+        });
+        var values = cut.FindAll(".multi-select-items .multi-select-item");
+        Assert.Equal(2, values.Count);
+
+        // 选中第四个
+        var items = cut.FindAll(".dropdown-menu .dropdown-item");
+        var item = items[items.Count - 1];
+        await cut.InvokeAsync(() => item.Click());
+        values = cut.FindAll(".multi-select-items .multi-select-item");
+        Assert.Equal(3, values.Count);
+    }
+
+    [Flags]
+    private enum MockFlagEnum
+    {
+        One = 1,
+        Two = 2,
+        Three = 4,
+        Four = 8
     }
 
     [Fact]
@@ -116,6 +239,18 @@ public class MultiSelectTest : BootstrapBlazorTestBase
             pb.Add(a => a.ShowToolbar, true);
             pb.Add(a => a.ButtonTemplate, builder => builder.AddContent(0, new MarkupString("<button class=\"btn-test\">ButtonTemplate</button>")));
         });
+
+        // 没有数据也显示 Toolbar 
+        Assert.Contains("btn-test", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.Items, new List<SelectedItem>
+            {
+                new("1", "Test1"),
+                new("2", "Test2")
+            });
+        });
         Assert.Contains("btn-test", cut.Markup);
     }
 
@@ -142,7 +277,7 @@ public class MultiSelectTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void OnSearchTextChanged_Ok()
+    public async Task OnSearchTextChanged_Ok()
     {
         var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
         {
@@ -154,23 +289,30 @@ public class MultiSelectTest : BootstrapBlazorTestBase
                 new("2", "Test2")
             });
         });
-        cut.Find(".form-control").Input("T");
-        Assert.Contains("multi-select", cut.Markup);
+        await cut.InvokeAsync(() => cut.Instance.TriggerOnSearch("a"));
+        cut.Contains("<div class=\"dropdown-item\">无数据</div>");
     }
 
     [Fact]
-    public void OnParameterSet_Ok()
+    public void ScrollIntoViewBehavior_Ok()
     {
         var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
         {
-            pb.Add(a => a.Value, "1,2");
-            pb.Add(a => a.Items, new List<SelectedItem>
+            pb.Add(a => a.Items, new SelectedItem[]
             {
                 new("1", "Test1"),
                 new("2", "Test2")
             });
+            pb.Add(a => a.Value, "2");
+            pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Auto);
         });
-        Assert.Contains("multi-select", cut.Markup);
+        Assert.Contains("data-bb-scroll-behavior=\"auto\"", cut.Markup);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Smooth);
+        });
+        Assert.DoesNotContain("data-bb-scroll-behavior", cut.Markup);
     }
 
     [Fact]
@@ -497,15 +639,16 @@ public class MultiSelectTest : BootstrapBlazorTestBase
                 new("1", "Test1"),
                 new("2", "Test2")
             });
-            pb.Add(a => a.ClearIcon, "icon-clear");
+            pb.Add(a => a.IsClearable, true);
         });
-        Assert.Contains("icon-clear", cut.Markup);
+        Assert.Contains("fa-regular fa-circle-xmark", cut.Markup);
 
         cut.SetParametersAndRender(pb =>
         {
-            pb.Add(a => a.ClearIcon, null);
+            pb.Add(a => a.ClearIcon, "icon-clear-test");
         });
-        Assert.Contains("fa-solid fa-xmark", cut.Markup);
+        Assert.DoesNotContain("fa-regular fa-circle-xmark", cut.Markup);
+        Assert.Contains("icon-clear-test", cut.Markup);
     }
 
     [Fact]
@@ -522,5 +665,202 @@ public class MultiSelectTest : BootstrapBlazorTestBase
             pb.Add(a => a.IsMarkupString, true);
         });
         Assert.Contains("<div>Test1</div>", cut.Markup);
+    }
+
+    [Fact]
+    public void DefaultVirtualizeItemText_Ok()
+    {
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "Test1"),
+                new("2", "Test2")
+            });
+            pb.Add(a => a.Value, "1,2");
+            pb.Add(a => a.DefaultVirtualizeItemText, "Test1");
+            pb.Add(a => a.IsVirtualize, true);
+        });
+        var items = cut.FindAll(".multi-select-items .multi-select-item");
+        Assert.Equal(2, items.Count);
+        Assert.Equal("Test1", items[0].InnerHtml);
+        Assert.Equal("2", items[1].InnerHtml);
+    }
+
+    [Fact]
+    public async Task IsVirtualize_Items_Clearable_Ok()
+    {
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "Test1"),
+                new("2", "Test2")
+            });
+            pb.Add(a => a.Value, "2");
+            pb.Add(a => a.IsVirtualize, true);
+            pb.Add(a => a.RowHeight, 33f);
+            pb.Add(a => a.OverscanCount, 4);
+            pb.Add(a => a.IsClearable, true);
+            pb.Add(a => a.ShowSearch, true);
+        });
+
+        // 覆盖有搜索条件时，点击清空按钮
+        // 期望 UI 显示值为默认值
+        // 期望 下拉框为全数据
+        var input = cut.Find(".search-text");
+        await cut.InvokeAsync(() => cut.Instance.TriggerOnSearch("2"));
+
+        // 下拉框仅显示一个选项 Test2
+        var items = cut.FindAll(".dropdown-item");
+        Assert.Single(items);
+
+        // 点击 Clear 按钮
+        var button = cut.Find(".clear-icon");
+        await cut.InvokeAsync(() => button.Click());
+
+        // 下拉框显示所有选项
+        items = cut.FindAll(".dropdown-item");
+        Assert.Equal(2, items.Count);
+    }
+
+    [Fact]
+    public async Task IsVirtualize_OnQueryAsync_Clearable_Ok()
+    {
+        var query = false;
+        var startIndex = 0;
+        var requestCount = 0;
+        var searchText = string.Empty;
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.OnQueryAsync, option =>
+            {
+                query = true;
+                startIndex = option.StartIndex;
+                requestCount = option.Count;
+                searchText = option.SearchText;
+                return Task.FromResult(new QueryData<SelectedItem>()
+                {
+                    Items = string.IsNullOrEmpty(searchText)
+                        ? [new("", "All"), new("1", "Test1"), new("2", "Test2")]
+                        : [new("2", "Test2")],
+                    TotalCount = string.IsNullOrEmpty(searchText) ? 2 : 1
+                });
+            });
+            pb.Add(a => a.Value, "");
+            pb.Add(a => a.IsVirtualize, true);
+            pb.Add(a => a.IsClearable, true);
+            pb.Add(a => a.ShowSearch, true);
+        });
+
+        // 覆盖有搜索条件时，点击清空按钮
+        // 期望 UI 显示值为默认值
+        // 期望 下拉框为全数据
+        var input = cut.Find(".search-text");
+        await cut.InvokeAsync(() => cut.Instance.TriggerOnSearch("2"));
+
+        // 下拉框仅显示一个选项 Test2
+        var items = cut.FindAll(".dropdown-item");
+        Assert.Single(items);
+
+        query = false;
+        // 点击 Clear 按钮
+        var button = cut.Find(".clear-icon");
+        await cut.InvokeAsync(() => button.Click());
+
+        // 下拉框显示所有选项
+        Assert.True(query);
+    }
+
+    [Fact]
+    public async Task IsVirtualize_BindValue()
+    {
+        var value = "3";
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.Value, value);
+            pb.Add(a => a.IsVirtualize, true);
+            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create(this, new Action<string?>(item =>
+            {
+                value = item;
+            })));
+            pb.Add(a => a.OnQueryAsync, option =>
+            {
+                return Task.FromResult(new QueryData<SelectedItem>()
+                {
+                    Items = new SelectedItem[]
+                    {
+                        new("1", "Test1"),
+                        new("2", "Test2")
+                    },
+                    TotalCount = 2
+                });
+            });
+        });
+
+        // 3 不在集合内，但是由于是虚拟集合，只能显示
+        var select = cut.Instance;
+        Assert.Equal("3", select.Value);
+
+        var item = cut.Find(".dropdown-item");
+        await cut.InvokeAsync(() =>
+        {
+            item.Click();
+        });
+        Assert.Equal("3,1", value);
+    }
+
+    [Fact]
+    public void LoadItems_Ok()
+    {
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.OnQueryAsync, option =>
+            {
+                return Task.FromResult(new QueryData<SelectedItem>());
+            });
+            pb.Add(a => a.Value, "2");
+            pb.Add(a => a.IsVirtualize, true);
+        });
+        var select = cut.Instance;
+        var mi = select.GetType().GetMethod("LoadItems", BindingFlags.NonPublic | BindingFlags.Instance);
+        mi?.Invoke(select, [new ItemsProviderRequest(0, 1, CancellationToken.None)]);
+
+        var totalCountProperty = select.GetType().GetProperty("TotalCount", BindingFlags.NonPublic | BindingFlags.Instance);
+        totalCountProperty?.SetValue(select, 2);
+        mi?.Invoke(select, [new ItemsProviderRequest(0, 1, CancellationToken.None)]);
+    }
+
+    [Fact]
+    public async Task OnClearAsync_Ok()
+    {
+        var clear = false;
+        var cut = Context.RenderComponent<MultiSelect<string>>(pb =>
+        {
+            pb.Add(a => a.Items, new SelectedItem[]
+            {
+                new("1", "<div>Test1</div>"),
+                new("2", "<div>Test2</div>")
+            });
+            pb.Add(a => a.Value, "2");
+            pb.Add(a => a.ShowSearch, true);
+            pb.Add(a => a.IsClearable, true);
+            pb.Add(a => a.OnClearAsync, () =>
+            {
+                clear = true;
+                return Task.CompletedTask;
+            });
+        });
+        cut.Contains("select dropdown multi-select is-clearable");
+        cut.Contains("fa-regular fa-circle-xmark");
+
+        var span = cut.Find(".clear-icon");
+        Assert.NotNull(span);
+
+        await cut.InvokeAsync(() =>
+        {
+            span.Click();
+        });
+        Assert.True(clear);
     }
 }

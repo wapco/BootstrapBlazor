@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
-using Microsoft.AspNetCore.Components.Web;
-
 namespace BootstrapBlazor.Components;
 
 /// <summary>
@@ -33,21 +31,16 @@ public class CountButton : Button
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    protected override void SetClickHandler()
+    protected override async Task OnClickButton()
     {
-        OnClickButton = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
-        {
-            IsAsyncLoading = true;
-            ButtonIcon = LoadingIcon;
-            IsDisabled = true;
+        IsAsyncLoading = true;
+        IsDisabled = true;
 
-            await Task.Run(() => InvokeAsync(HandlerClick));
-            await UpdateCount();
+        await HandlerClick();
+        await UpdateCount();
 
-            IsDisabled = false;
-            ButtonIcon = Icon;
-            IsAsyncLoading = false;
-        });
+        IsDisabled = false;
+        IsAsyncLoading = false;
     }
 
     /// <summary>
@@ -70,7 +63,6 @@ public class CountButton : Button
     {
         var count = Count;
         var text = Text;
-        ButtonIcon = null;
         while (count > 0)
         {
             Text = GetCountText(count--, text);

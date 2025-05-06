@@ -1,5 +1,4 @@
 ﻿@page "/fa-icon"
-@layout MainLayout
 @inject IStringLocalizer<FAIcons> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -14,10 +13,10 @@
 
 <Pre>&lt;link href="_content/BootstrapBlazor.FontAwesome/css/font-awesome.min.css" rel="stylesheet"&gt;</Pre>
 
-<div class="row form-inline">
-    <div class="col-12">
-        <Switch ShowLabel="true" DisplayText="@DisplayText" @bind-Value="@ShowCopyDialog" />
-    </div>
+<div class="mb-2">
+    <i class="fa-brands fa-github"></i>
 </div>
 
-<FAIconList ShowCopyDialog="ShowCopyDialog" CopiedTooltipText="@Localizer["CopiedTooltipText"]" />
+<Pre>&lt;i class="fa-brands fa-github"&gt;&lt;/i&gt;</Pre>
+
+<div>@((MarkupString)Localizer["Icons"].Value)</div>

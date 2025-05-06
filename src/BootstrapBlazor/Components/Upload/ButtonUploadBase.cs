@@ -180,6 +180,7 @@ public abstract class ButtonUploadBase<TValue> : SingleUploadBase<TValue>
                 OriginFileName = f.Name,
                 Size = f.Size,
                 File = f,
+                FileCount = args.FileCount,
                 Uploaded = OnChange == null,
                 UpdateCallback = Update
             }).ToList();
@@ -218,14 +219,6 @@ public abstract class ButtonUploadBase<TValue> : SingleUploadBase<TValue>
 
         //触发 ValueChange，以支持 bind-value
         await base.OnFileChange(args);
-    }
-
-    private void Update(UploadFile file)
-    {
-        if (GetShowProgress(file))
-        {
-            StateHasChanged();
-        }
     }
 
     /// <summary>

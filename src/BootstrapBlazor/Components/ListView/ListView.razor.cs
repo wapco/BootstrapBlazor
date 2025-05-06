@@ -15,7 +15,7 @@ public partial class ListView<TItem> : BootstrapComponentBase
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
-    private string? BodyClassString => CssBuilder.Default("listview-body")
+    private string? BodyClassString => CssBuilder.Default("listview-body scroll")
         .AddClass("is-group", GroupName != null)
         .Build();
 
@@ -47,13 +47,11 @@ public partial class ListView<TItem> : BootstrapComponentBase
     /// 获得/设置 BodyTemplate
     /// </summary>
     [Parameter]
-#if NET6_0_OR_GREATER
     [EditorRequired]
-#endif
     public RenderFragment<TItem>? BodyTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 FooterTemplate 默认 null 未设置 设置值后 <see cref="Pageable"/> 参数不起作用，请自行实现分页功能
+    /// 获得/设置 FooterTemplate 默认 null 未设置 设置值后 <see cref="IsPagination"/> 参数不起作用，请自行实现分页功能
     /// </summary>
     [Parameter]
     public RenderFragment? FooterTemplate { get; set; }
@@ -68,7 +66,15 @@ public partial class ListView<TItem> : BootstrapComponentBase
     /// 获得/设置 是否分页 默认为 false 不分页 设置 <see cref="FooterTemplate"/> 时分页功能自动被禁用
     /// </summary>
     [Parameter]
-    public bool Pageable { get; set; }
+    [Obsolete("已弃用，请使用 IsPagination 代替。Deprecated, use IsPagination instead")]
+    [ExcludeFromCodeCoverage]
+    public bool Pageable { get => IsPagination; set => IsPagination = value; }
+
+    /// <summary>
+    /// 获得/设置 是否分页 默认为 false 不分页 设置 <see cref="FooterTemplate"/> 时分页功能自动被禁用
+    /// </summary>
+    [Parameter]
+    public bool IsPagination { get; set; }
 
     /// <summary>
     /// 获得/设置 分组 Lambda 表达式 默认 null
@@ -125,19 +131,42 @@ public partial class ListView<TItem> : BootstrapComponentBase
     public int PageItems { get; set; } = 20;
 
     /// <summary>
+    /// 获得/设置 组件高度 默认 null 未设置高度 如：50% 100px 10rem 10vh 等
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// 获得/设置 无数据时模板 默认 null 未设置
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// 获得/设置 无数据时显示文字 默认 null 未设置使用资源文件设置文字
+    /// </summary>
+    [Parameter]
+    public string? EmptyText { get; set; }
+
+    /// <summary>
     /// 获得/设置 当前页码
     /// </summary>
-    private int PageIndex { get; set; }
+    private int _pageIndex = 1;
 
     /// <summary>
     /// 获得/设置 数据总条目
     /// </summary>
-    protected int TotalCount { get; set; }
+    private int _totalCount;
 
     /// <summary>
     /// 数据集合内部使用
     /// </summary>
-    protected IEnumerable<TItem> Rows => Items ?? [];
+    private List<TItem> Rows => Items?.ToList() ?? [];
+
+    private string? StyleString => CssBuilder.Default()
+        .AddClass($"height: {Height};", !string.IsNullOrEmpty(Height))
+        .AddStyleFromAttributes(AdditionalAttributes)
+        .Build();
 
     /// <summary>
     /// <inheritdoc/>
@@ -156,41 +185,43 @@ public partial class ListView<TItem> : BootstrapComponentBase
     /// 点击页码调用此方法
     /// </summary>
     /// <param name="pageIndex"></param>
-    protected Task OnPageLinkClick(int pageIndex) => QueryAsync(pageIndex);
+    protected Task OnPageLinkClick(int pageIndex) => QueryAsync(pageIndex, true);
 
     /// <summary>
     /// 查询按钮调用此方法
     /// </summary>
     /// <returns></returns>
-    public async Task QueryAsync(int pageIndex = 1)
+    public async Task QueryAsync(int pageIndex = 1, bool triggerByPagination = false)
     {
-        PageIndex = pageIndex;
-        await QueryData();
+        _pageIndex = pageIndex;
+        await QueryData(triggerByPagination);
         StateHasChanged();
     }
 
     /// <summary>
     /// 调用 OnQuery 回调方法获得数据源
     /// </summary>
-    protected async Task QueryData()
+    protected async Task QueryData(bool triggerByPagination = false)
     {
         QueryData<TItem>? queryData = null;
         if (OnQueryAsync != null)
         {
             queryData = await OnQueryAsync(new QueryPageOptions()
             {
-                PageIndex = PageIndex,
+                IsPage = IsPagination,
+                IsTriggerByPagination = triggerByPagination,
+                PageIndex = _pageIndex,
                 PageItems = PageItems,
             });
         }
         if (queryData != null)
         {
             Items = queryData.Items;
-            TotalCount = queryData.TotalCount;
+            _totalCount = queryData.TotalCount;
         }
     }
 
-    private int PageCount => (int)Math.Ceiling(TotalCount * 1.0 / PageItems);
+    private int PageCount => (int)Math.Ceiling(_totalCount * 1.0 / PageItems);
 
     /// <summary>
     /// 点击元素事件
@@ -211,7 +242,7 @@ public partial class ListView<TItem> : BootstrapComponentBase
         foreach (var key in GetGroupItems(groupFunc))
         {
             var i = index++;
-            builder.AddContent(i, RenderItem(key, i));
+            builder.AddContent(i, RenderGroupItem(key, i));
         }
     };
 

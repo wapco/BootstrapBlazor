@@ -44,6 +44,20 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
         Assert.Equal(expect, actual);
     }
 
+    [Fact]
+    public void IsNumber_Culture()
+    {
+        var culture = new CultureInfo("es-ES");
+        CultureInfo.CurrentUICulture = culture;
+        Assert.True(typeof(long).IsNumber());
+        Assert.False(typeof(long).IsNumberWithDotSeparator());
+
+        culture = new CultureInfo("en-US");
+        CultureInfo.CurrentUICulture = culture;
+        Assert.True(typeof(long).IsNumber());
+        Assert.True(typeof(long).IsNumberWithDotSeparator());
+    }
+
     [Theory]
     [InlineData(typeof(DateTime?), true)]
     [InlineData(typeof(DateTime), true)]
@@ -287,6 +301,27 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
         var v = new MockStatic();
         var pi = v.GetType().GetProperty(nameof(MockStatic.Test))!;
         Assert.True(pi.IsStatic());
+    }
+
+    [Fact]
+    public void CreateInstance_Ok()
+    {
+        var exception = Assert.ThrowsAny<Exception>(() => ObjectExtensions.CreateInstance<MockComplexObject>(true));
+
+        var mi = typeof(ObjectExtensions).GetMethod("EnsureInitialized", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(mi);
+        mi.Invoke(null, [null, false]);
+
+        var instance = ObjectExtensions.CreateInstance<MockComplexObject>(false);
+        Assert.NotNull(instance);
+        Assert.Null(instance.Test);
+    }
+
+    private class MockComplexObject
+    {
+        public Foo? Foo { get; set; }
+
+        public (string Name, int Count)[]? Test { get; set; }
     }
 
     private class MockStatic

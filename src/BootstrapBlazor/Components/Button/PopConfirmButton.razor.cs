@@ -69,6 +69,8 @@ public partial class PopConfirmButton
 
     private string? ConfirmString => OnBeforeClick != null ? "true" : null;
 
+    private string? TriggerCloseString => OnClose != null ? "true" : null;
+
     /// <summary>
     /// 显示确认弹窗方法
     /// </summary>
@@ -95,9 +97,13 @@ public partial class PopConfirmButton
         if (IsAsync)
         {
             IsDisabled = true;
-            ButtonIcon = LoadingIcon;
+            IsAsyncLoading = true;
             StateHasChanged();
-            await Task.Run(() => InvokeAsync(OnConfirm));
+
+            if (OnConfirm != null)
+            {
+                await OnConfirm();
+            }
 
             if (ButtonType == ButtonType.Submit)
             {
@@ -106,13 +112,16 @@ public partial class PopConfirmButton
             else
             {
                 IsDisabled = false;
-                ButtonIcon = Icon;
+                IsAsyncLoading = false;
                 StateHasChanged();
             }
         }
         else
         {
-            await OnConfirm();
+            if (OnConfirm != null)
+            {
+                await OnConfirm();
+            }
             if (ButtonType == ButtonType.Submit)
             {
                 await TrySubmit();

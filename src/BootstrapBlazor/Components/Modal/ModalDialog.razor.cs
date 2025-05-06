@@ -24,8 +24,10 @@ public partial class ModalDialog : IHandlerException
         .AddClass("modal-dialog-scrollable", IsScrolling)
         .AddClass("modal-fullscreen", MaximizeStatus)
         .AddClass("is-draggable", IsDraggable)
-        .AddClass("d-none", !IsShown)
+        .AddClass("is-draggable-center", IsCentered && IsDraggable && _firstRender)
+        .AddClass("d-none", IsHidePreviousDialog && !IsShown)
         .AddClass(Class, !string.IsNullOrEmpty(Class))
+        .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
     /// <summary>
@@ -52,14 +54,15 @@ public partial class ModalDialog : IHandlerException
     public bool ShowResize { get; set; }
 
     /// <summary>
-    /// 获得/设置 弹窗大小
+    /// 获得/设置 弹窗大小 默认为 <see cref="Size.ExtraExtraLarge"/>
     /// </summary>
     [Parameter]
     public Size Size { get; set; } = Size.ExtraExtraLarge;
 
     /// <summary>
-    /// 获得/设置 弹窗大小
+    /// 获得/设置 弹窗大小 默认为 <see cref="FullScreenSize.None"/>
     /// </summary>
+    /// <remarks>为保证功能正常，设置值后 <see cref="ShowMaximizeButton"/> <seealso cref="ShowResize"/> <seealso cref="IsDraggable"/> 均不可用</remarks>
     [Parameter]
     public FullScreenSize FullScreenSize { get; set; }
 
@@ -67,13 +70,19 @@ public partial class ModalDialog : IHandlerException
     /// 获得/设置 是否垂直居中 默认为 true
     /// </summary>
     [Parameter]
-    public bool IsCentered { get; set; }
+    public bool IsCentered { get; set; } = true;
 
     /// <summary>
-    /// 获得/设置 是否弹窗正文超长时滚动
+    /// 获得/设置 是否弹窗正文超长时滚动 默认为 false
     /// </summary>
     [Parameter]
     public bool IsScrolling { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to hide the previous dialog when opening a new one, default is false
+    /// </summary>
+    [Parameter]
+    public bool IsHidePreviousDialog { get; set; }
 
     /// <summary>
     /// 获得/设置 是否可以拖拽弹窗 默认 false 不可以拖动
@@ -82,8 +91,9 @@ public partial class ModalDialog : IHandlerException
     public bool IsDraggable { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示最大化按钮
+    /// 获得/设置 是否显示最大化按钮 默认为 false
     /// </summary>
+    /// <remarks>为保证功能正常，设置值为 true 后 <seealso cref="ShowResize"/> <seealso cref="IsDraggable"/> 均不可用</remarks>
     [Parameter]
     public bool ShowMaximizeButton { get; set; }
 
@@ -191,6 +201,12 @@ public partial class ModalDialog : IHandlerException
     public RenderFragment? FooterTemplate { get; set; }
 
     /// <summary>
+    /// Gets or sets the footer content template. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContentTemplate { get; set; }
+
+    /// <summary>
     /// 获得/设置 ModalHeader 组件
     /// </summary>
     [Parameter]
@@ -290,6 +306,8 @@ public partial class ModalDialog : IHandlerException
 
     private DialogResult _result = DialogResult.Close;
 
+    private bool _firstRender = true;
+
     /// <summary>
     /// OnInitialized 方法
     /// </summary>
@@ -326,6 +344,32 @@ public partial class ModalDialog : IHandlerException
         ExportPdfButtonOptions.Icon ??= IconTheme.GetIconByKey(ComponentIcons.TableExportPdfIcon);
 
         MaximizeIconString = MaximizeWindowIcon;
+
+        if (FullScreenSize != FullScreenSize.None)
+        {
+            ShowMaximizeButton = false;
+            ShowResize = false;
+            IsDraggable = false;
+        }
+        else if (ShowMaximizeButton)
+        {
+            ShowResize = false;
+            IsDraggable = false;
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <param name="firstRender"></param>
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            _firstRender = false;
+        }
     }
 
     /// <summary>
@@ -368,7 +412,7 @@ public partial class ModalDialog : IHandlerException
                 }
             }
         }
-        ResultTask?.SetResult(_result);
+        ResultTask?.TrySetResult(_result);
         await Modal.Close();
     }
 

@@ -10,11 +10,11 @@ namespace BootstrapBlazor.Server.Components.Samples;
 /// </summary>
 public sealed partial class Avatars
 {
-    private static async Task<string> GetUrlAsync()
+    private async Task<string> GetUrlAsync()
     {
         // 模拟异步获取图像地址
         await Task.Delay(500);
-        return "./images/Argo-C.png";
+        return $"{WebsiteOption.CurrentValue.AssetRootPath}images/Argo-C.png";
     }
 
     /// <summary>

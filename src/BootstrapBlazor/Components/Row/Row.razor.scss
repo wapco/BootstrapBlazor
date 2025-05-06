@@ -17,7 +17,7 @@
 
         .form-label {
             padding: var(--bb-row-control-padding) 0;
-            margin-bottom: 0;
+            margin-block-end: 0;
             padding-right: 10px;
             width: var(--bb-row-label-width);
             text-overflow: ellipsis;
@@ -46,6 +46,10 @@
 
         &.form-inline-center > div > .form-label {
             text-align: center;
+        }
+
+        .form-label-tooltip + * {
+            flex: 1;
         }
     }
 }

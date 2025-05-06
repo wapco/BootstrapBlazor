@@ -5,13 +5,16 @@
 
 namespace UnitTest.Misc;
 
-public class TreeNodeCacheTest
+public class TreeNodeCacheTest : BootstrapBlazorTestBase
 {
     [Fact]
     public void ToggleCheck_Ok()
     {
+        var cut = Context.RenderComponent<TreeView<TreeFoo>>();
+        var comparer = cut.Instance;
+
         var items = TreeFoo.GetTreeItems();
-        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(Comparer);
+        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(comparer);
         nodeCache.IsChecked(items);
 
         // 设置 1010 节点为选中状态
@@ -204,8 +207,11 @@ public class TreeNodeCacheTest
     [Fact]
     public void FindParentNode_Ok()
     {
+        var cut = Context.RenderComponent<TreeView<TreeFoo>>();
+        var comparer = cut.Instance;
+
         var items = TreeFoo.GetTreeItems();
-        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(Comparer);
+        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(comparer);
         var targetId = nodeCache.FindParentNode(items, new TreeViewItem<TreeFoo>(new TreeFoo() { Id = "1110" }))?.Value?.Id;
         Assert.Equal("1080", targetId);
     }
@@ -213,14 +219,26 @@ public class TreeNodeCacheTest
     [Fact]
     public void SetChildrenCheck_Ok()
     {
+        var cut = Context.RenderComponent<TreeView<TreeFoo>>();
+        var comparer = cut.Instance;
+
         var items = TreeFoo.GetTreeItems();
-        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(Comparer);
+        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(comparer);
         var count = GetUncheckItemCount(nodeCache);
         Assert.Equal(0, count);
 
         var node = nodeCache.FindParentNode(items, new TreeViewItem<TreeFoo>(new TreeFoo() { Id = "1110" }));
         Assert.NotNull(node);
-        node.SetChildrenCheck(CheckboxState.UnChecked, nodeCache);
+        Assert.Equal("Sub Menu Two", node.Value.Text);
+
+        node.CheckedState = CheckboxState.UnChecked;
+        node.SetChildrenCheck(nodeCache);
+        count = GetUncheckItemCount(nodeCache);
+        Assert.Equal(6, count);
+
+        // Indeterminate 状态不更改子节点状态
+        node.CheckedState = CheckboxState.Indeterminate;
+        node.SetChildrenCheck(nodeCache);
         count = GetUncheckItemCount(nodeCache);
         Assert.Equal(6, count);
     }
@@ -228,7 +246,10 @@ public class TreeNodeCacheTest
     [Fact]
     public void Reset_Ok()
     {
-        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(Comparer);
+        var cut = Context.RenderComponent<TreeView<TreeFoo>>();
+        var comparer = cut.Instance;
+
+        var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(comparer);
 
         // 设置 1070 节点为选中状态
         var node = new TreeViewItem<TreeFoo>(new TreeFoo()
@@ -283,36 +304,14 @@ public class TreeNodeCacheTest
         Assert.Equal(0, count);
     }
 
-    //[Theory]
-    //[InlineData(CheckboxState.Checked)]
-    //[InlineData(CheckboxState.UnChecked)]
-    //public async Task ToggleNodeAsync_Ok(CheckboxState state)
-    //{
-    //    var node = new TreeViewItem<TreeFoo>(new TreeFoo() { Id = "1000" })
-    //    {
-    //        IsExpand = true,
-    //        CheckedState = state
-    //    };
-    //    var nodeCache = new TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo>(Comparer);
-    //    await nodeCache.ToggleNodeAsync(node, n =>
-    //    {
-    //        var items = new TreeViewItem<TreeFoo>[]
-    //        {
-    //            new(new TreeFoo() { Id = "1020" })
-    //        };
-    //        return Task.FromResult(items.Cast<IExpandableNode<TreeFoo>>());
-    //    });
-    //    Assert.Equal(state, node.Items.First().CheckedState);
-    //}
-
     private bool Comparer(TreeFoo x, TreeFoo y) => x.Id == y.Id;
 
     private static int GetCheckItemCount(TreeNodeCache<TreeViewItem<TreeFoo>, TreeFoo> treeNodeCache)
     {
         var count = 0;
         var type = treeNodeCache.GetType();
-        var pi = type.GetProperty("CheckedNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (pi != null && pi.GetValue(treeNodeCache) is List<TreeFoo> data)
+        var pi = type.GetField("_checkedNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (pi != null && pi.GetValue(treeNodeCache) is HashSet<TreeFoo> data)
         {
             count = data.Count;
         }
@@ -323,8 +322,8 @@ public class TreeNodeCacheTest
     {
         var count = 0;
         var type = treeNodeCache.GetType();
-        var pi = type.GetProperty("UncheckedNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (pi != null && pi.GetValue(treeNodeCache) is List<TreeFoo> data)
+        var pi = type.GetField("_uncheckedNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (pi != null && pi.GetValue(treeNodeCache) is HashSet<TreeFoo> data)
         {
             count = data.Count;
         }
@@ -335,8 +334,8 @@ public class TreeNodeCacheTest
     {
         var count = 0;
         var type = treeNodeCache.GetType();
-        var pi = type.GetProperty("IndeterminateNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (pi != null && pi.GetValue(treeNodeCache) is List<TreeFoo> data)
+        var pi = type.GetField("_indeterminateNodeCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (pi != null && pi.GetValue(treeNodeCache) is HashSet<TreeFoo> data)
         {
             count = data.Count;
         }

@@ -30,6 +30,7 @@
 
     .bd-masthead .bb-logo {
         width: 200px;
+        height: 200px;
     }
 
 .bd-gutter {
@@ -82,25 +83,7 @@
 
     .donate .barcode {
         width: 280px;
-    }
-
-.bb-foundation {
-    background-color: rgb(var(--bs-tertiary-bg-rgb));
-    position: relative;
-}
-
-    .bb-foundation .bb-foundation-img {
-        position: absolute;
-        right: 1rem;
-        top: 1rem;
-    }
-
-    .bb-foundation .bb-foundation-content {
-        text-align: center;
-        font-size: 1.1rem;
-        font-weight: bolder;
-        line-height: 100px;
-        padding: 1rem 0;
+        height: 178.84px;
     }
 
 @media (min-width: 768px) {
@@ -115,5 +98,6 @@
 
     .donate .barcode {
         width: 480px;
+        height: 306.59px;
     }
 }

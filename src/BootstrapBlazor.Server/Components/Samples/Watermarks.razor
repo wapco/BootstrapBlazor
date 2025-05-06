@@ -1,0 +1,53 @@
+﻿@page "/watermark"
+@inject IStringLocalizer<Watermarks> Localizer
+
+<h3>@Localizer["WatermarkTitle"]</h3>
+
+<h4>@Localizer["WatermarkIntro"]</h4>
+
+<DemoBlock Title="@Localizer["WatermarkNormalTitle"]" Introduction="@Localizer["WatermarkNormalIntro"]" Name="Normal">
+    <section ignore>
+        @((MarkupString)Localizer["WatermarkDescription"].Value)
+        <Pre>&lt;Layout&gt;&lt;/Layout&gt;
+&lt;Watermark IsPage="true" Text="BootstrapBlazor" FontSize="20" Color="#ddd" Rotate="-45" Gap="40"&gt;&lt;/Watermark&gt;</Pre>
+        <div class="row form-inline g-3">
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="Text" Width="76"></BootstrapInputGroupLabel>
+                    <BootstrapInput @bind-Value="@_text"></BootstrapInput>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="FontSize" Width="76"></BootstrapInputGroupLabel>
+                    <Slider @bind-Value="@_fontSize" Min="12" Max="20"></Slider>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="Color" Width="76"></BootstrapInputGroupLabel>
+                    <ColorPicker @bind-Value="@_color" IsSupportOpacity="true"></ColorPicker>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="Rotate" Width="76"></BootstrapInputGroupLabel>
+                    <Slider @bind-Value="@_rotate" Min="-180" Max="180"></Slider>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="Gap" Width="76"></BootstrapInputGroupLabel>
+                    <Slider @bind-Value="@_gap" Min="0" Max="100"></Slider>
+                </BootstrapInputGroup>
+            </div>
+        </div>
+    </section>
+    <Watermark Text="@_text" FontSize="@_fontSize" Color="@_color" Rotate="@_rotate"
+               Gap="@_gap">
+        <div style="height: 500px; padding-top: 40px; text-align: center;">
+            <p>this is a watermark demo</p>
+            <div>这是 watermark 演示</div>
+        </div>
+    </Watermark>
+</DemoBlock>

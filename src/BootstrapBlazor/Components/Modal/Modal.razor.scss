@@ -2,6 +2,10 @@
     cursor: pointer;
 }
 
+.is-draggable-center {
+    visibility: hidden;
+}
+
 .modal-header {
     padding: .5rem 1rem;
 }
@@ -17,6 +21,18 @@
 
 .modal-footer {
     padding: 0.5rem 1rem;
+
+    .modal-footer-content {
+        flex-grow: 1;
+        min-width: 0;
+        width: 1%;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-inline-end: 1rem;
+    }
 }
 
 .modal-footer > * {
@@ -24,7 +40,7 @@
 }
 
 .modal-footer button:not(:last-child) {
-    margin-right: .5rem;
+    margin-inline-end: .5rem;
 }
 
 .modal-resizer {
@@ -53,7 +69,7 @@
 }
 
 .modal-header-buttons .btn:not(:last-child) {
-    margin-right: .5rem;
+    margin-inline-end: .5rem;
 }
 
 .modal-header-buttons .btn-maximize {
@@ -64,6 +80,24 @@
 .modal-fullscreen.is-draggable {
     margin: 0 !important;
     width: 100vw !important;
+}
+
+.modal-multiple .modal-dialog {
+    position: fixed;
+    inset: 0;
+
+    &:last-child:before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-color: #000;
+        opacity: 0.3;
+        pointer-events: auto;
+    }
+}
+
+.modal-multiple ~ .modal-backdrop {
+    display: none;
 }
 
 @media print {

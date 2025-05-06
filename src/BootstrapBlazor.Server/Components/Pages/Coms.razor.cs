@@ -6,7 +6,7 @@
 namespace BootstrapBlazor.Server.Components.Pages;
 
 /// <summary>
-/// 
+/// Coms 组件
 /// </summary>
 public sealed partial class Coms
 {
@@ -14,10 +14,15 @@ public sealed partial class Coms
 
     private string? SearchText { get; set; }
 
-    private Task OnSearch(string searchText)
+    private Task<IEnumerable<string?>> OnSearch(string searchText)
     {
         SearchText = searchText;
+        return Task.FromResult<IEnumerable<string?>>(ComponentItems.Where(i => i.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
 
+    private Task OnClear()
+    {
+        SearchText = "";
         StateHasChanged();
         return Task.CompletedTask;
     }

@@ -88,6 +88,7 @@
     "group-box": "GroupBoxes",
     "handwritten": "Handwrittens",
     "html-renderer": "HtmlRenderers",
+    "html2image": "Html2Images",
     "html2pdf": "Html2Pdfs",
     "label": "Labels",
     "layout": "Layouts",
@@ -99,6 +100,7 @@
     "locator": "Locators",
     "logout": "Logouts",
     "icon": "BootstrapBlazorIcons",
+    "iframe": "IFrames",
     "image-viewer": "ImageViewers",
     "input-number": "InputNumbers",
     "input": "Inputs",
@@ -111,6 +113,7 @@
     "menu": "Menus",
     "message": "Messages",
     "mind-map": "MindMaps",
+    "mermaid": "Mermaids",
     "modal": "Modals",
     "mouse-follower": "MouseFollowers",
     "multi-select": "MultiSelects",
@@ -139,6 +142,7 @@
     "search-dialog": "SearchDialogs",
     "search": "Searches",
     "select": "Selects",
+    "select-generic": "SelectGenerics",
     "select-object": "SelectObjects",
     "select-tree": "SelectTrees",
     "select-table": "SelectTables",
@@ -174,7 +178,6 @@
     "topology": "Topologies",
     "transfer": "Transfers",
     "transition": "Transitions",
-    "tree": "Trees",
     "tree-view": "TreeViews",
     "upload": "Uploads",
     "validate-form": "ValidateForms",
@@ -218,7 +221,18 @@
     "barcode-generator": "BarcodeGenerators",
     "sortable-list": "SortableLists",
     "win-box": "WinBoxes",
-    "player": "Players"
+    "player": "Players",
+    "rdkit": "Rdkits",
+    "smiles-drawer": "SmilesDrawers",
+    "affix": "Affixs",
+    "watermark": "Watermarks",
+    "typed": "Typeds",
+    "univer-sheet": "UniverSheets",
+    "shield-badge": "ShieldBadges",
+    "opt-input": "OtpInputs",
+    "otp-service": "OtpServices",
+    "video-device": "VideoDevices",
+    "audio-device": "AudioDevices"
   },
   "video": {
     "table": "BV1ap4y1x7Qn?p=1",
@@ -287,6 +301,7 @@
   "link": {
     "AntDesign": "http://www.antblazor.com/",
     "Pear Admin": "http://www.pearadmin.com/",
-    "SAPHP": "https://www.swiftadmin.net/"
+    "SAPHP": "https://www.swiftadmin.net/",
+    "Veterinary Hospital": "http://animal.jucun.zone/"
   }
 }

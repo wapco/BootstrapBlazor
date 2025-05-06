@@ -3,7 +3,7 @@
 
 @if (_showTooltip)
 {
-    <Tooltip Title="@Value">
+    <Tooltip Title="@Value" class="form-label-tooltip">
         @RenderLabel
     </Tooltip>
 }
@@ -14,5 +14,5 @@ else
 
 @code {
     RenderFragment RenderLabel =>
-    @<label @attributes="AdditionalAttributes" class="@ClassString">@Value</label>;
+    @<label @attributes="AdditionalAttributes" class="@ClassString" style="@StyleString">@Value</label>;
 }

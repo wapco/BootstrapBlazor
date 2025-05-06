@@ -58,13 +58,19 @@ public class DialogTest : BootstrapBlazorTestBase
             ShowExportPdfButton = true,
             ShowExportPdfButtonInHeader = true,
             ExportPdfButtonOptions = new(),
+            IsFade = false,
             OnCloseAsync = () =>
             {
                 closed = true;
                 return Task.CompletedTask;
             }
         }));
-        Assert.Contains("<svg", cut.Markup);
+
+        // 由于设置了 IsFade=false Modal 不应该渲染 fade 样式
+        Assert.DoesNotContain("modal fade", modal.Markup);
+
+        // 由于设置了 ShowMaximizeButton 导致 ShowResize 参数失效
+        Assert.DoesNotContain("<svg", cut.Markup);
         Assert.Contains("data-bs-backdrop=\"static\"", cut.Markup);
 
         // 全屏按钮
@@ -210,9 +216,11 @@ public class DialogTest : BootstrapBlazorTestBase
             return Task.CompletedTask;
         };
         await cut.InvokeAsync(() => dialog.ShowEditDialog(editOption));
+
         // 点击关闭按钮
         button = cut.FindComponents<Button>().First(b => b.Instance.Text == "关闭");
-        await cut.InvokeAsync(() => button.Instance.OnClickWithoutRender!.Invoke());
+        // 关闭按钮未设置 OnClickWithoutRender 事件
+        Assert.Null(button.Instance.OnClickWithoutRender);
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
         Assert.True(closed);
 
@@ -390,6 +398,7 @@ public class DialogTest : BootstrapBlazorTestBase
         #region 弹窗中的弹窗测试
         await cut.InvokeAsync(() => dialog.Show(new DialogOption()
         {
+            IsHidePreviousDialog = true,
             // 弹窗中按钮
             BodyTemplate = BootstrapDynamicComponent.CreateComponent<Button>(new Dictionary<string, object?>()
             {
@@ -406,10 +415,12 @@ public class DialogTest : BootstrapBlazorTestBase
                 }
             }).Render()
         }));
+        Assert.DoesNotContain("modal-multiple", cut.Markup);
 
         // 弹出第二个弹窗
         var buttonInDialog = cut.Find(".btn-primary");
         buttonInDialog.Click();
+        Assert.Contains("class=\"modal fade modal-multiple show\"", cut.Markup);
         Assert.Equal(2, cut.FindComponents<ModalDialog>().Count);
 
         // 关闭第二个弹窗

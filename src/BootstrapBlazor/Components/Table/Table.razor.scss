@@ -1,4 +1,4 @@
-.table-container {
+﻿.table-container {
     --bb-table-td-padding-x: .5rem;
     --bb-table-td-padding-y: .5rem;
     --bb-table-cardview-label-width: 30%;
@@ -11,8 +11,8 @@
     --bb-table-footer-font-weight: blod;
     --bb-table-card-row-padding: .75rem .5rem;
     --bb-table-columnlist-max-height: var(--bb-dropdown-max-height);
-    --bs-table-striped-bg: rgba(0,0,0,.05);
-    --bs-table-hover-bg: rgba(0,0,0,.075);
+    --bs-table-striped-bg: rgba(0, 0, 0, .05);
+    --bs-table-hover-bg: rgba(0, 0, 0, .075);
     --bb-table-search-body-margin: 1rem;
     --bb-table-copy-column-margin-right: .5rem;
     --bb-table-column-fixed-border-color: rgba(var(--bs-body-color-rgb), .18);
@@ -29,7 +29,7 @@
     height: 100%;
 
     .nav-pages {
-        margin-top: .5rem;
+        margin-block-start: .5rem;
 
         .pagination {
             --bs-pagination-color: var(--bb-table-pagination-color);
@@ -119,7 +119,7 @@
 }
 
 .table {
-    margin-bottom: 0;
+    margin-block-end: 0;
 }
 
 .table thead th, .table tbody td {
@@ -304,11 +304,12 @@
 }
 
 .table-toolbar .table-toolbar-button {
-    margin-bottom: .5rem;
+    margin-block-end: .5rem;
 }
 
 .table-toolbar .dropdown-menu {
     max-height: var(--bb-table-columnlist-max-height);
+    overflow: auto;
 }
 
 .table-toolbar .dropdown-menu .dropdown-item span {
@@ -338,11 +339,11 @@
 }
 
 .btn-gear .dropdown-menu .dropdown-item:not(:first-child) {
-    border-left: solid 1px #aeb2b7;
+    border-inline-start: solid 1px #aeb2b7;
 }
 
 .table-column-right {
-    margin-left: 0.3125rem;
+    margin-inline-start: 0.3125rem;
 }
 
 .search-input-tooltip {
@@ -381,6 +382,10 @@
 
 .table-fixed-body > .table > tbody > tr > td,
 .table-fixed-header > .table > thead > tr > th {
+    overflow: hidden;
+}
+
+td > .table-cell {
     overflow: hidden;
 }
 
@@ -464,11 +469,11 @@ tr.active:not(.is-edit):hover {
 
 .table-row .table-cell label:not(.form-check) {
     font-weight: bold;
-    margin-bottom: 0;
+    margin-block-end: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-right: 6px;
+    margin-inline-end: 6px;
     flex-basis: var(--bb-table-cardview-label-width);
     flex-shrink: 0;
 }
@@ -488,7 +493,7 @@ tr.active:not(.is-edit):hover {
 .table-row.table-footer .table-cell:first-child {
     font-weight: bold;
     width: var(--bb-table-cardview-label-width);
-    margin-bottom: 0;
+    margin-block-end: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -553,10 +558,6 @@ tr.active:not(.is-edit):hover {
     transition: box-shadow .3s;
     content: "";
     pointer-events: none;
-}
-
-.table-fixed-column .table .fixed-right {
-    border-right: inherit;
 }
 
 .table-fixed-column .table .fixed-right.fl {
@@ -698,7 +699,7 @@ form .table .table-cell > textarea {
 }
 
 .table-search {
-    margin-bottom: .5rem;
+    margin-block-end: .5rem;
 
     .card-header {
         --bs-card-cap-padding-y: 0;
@@ -708,6 +709,15 @@ form .table .table-cell > textarea {
             display: none;
         }
     }
+}
+
+.table-toolbar-template {
+    margin-block-end: .5rem;
+    min-height: 35px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 @media (min-width: 576px) {
@@ -750,6 +760,10 @@ form .table .table-cell > textarea {
 
 .table-excel > tbody > tr > td > .table-cell > .form-check {
     padding: 6px 8px;
+}
+
+.table-excel > tbody > tr > td > .col-line-no {
+    padding: 7px 0;
 }
 
 .table-excel .active > td > .table-cell .form-control,
@@ -834,18 +848,20 @@ form .table .table-cell > textarea {
 }
 
 .form-footer {
-    margin-top: .5rem;
+    margin-block-start: .5rem;
 }
 
 .modal-body .form-footer {
     margin: 1rem -1rem -.5rem -1rem;
     padding: .5rem 1rem 0 1rem;
     border-top: 1px solid var(--bs-border-color);
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .modal-body .form-footer button:not(:last-child) {
-    margin-right: .25rem;
+    margin-inline-end: .25rem;
 }
 
 .modal-dialog-table.modal-dialog-scrollable .modal-body {
@@ -887,7 +903,7 @@ form .table .table-cell > textarea {
 
 .col-copy {
     cursor: pointer;
-    margin-right: var(--bb-table-copy-column-margin-right);
+    margin-inline-end: var(--bb-table-copy-column-margin-right);
 }
 
 .table-drag-over {

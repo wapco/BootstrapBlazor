@@ -1,6 +1,7 @@
 ﻿@page "/input-group"
 @inject IStringLocalizer<InputGroups> Localizer
 @inject IStringLocalizer<Foo> LocalizerFoo
+@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["InputGroupsTitle"]</h3>
 
@@ -87,18 +88,18 @@
         <div class="col-12 col-sm-6">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="AutoFill" />
-                <AutoFill TValue="Foo" Items="AufoFillItems" IsLikeMatch="true" OnGetDisplayText="@(foo => foo.Name ?? "")">
-                    <Template>
+                <AutoFill Items="AufoFillItems" IsLikeMatch="true" OnGetDisplayText="@(foo => foo?.Name)">
+                    <ItemTemplate>
                         <div class="d-flex">
                             <div>
-                                <img src="@Foo.GetAvatarUrl(context.Id)" class="bb-avatar" />
+                                <img src="@WebsiteOption.CurrentValue.GetAvatarUrl(context.Id)" class="bb-avatar" />
                             </div>
                             <div class="ps-2">
                                 <div>@context.Name</div>
                                 <div class="bb-sub">@Foo.GetTitle(context.Id)</div>
                             </div>
                         </div>
-                    </Template>
+                    </ItemTemplate>
                 </AutoFill>
             </BootstrapInputGroup>
         </div>
@@ -112,14 +113,14 @@
     <ValidateForm Model="@Model">
         <div class="@GroupFormClassString">
             <div class="col-12 col-sm-6">
-                <BootstrapInputGroupLabel @bind-Value="@Model.Name" required="true" />
+                <BootstrapInputGroupLabel @bind-Value="@Model.Name" ShowRequiredMark="true" />
                 <BootstrapInputGroup>
                     <Display @bind-Value="@Model.Name"></Display>
                     <BootstrapInputGroupLabel @bind-Value="@Model.Name" />
                 </BootstrapInputGroup>
             </div>
             <div class="col-12 col-sm-6">
-                <BootstrapInputGroupLabel @bind-Value="@Model.Address" required="true" />
+                <BootstrapInputGroupLabel @bind-Value="@Model.Address" ShowRequiredMark="true" />
                 <BootstrapInputGroup>
                     <Display @bind-Value="@Model.Address"></Display>
                     <BootstrapInputGroupLabel @bind-Value="@Model.Address" />

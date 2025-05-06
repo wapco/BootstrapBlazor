@@ -8,13 +8,48 @@ namespace UnitTest.Components;
 public class DropdownTest : BootstrapBlazorTestBase
 {
     [Fact]
-    public void ShowSplit_OK()
+    public async Task ShowSplit_OK()
+    {
+        var clicked = false;
+        var clickedWithoutRender = false;
+        var cut = Context.RenderComponent<Dropdown<EnumEducation>>(pb =>
+        {
+            pb.Add(a => a.ShowSplit, true);
+            pb.Add(a => a.OnClick, () =>
+            {
+                clicked = true;
+            });
+            pb.Add(a => a.OnClickWithoutRender, () =>
+            {
+                clickedWithoutRender = true;
+                return Task.CompletedTask;
+            });
+        });
+        Assert.Contains(" dropdown-toggle-split", cut.Markup);
+
+        var button = cut.Find("button");
+        await cut.InvokeAsync(() => button.Click());
+        Assert.True(clicked);
+        Assert.True(clickedWithoutRender);
+    }
+
+    [Fact]
+    public async Task IsAsync_Ok()
     {
         var cut = Context.RenderComponent<Dropdown<EnumEducation>>(pb =>
         {
             pb.Add(a => a.ShowSplit, true);
+            pb.Add(a => a.IsAsync, true);
+            pb.Add(a => a.IsKeepDisabled, false);
+            pb.Add(a => a.Icon, "fa-solid fa-test-icon");
+            pb.Add(a => a.OnClickWithoutRender, () =>
+            {
+                return Task.CompletedTask;
+            });
         });
-        Assert.Contains(" dropdown-toggle-split", cut.Markup);
+        cut.Contains("<i class=\"fa-solid fa-test-icon\"></i>");
+        var button = cut.Find("button");
+        await cut.InvokeAsync(() => button.Click());
     }
 
     [Fact]
@@ -226,17 +261,14 @@ public class DropdownTest : BootstrapBlazorTestBase
     {
         var cut = Context.RenderComponent<Dropdown<string>>(pb =>
         {
-            pb.Add(a => a.IsDisabled, true);
+            pb.Add(a => a.IsDisabled, false);
             pb.Add(a => a.Items, new SelectedItem[]
             {
                 new("1", "Test1") { IsDisabled = true },
                 new("2", "Test2")
             });
         });
-        // 禁用组件不生成 下拉菜单
-        cut.DoesNotContain("dropdown-menu");
-
-        cut.SetParametersAndRender(pb => pb.Add(a => a.IsDisabled, false));
+        cut.Contains("<div class=\"dropdown-item disabled\">Test1</div>");
     }
 
     [Fact]

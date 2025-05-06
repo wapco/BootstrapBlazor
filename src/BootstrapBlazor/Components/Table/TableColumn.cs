@@ -8,20 +8,12 @@ using System.Linq.Expressions;
 
 namespace BootstrapBlazor.Components;
 
-#if NET5_0
-/// <summary>
-/// 表头组件
-/// </summary>
-/// <typeparam name="TType">绑定字段值类型</typeparam>
-public class TableColumn<TType> : BootstrapComponentBase, ITableColumn
-#elif NET6_0_OR_GREATER
 /// <summary>
 /// 表头组件
 /// </summary>
 /// <typeparam name="TItem">模型泛型</typeparam>
 /// <typeparam name="TType">绑定字段值类型</typeparam>
 public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
-#endif
 {
     /// <summary>
     /// 获得/设置 相关过滤器
@@ -120,13 +112,19 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     public string? Step { get; set; }
 
     /// <summary>
-    /// 获得/设置 Textarea 行数 默认为 0
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public int Rows { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否为默认排序规则 默认为 SortOrder.Unset
+    /// <inheritdoc/>
+    /// </summary>
+    [Parameter]
+    public int Cols { get; set; }
+
+    /// <summary>
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public SortOrder DefaultSortOrder { get; set; }
@@ -290,47 +288,26 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     public string? FormatString { get; set; }
 
     /// <summary>
-    /// 获得/设置 列格式化回调委托
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public Func<object?, Task<string?>>? Formatter { get; set; }
 
     /// <summary>
-    /// 获得/设置 显示模板
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
-#if NET5_0
-    public RenderFragment<TableColumnContext<object, TType>>? Template { get; set; }
-
-    /// <summary>
-    /// 内部使用负责把 object 类型的绑定数据值转化为泛型数据传递给前端
-    /// </summary>
-    RenderFragment<object>? ITableColumn.Template
-    {
-        get => Template == null ? null : new RenderFragment<object>(context => builder =>
-        {
-            // 此处 context 为行数据
-            var fieldName = GetFieldName();
-            var value = Utility.GetPropertyValue<object, TType>(context, fieldName);
-            builder.AddContent(0, Template.Invoke(new TableColumnContext<object, TType>(context, value)));
-        });
-        set
-        {
-
-        }
-    }
-#elif NET6_0_OR_GREATER
     public RenderFragment<TableColumnContext<TItem, TType?>>? Template { get; set; }
 
     /// <summary>
-    /// 内部使用负责把 object 类型的绑定数据值转化为泛型数据传递给前端
+    /// <inheritdoc/>
     /// </summary>
     RenderFragment<object>? ITableColumn.Template
     {
         get => Template == null ? null : new RenderFragment<object>(context => builder =>
         {
             // 此处 context 为行数据
-            if (this is TableTemplateColumn<TItem> col)
+            if (this is TableTemplateColumn<TItem>)
             {
                 builder.AddContent(0, Template.Invoke(new TableColumnContext<TItem, TType?>((TItem)context, default)));
             }
@@ -346,15 +323,11 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
 
         }
     }
-#endif
 
     /// <summary>
-    /// 获得/设置 编辑模板
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
-#if NET5_0
-    public RenderFragment<object>? EditTemplate { get; set; }
-#elif NET6_0_OR_GREATER
     public RenderFragment<TItem>? EditTemplate { get; set; }
 
     RenderFragment<object>? IEditorItem.EditTemplate
@@ -370,16 +343,12 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
         {
         }
     }
-#endif
 
     /// <summary>
-    /// 获得/设置 搜索模板
+    /// <inheritdoc/>
     /// </summary>
     /// <value></value>
     [Parameter]
-#if NET5_0
-    public RenderFragment<object>? SearchTemplate { get; set; }
-#elif NET6_0_OR_GREATER
     public RenderFragment<TItem>? SearchTemplate { get; set; }
 
     RenderFragment<object>? ITableColumn.SearchTemplate
@@ -395,55 +364,62 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
         {
         }
     }
-#endif
 
     /// <summary>
-    /// 获得/设置 过滤模板
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public RenderFragment? FilterTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 表头模板
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public RenderFragment<ITableColumn>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 列工具栏模板 默认 null
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public RenderFragment<ITableColumn>? ToolboxTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 显示节点阈值 默认值 BreakPoint.None 未设置
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public BreakPoint ShownWithBreakPoint { get; set; }
 
     /// <summary>
-    /// 获得/设置 额外数据源一般用于下拉框或者 CheckboxList 这种需要额外配置数据源组件使用
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public IEnumerable<SelectedItem>? Items { get; set; }
 
     /// <summary>
-    /// 获得/设置 显示顺序
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public int Order { get; set; }
 
     /// <summary>
-    /// 获得/设置 字典数据源 常用于外键自动转换为名称操作
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public IEnumerable<SelectedItem>? Lookup { get; set; }
 
     /// <summary>
-    /// 获得/设置 字段数据源下拉框是否显示搜索栏 默认 false 不显示
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public bool ShowSearchWhenSelect { get; set; }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    [Parameter]
+    [Obsolete("已弃用，请删除；Deprecated, please delete")]
+    [ExcludeFromCodeCoverage]
+    public bool IsFixedSearchWhenSelect { get; set; }
 
     /// <summary>
     /// <inheritdoc/>
@@ -458,6 +434,12 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     public StringComparison LookupStringComparison { get; set; } = StringComparison.OrdinalIgnoreCase;
 
     /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    [Parameter]
+    public ILookupService? LookupService { get; set; }
+
+    /// <summary>
     /// <inheritdoc/>>
     /// </summary>
     [Parameter]
@@ -470,13 +452,13 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     public object? LookupServiceData { get; set; }
 
     /// <summary>
-    /// 获得/设置 单元格回调方法
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public Action<TableCellArgs>? OnCellRender { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否为 MarkupString 默认 false
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public bool IsMarkupString { get; set; }
@@ -488,31 +470,31 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     public List<IValidator>? ValidateRules { get; set; }
 
     /// <summary>
-    /// 获得/设置 绑定类字段名称
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public string? FieldName { get; set; }
 
     /// <summary>
-    /// 获得/设置 当前属性分组 默认 null
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public string? GroupName { get; set; }
 
     /// <summary>
-    /// 获得/设置 当前属性分组排序 默认 0
+    /// <inheritdoc/>
     /// </summary>
     [Parameter]
     public int GroupOrder { get; set; }
 
     /// <summary>
-    /// 获得/设置 Table 实例
+    /// <inheritdoc/>
     /// </summary>
     [CascadingParameter]
     protected IColumnCollection? Columns { get; set; }
 
     /// <summary>
-    /// 组件初始化方法
+    /// <inheritdoc/>
     /// </summary>
     protected override void OnInitialized()
     {
@@ -530,12 +512,12 @@ public class TableColumn<TItem, TType> : BootstrapComponentBase, ITableColumn
     private FieldIdentifier? _fieldIdentifier;
 
     /// <summary>
-    /// 获取绑定字段显示名称方法
+    /// <inheritdoc/>
     /// </summary>
     public virtual string GetDisplayName() => Text ?? _fieldIdentifier?.GetDisplayName() ?? FieldName ?? "";
 
     /// <summary>
-    /// 获取绑定字段信息方法
+    /// <inheritdoc/>
     /// </summary>
     public string GetFieldName()
     {

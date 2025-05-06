@@ -1,5 +1,5 @@
 ﻿@page "/upload"
-@inject IOptionsMonitor<WebsiteOptions> SiteOptions
+@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<Uploads> Localizer
 @inject ToastService ToastService
 @implements IDisposable
@@ -144,7 +144,7 @@
         <div>@((MarkupString)Localizer["UploadPreCardStyleServerSide"].Value)</div>
         <div>@((MarkupString)Localizer["UploadPreCardStyleWasm"].Value)</div>
         <div>@((MarkupString)Localizer["UploadPreCardStyleWasmSide"].Value)</div>
-        <div>@((MarkupString)Localizer["UploadPreCardStyleLink", SiteOptions.CurrentValue.VideoLibUrl].Value)</div>
+        <div>@((MarkupString)Localizer["UploadPreCardStyleLink", WebsiteOption.CurrentValue.VideoLibUrl].Value)</div>
         <div>@((MarkupString)Localizer["UploadPreCardStyleValidation"].Value)</div>
     </section>
     <div class="row g-3 mt-3">
@@ -183,6 +183,10 @@
            Introduction="@Localizer["UploadBase64Intro"]"
            Name="Base64">
     <CardUpload TValue="string" DefaultFileList="@Base64FormatFileList" IsSingle="true" />
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["DropUploadTitle"]" Introduction="@Localizer["DropUploadIntro"]" Name="DropUpload">
+    <DropUpload OnChange="@OnCardUpload" ShowProgress="true" ShowFooter="true" FooterText="@Localizer["DropUploadFooterText"]"></DropUpload>
 </DemoBlock>
 
 <AttributeTable Items="@GetInputAttributes()" Title="InputUpload" />

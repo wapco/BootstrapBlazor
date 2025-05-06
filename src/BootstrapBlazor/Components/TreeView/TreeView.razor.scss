@@ -1,103 +1,168 @@
 .tree-view {
     --bb-tree-padding: #{$bb-tree-padding};
     --bb-tree-margin: #{$bb-tree-margin};
-    --bb-tree-ul-padding-left: #{$bb-tree-ul-padding-left};
+    --bb-tree-padding-left: #{$bb-tree-padding-left};
     --bb-tree-item-margin: #{$bb-tree-item-margin};
     --bb-tree-icon-width: #{$bb-tree-icon-width};
     --bb-tree-check-margin: #{$bb-tree-check-margin};
     --bb-tree-node-padding: #{$bb-tree-node-padding};
     --bb-tree-item-active-color: #{$bb-tree-item-active-color};
     --bb-tree-item-active-bg: #{$bb-tree-item-active-bg};
+    --bb-tree-item-hover-color: #{$bb-tree-item-hover-color};
     --bb-tree-item-hover-bg: #{$bb-tree-item-hover-bg};
     --bb-tree-icon-margin-right: #{$bb-tree-icon-margin-right};
     --bb-tree-disabled-opacity: #{$bb-tree-disabled-opacity};
     --bb-tree-search-height: #{$bb-tree-search-height};
+    --bb-tree-item-bg-radius: var(--bs-border-radius);
     position: relative;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 
     .tree-search {
-        margin-bottom: .5rem;
+        padding-bottom: .5rem;
+    }
+
+    .tree-root {
+        padding: var(--bb-tree-padding);
+        margin: var(--bb-tree-margin);
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        height: 1%;
+    }
+
+    .tree-content {
+        position: relative;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        cursor: pointer;
+
+        .tree-content-toolbar {
+            display: none;
+        }
+
+        .tree-content-header {
+            flex-basis: calc(var(--bb-tree-padding-left) * var(--bb-tree-view-level, 0));
+            flex-shrink: 0;
+        }
+
+        .tree-content-body {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-grow: 1;
+            flex-shrink: 0;
+            align-items: center;
+            border-radius: var(--bs-border-radius);
+        }
+
+        .node-icon {
+            width: 18px;
+            height: 18px;
+            transition: transform .3s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+
+            &.disabled {
+                opacity: var(--bb-tree-disabled-opacity);
+            }
+        }
+
+        .node-loading {
+            display: none;
+            visibility: visible;
+        }
+
+        .show {
+            .node-icon {
+                transform: rotate(90deg);
+            }
+        }
+
+        &.loading {
+            .node-icon {
+                display: none;
+            }
+
+            .node-loading {
+                display: flex;
+            }
+        }
+
+        .form-check {
+            margin: var(--bb-tree-check-margin);
+        }
+
+        &:not(.disabled) {
+            &.active {
+                .tree-content-body {
+                    color: var(--bb-tree-item-active-color);
+                    background-color: var(--bb-tree-item-active-bg);
+                }
+            }
+
+            &:hover {
+                .tree-content-body {
+                    color: var(--bb-tree-item-hover-color);
+                    background-color: var(--bb-tree-item-hover-bg);
+                }
+            }
+        }
+
+        &:not(:last-child) {
+            margin-bottom: 1px;
+        }
+    }
+
+    .tree-node {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--bb-tree-node-padding);
+        flex: 1;
+
+        .tree-icon {
+            width: var(--bb-tree-icon-width);
+            text-align: center;
+            margin-inline-end: var(--bb-tree-icon-margin-right);
+        }
+
+        .tree-node-text {
+            white-space: nowrap;
+        }
+
+        &.disabled {
+            opacity: var(--bb-tree-disabled-opacity);
+        }
+
+        .tree-node-toolbar-edit {
+            position: absolute;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        &:not(:hover) .tree-node-toolbar-edit {
+            display: none;
+        }
     }
 }
 
-.tree-view .tree-root {
-    padding: var(--bb-tree-padding);
-    margin: var(--bb-tree-margin);
-}
-
-.tree-view.is-fixed-search .tree-root {
-    height: calc(100% - var(--bb-tree-search-height));
-}
-
-.tree-view .tree-ul {
-    padding: 0 0 0 var(--bb-tree-ul-padding-left);
-    display: none;
-}
-
-.tree-view .tree-ul.show {
-    display: block;
-}
-
-.tree-view .tree-item {
-    list-style: none;
-    cursor: pointer;
-    margin: var(--bb-tree-item-margin);
-}
-
-.tree-view .tree-item .tree-content {
-    position: relative;
+.tree-view-edit-form {
     display: flex;
-    align-items: center;
-}
 
-.tree-view .tree-item .tree-content .node-icon {
-    width: 18px;
-    height: 18px;
-    transition: transform .3s linear;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    visibility: hidden;
+    > span {
+        display: flex;
+        align-items: center;
+        margin-inline-end: 0.25rem;
 
-    &.disabled {
-        opacity: var(--bb-tree-disabled-opacity);
+        & + * {
+            flex: 1;
+            width: 1%;
+            min-width: 0;
+        }
     }
-}
-
-.tree-view .tree-item .tree-content .show .node-icon {
-    transform: rotate(90deg);
-}
-
-.tree-view .tree-node {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--bb-tree-node-padding);
-    border-radius: var(--bs-border-radius);
-    flex: 1;
-
-    &.disabled {
-        opacity: var(--bb-tree-disabled-opacity);
-    }
-}
-
-.tree-view .tree-node:hover {
-    background-color: var(--bb-tree-item-hover-bg);
-}
-
-.tree-view .tree-node .tree-icon {
-    margin-right: var(--bb-tree-icon-margin-right);
-}
-
-.tree-view .form-check {
-    margin: var(--bb-tree-check-margin);
-}
-
-.tree-view .tree-icon {
-    width: var(--bb-tree-icon-width);
-    text-align: center;
-}
-
-.tree-view .tree-item:not(.disabled).active > .tree-content > .tree-node {
-    color: var(--bb-tree-item-active-color);
-    background-color: var(--bb-tree-item-active-bg);
 }

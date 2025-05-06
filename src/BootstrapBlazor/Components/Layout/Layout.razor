@@ -2,15 +2,15 @@
 @inherits BootstrapModuleComponentBase
 @attribute [BootstrapModuleAutoLoader(JSObjectReference = true)]
 
-<CascadingValue Value="this" IsFixed="true">
-    @if (IsInit)
-    {
+@if (_init)
+{
+    <CascadingValue Value="this" IsFixed="true">
         @if (IsAuthenticated)
         {
-            <section @attributes="AdditionalAttributes" class="@ClassString" style="@StyleString">
+            <section @attributes="AdditionalAttributes" id="@Id" class="@ClassString" style="@StyleString">
                 @if (Side == null)
                 {
-                    if(Header != null)
+                    if (Header != null)
                     {
                         @RenderHeader(false)
                     }
@@ -22,18 +22,9 @@
                 }
                 else if (IsFullSide)
                 {
-                    <aside class="@SideClassString" style="@SideStyleString">
-                        @if(Side != null)
-                        {
-                            @Side
-                        }
-                        @if (Menus != null)
-                        {
-                            @RenderMenu(IsFullSide)
-                        }
-                    </aside>
+                    @RenderSide
                     <section class="layout-right">
-                        @if(Header != null)
+                        @if (Header != null)
                         {
                             @RenderHeader(ShowCollapseBar)
                         }
@@ -51,16 +42,7 @@
                         @RenderHeader(ShowCollapseBar)
                     }
                     <section class="has-sidebar">
-                        <aside class="@SideClassString" style="@SideStyleString">
-                            @if (Side != null)
-                            {
-                                @Side
-                            }
-                            @if (Menus != null)
-                            {
-                                @RenderMenu(IsFullSide)
-                            }
-                        </aside>
+                        @RenderSide
                         @RenderMain
                     </section>
                     @if (ShowFooter && Footer != null)
@@ -78,8 +60,8 @@
         {
             @RenderMain
         }
-    }
-</CascadingValue>
+    </CascadingValue>
+}
 
 @code {
     RenderFragment<bool> RenderHeader => collapse =>
@@ -88,42 +70,59 @@
         {
             @if (CollapseBarTemplate == null)
             {
-                <a title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="@TooltipText" class="@CollapseBarClassString" @onclick="CollapseMenu">
+                <div data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="@TooltipText" class="layout-header-bar" @onclick="ToggleSidebar">
                     <i class="@MenuBarIcon"></i>
-                </a>
+                </div>
             }
             else
             {
                 @CollapseBarTemplate
             }
         }
+        @if (ShowTabInHeader)
+        {
+            <div class="tabs tabs-chrome" id="@GetId()">
+                @RenderTabHeader()
+            </div>
+        }
         @Header
     </header>;
 
-    RenderFragment<bool> RenderMenu => hasScroll =>
+    RenderFragment RenderSide =>
+    @<aside class="@SideClassString" style="@SideStyleString">
+        @if (Side != null)
+        {
+            @Side
+        }
+        @if (ShowSplitBar)
+        {
+            <LayoutSplitBar Min="SidebarMinWidth" Max="SidebarMaxWidth"></LayoutSplitBar>
+        }
+        @if (Menus != null)
+        {
+            @RenderMenu
+        }
+    </aside>;
+
+    RenderFragment RenderMenu =>
     @<div class="layout-menu">
-        @if (hasScroll)
+        @if (IsFixedTabHeader || IsFullSide)
         {
             <Scroll>
-                <Menu Items="@Menus" IsVertical="true" IsCollapsed="@IsCollapsed" IsAccordion="@IsAccordion" OnClick="@ClickMenu()"></Menu>
+                <Menu Items="@Menus" IsVertical="true" IsAccordion="@IsAccordion" OnClick="ClickMenu"></Menu>
             </Scroll>
         }
         else
         {
-            <Menu Items="@Menus" IsVertical="true" IsCollapsed="@IsCollapsed" IsAccordion="@IsAccordion" OnClick="@ClickMenu()"></Menu>
+            <Menu Items="@Menus" IsVertical="true" IsAccordion="@IsAccordion" OnClick="ClickMenu"></Menu>
         }
     </div>;
 
     RenderFragment RenderMain =>
-    @<main class="@MainClassString">
+    @<main class="layout-main">
         @if (UseTabSet)
         {
-            <Tab ClickTabToNavigation="ClickTabToNavigation"
-                 ShowExtendButtons="ShowTabExtendButtons" ShowClose="ShowTabItemClose" AllowDrag="AllowDragTab"
-                 AdditionalAssemblies="@AdditionalAssemblies" NotFoundTabText="@NotFoundTabText"
-                 DefaultUrl="@TabDefaultUrl" ExcludeUrls="@ExcludeUrls" IsOnlyRenderActiveTab="IsOnlyRenderActiveTab"
-                 Body="@Main" NotAuthorized="NotAuthorized!" NotFound="NotFound!">
-            </Tab>
+            @RenderTab
         }
         else
         {
@@ -131,12 +130,29 @@
         }
     </main>;
 
+    RenderFragment RenderTab =>
+    @<Tab ClickTabToNavigation="ClickTabToNavigation" AdditionalAssemblies="@AdditionalAssemblies"
+          ShowExtendButtons="ShowTabExtendButtons" ShowClose="ShowTabItemClose" AllowDrag="AllowDragTab"        
+          DefaultUrl="@TabDefaultUrl" ExcludeUrls="@ExcludeUrls" IsOnlyRenderActiveTab="IsOnlyRenderActiveTab"
+          TabStyle="TabStyle" ShowToolbar="@ShowToolbar" ToolbarTemplate="@ToolbarTemplate"
+          ShowContextMenu="ShowTabContextMenu"
+          BeforeContextMenuTemplate="@BeforeTabContextMenuTemplate" ContextMenuTemplate="@TabContextMenuTemplate"
+          ContextMenuRefreshIcon="@TabContextMenuRefreshIcon" ContextMenuCloseIcon="@TabContextMenuCloseIcon"
+          ContextMenuCloseOtherIcon="@TabContextMenuCloseOtherIcon" ContextMenuCloseAllIcon="@TabContextMenuCloseAllIcon"
+          OnBeforeShowContextMenu="@OnBeforeShowContextMenu"
+          ShowRefreshToolbarButton="ShowRefreshToolbarButton" ShowFullscreenToolbarButton="ShowFullscreenToolbarButton"
+          RefreshToolbarButtonIcon="@RefreshToolbarButtonIcon" FullscreenToolbarButtonIcon="@FullscreenToolbarButtonIcon"
+          RefreshToolbarTooltipText="@RefreshToolbarTooltipText" FullscreenToolbarTooltipText="@FullscreenToolbarTooltipText"
+          OnToolbarRefreshCallback="OnToolbarRefreshCallback" TabHeader="TabHeader"
+          Body="@Main" NotAuthorized="NotAuthorized!" NotFound="NotFound!" NotFoundTabText="@NotFoundTabText">
+    </Tab>;
+
     RenderFragment RenderFooter =>
     @<footer class="@FooterClassString">
         @Footer
         @if (ShowGotoTop)
         {
-            <GoTop />
+            <GoTop Target="@GetTargetString()" />
         }
     </footer>;
 }

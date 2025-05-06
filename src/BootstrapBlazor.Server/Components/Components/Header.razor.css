@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     padding: 0;
-    margin-right: 0;
+    margin-inline-end: 0;
 }
 
 ::deep .btn-fs {
@@ -63,16 +63,22 @@
         border-radius: var(--bs-border-radius);
     }
 
+::deep .bb-g-search {
+    width: var(--bb-header-select-width);
+    margin-bottom: var(--bb-header-search-margin-bottom);
+}
+
 @media (min-width: 768px) {
     .navbar-header {
         position: sticky;
         top: 0;
-        z-index: 1050;
+        z-index: 15;
         height: var(--bs-header-height);
     }
 
-    .modal-open .navbar-header {
-        z-index: 1040;
+    ::deep .bb-g-search {
+        margin-bottom: 0;
+        margin-inline-end: .5rem;
     }
 }
 

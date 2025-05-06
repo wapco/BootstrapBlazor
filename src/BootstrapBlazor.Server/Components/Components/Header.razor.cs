@@ -39,7 +39,7 @@ public partial class Header
     [NotNull]
     private string? TutorialsText { get; set; }
 
-    private string DownloadUrl => "https://github.com/dotnetcore/BootstrapBlazor/releases?wt.mc_id=DT-MVP-5004174";
+    private const string DownloadUrl = "https://github.com/dotnetcore/BootstrapBlazor/releases?wt.mc_id=DT-MVP-5004174";
 
     private string _versionString = "";
 
@@ -57,6 +57,4 @@ public partial class Header
         TutorialsText ??= Localizer[nameof(TutorialsText)];
         _versionString = $"v{PackageVersionService.Version}";
     }
-
-    private Task OnThemeChangedAsync(ThemeValue themeName) => InvokeVoidAsync("updateTheme", themeName);
 }

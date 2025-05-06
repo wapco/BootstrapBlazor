@@ -7,12 +7,11 @@
     }
 
         .card:hover .card-footer-control i {
-            margin-left: -1.5rem;
-            margin-left: -72px;
+            margin-inline-start: -72px;
         }
 
         .card:hover .card-footer-control .card-text {
-            margin-left: 1rem;
+            margin-inline-start: 1rem;
         }
 
             .card:hover .card-footer-control .card-text:before {
@@ -46,6 +45,7 @@
 
     .card-footer-code ::deep .pre-code {
         margin: .5rem;
+        width: calc(100% - 1rem);
     }
 
 .card-footer-control {
@@ -67,7 +67,7 @@
     }
 
     .card-footer-control .card-text {
-        margin-left: 1.5rem;
+        margin-inline-start: 1.5rem;
         position: absolute;
         transition: all .3s linear;
     }
@@ -86,8 +86,8 @@
     font-weight: var(--bb-font-weight);
     color: var(--bs-body-color);
     font-size: var(--bb-sub-font-size);
-    margin-top: 1rem;
-    margin-bottom: .5rem;
+    margin-top: var(--bb-demo-block-margin-top);
+    margin-bottom: var(--bb-demo-block-margin-bottom);
 }
 
 ::deep .table-cell .progress {

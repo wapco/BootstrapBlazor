@@ -14,6 +14,12 @@ public class TextareaTest : BootstrapBlazorTestBase
 
         var component = cut.FindComponent<BootstrapLabel>();
         Assert.NotNull(component);
+
+        component.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.LabelWidth, 120);
+        });
+        cut.Contains("style=\"--bb-row-label-width: 120px;\"");
     }
 
     [Fact]
@@ -69,5 +75,21 @@ public class TextareaTest : BootstrapBlazorTestBase
         var input = cut.Find("textarea");
         await cut.InvokeAsync(() => { input.Blur(); });
         Assert.True(blur);
+    }
+
+    [Fact]
+    public void UseShiftEnter_Ok()
+    {
+        var cut = Context.RenderComponent<Textarea>(builder =>
+        {
+            builder.Add(a => a.UseShiftEnter, true);
+        });
+        cut.Contains("data-bb-shift-enter=\"true\"");
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.UseShiftEnter, false);
+        });
+        cut.DoesNotContain("data-bb-shift-enter=\"true\"");
     }
 }

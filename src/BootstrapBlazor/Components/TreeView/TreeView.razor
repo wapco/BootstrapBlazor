@@ -1,11 +1,16 @@
-﻿@namespace BootstrapBlazor.Components
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+@namespace BootstrapBlazor.Components
 @typeparam TItem
 @inherits BootstrapModuleComponentBase
 @attribute [BootstrapModuleAutoLoader(JSObjectReference = true)]
 
 @if (Items == null)
 {
-    if (ShowSkeleton)
+    if (_init)
+    {
+
+    }
+    else if (ShowSkeleton)
     {
         <SkeletonTree AdditionalAttributes="AdditionalAttributes"></SkeletonTree>
     }
@@ -34,62 +39,42 @@ else
             }
             else
             {
-                @SearchTemplate
+                <div class="tree-search">
+                    @SearchTemplate
+                </div>
             }
         }
-        <ul class="tree-root scroll" tabindex="0">
-            @foreach (var item in Items)
-            {
-                @RenderTreeItem(item)
-            }
-        </ul>
+        @if (IsVirtualize)
+        {
+            <div class="tree-root scroll is-virtual" tabindex="0">
+                <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@Rows">
+                    @RenderRow(context)
+                </Virtualize>
+            </div>
+        }
+        else
+        {
+            <div class="tree-root scroll" tabindex="0">
+                @foreach (var item in Rows)
+                {
+                    @RenderRow(item)
+                }
+            </div>
+        }
     </div>
 }
 
 @code {
-    private RenderFragment<TreeViewItem<TItem>> RenderTreeNode => item =>
-    @<ul class="@GetTreeClassString(item)">
-        @foreach (var node in item.Items)
-        {
-            @RenderTreeItem(node)
-        }
-    </ul>;
-
-    private RenderFragment<TreeViewItem<TItem>> RenderTreeItem => item =>
-    @<li class="@GetItemClassString(item)">
-        <div class="tree-content" @oncontextmenu="e => OnContextMenu(e, item)" @oncontextmenu:preventDefault="IsPreventDefault" @ontouchstart="e => OnTouchStart(e, item)" @ontouchend="OnTouchEnd">
-            <DynamicElement TagName="i" class="@GetCaretClassString(item)" TriggerClick="TriggerNodeArrow(item)" OnClick="() => OnToggleNodeAsync(item, true)"></DynamicElement>
-            @if (ShowCheckbox)
-            {
-                <Checkbox Value="@item.CheckedState" IsDisabled="GetItemDisabledState(item)" SkipValidate="true"
-                          ShowLabel="false" ShowAfterLabel="false" @bind-State="@item.CheckedState"
-                          OnBeforeStateChanged="@(MaxSelectedCount > 0 ? state => OnBeforeStateChangedCallback(item, state) : null)"
-                          OnStateChanged="(state, v) => OnCheckStateChanged(item, true)" StopPropagation="true" />
-            }
-            <DynamicElement class="@GetNodeClassString(item)" TriggerClick="TriggerNodeLabel(item)" OnClick="() => OnClick(item)">
-                @if (ShowIcon)
-                {
-                    <i class="@GetIconClassString(item)"></i>
-                }
-                @if (item.Template == null)
-                {
-                    <span class="@item.CssClass">@item.Text</span>
-                }
-                else
-                {
-                    @item.Template(item.Value)
-                }
-            </DynamicElement>
-        </div>
-        @if (item.ShowLoading)
-        {
-            <ul class="tree-ul show">
-                <Spinner Size="Size.Small" Color="Color.Primary" />
-            </ul>
-        }
-        else if (item.Items.Any())
-        {
-            @RenderTreeNode(item)
-        }
-    </li>;
+    RenderFragment RenderRow(TreeViewItem<TItem> item) =>
+    @<TreeViewRow @key="item" IsActive="GetActive(item)" Index="GetIndex(item)" Item="item"
+                  NodeIcon="@NodeIcon" ExpandNodeIcon="@ExpandNodeIcon" LoadingIcon="@LoadingIcon"
+                  MaxSelectedCount="MaxSelectedCount"
+                  ToolbarEditTitle="@ToolbarEditTitle" ToolbarEditLabelText="@ToolbarEditLabelText"
+                  IsDisabled="IsDisabled" CanExpandWhenDisabled="CanExpandWhenDisabled"
+                  ShowCheckbox="ShowCheckbox" ShowIcon="ShowIcon"
+                  ShowToolbar="ShowToolbar" ShowToolbarCallback="ShowToolbarCallback"
+                  OnToggleNodeAsync="OnToggleNodeAsync" OnClick="OnClick"
+                  OnBeforeStateChangedCallback="OnBeforeStateChangedCallback"
+                  OnCheckStateChanged="OnCheckStateChanged"
+                  OnUpdateCallbackAsync="OnUpdateCallbackAsync" ToolbarTemplate="ToolbarTemplate"></TreeViewRow>;
 }

@@ -10,6 +10,10 @@ namespace BootstrapBlazor.Server.Components.Samples;
 /// </summary>
 public partial class MultiSelects
 {
+    [Inject]
+    [NotNull]
+    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+
     /// <summary>
     /// Foo 类为Demo测试用，如有需要请自行下载源码查阅
     /// Foo class is used for Demo tet, please download the source code if necessary
@@ -18,6 +22,9 @@ public partial class MultiSelects
     private Foo Model { get; set; } = new Foo();
 
     private Foo Foo { get; set; } = new Foo();
+
+    [NotNull]
+    private List<SelectedItem>? EditableItems { get; set; }
 
     [NotNull]
     private List<SelectedItem>? Items1 { get; set; }
@@ -59,18 +66,26 @@ public partial class MultiSelects
 
     private string SelectedItemsValue { get; set; } = "Beijing";
 
-    private IEnumerable<string> SelectedArrayValues { get; set; } = Enumerable.Empty<string>();
+    private IEnumerable<string> SelectedArrayValues { get; set; } = [];
 
     private IEnumerable<EnumEducation> SelectedEnumValues { get; set; } = new List<EnumEducation>
     {
         EnumEducation.Middle, EnumEducation.Primary
     };
 
-    [NotNull]
-    private ConsoleLogger? Logger { get; set; }
+    private MultiSelectEnumFoo EnumFoo { get; set; } = MultiSelectEnumFoo.One | MultiSelectEnumFoo.Two;
+
+    [Flags]
+    private enum MultiSelectEnumFoo
+    {
+        One = 1,
+        Two = 2,
+        Three = 4,
+        Four = 8
+    }
 
     [NotNull]
-    private ConsoleLogger? OptionLogger { get; set; }
+    private ConsoleLogger? Logger { get; set; }
 
     private List<SelectedItem>? SearchItemsSource { get; set; }
 
@@ -95,6 +110,49 @@ public partial class MultiSelects
 
     private List<SelectedItem> CascadingItems1 { get; set; } = [];
 
+    [NotNull]
+    private List<Foo>? Foos { get; set; }
+
+    private string? _virtualItemValue1;
+    private string? _virtualItemValue2;
+    private string? _virtualItemText1;
+    private string? _virtualItemText2;
+
+    private IEnumerable<SelectedItem> VirtualItems => Foos.Select(i => new SelectedItem(i.Id.ToString(), i.Name!)).ToList();
+
+    private string? _editString;
+    private bool _isClearable = true;
+    private bool _showToolbar = true;
+    private bool _showSearch = true;
+
+    private async Task<SelectedItem> OnEditCallback(string value)
+    {
+        await Task.Delay(100);
+
+        var item = EditableItems.Find(i => i.Text.Equals(value, StringComparison.OrdinalIgnoreCase));
+        if (item == null)
+        {
+            item = new SelectedItem(value, value);
+            EditableItems.Add(item);
+        }
+        return item;
+    }
+
+    private async Task<QueryData<SelectedItem>> OnQueryAsync(VirtualizeQueryOption option)
+    {
+        await Task.Delay(200);
+        var items = Foos;
+        if (!string.IsNullOrEmpty(option.SearchText))
+        {
+            items = [.. Foos.Where(i => i.Name!.Contains(option.SearchText, StringComparison.OrdinalIgnoreCase))];
+        }
+        return new QueryData<SelectedItem>
+        {
+            Items = items.Skip(option.StartIndex).Take(option.Count).Select(i => new SelectedItem(i.Id.ToString(), i.Name!)),
+            TotalCount = items.Count
+        };
+    }
+
     private SelectedItem[] GroupItems { get; } =
     [
         new("Jilin", "吉林") { GroupName = "东北"},
@@ -105,7 +163,7 @@ public partial class MultiSelects
         new("Ningbo", "宁波") {GroupName = "华东", Active = true }
     ];
 
-    private readonly SelectedItem[] CascadingItems2 =
+    private readonly SelectedItem[] _cascadingItems2 =
     [
         new("", "请选择 ..."),
         new("Beijing", "北京") { Active = true },
@@ -114,7 +172,7 @@ public partial class MultiSelects
     ];
 
     /// <summary>
-    /// OnInitialized
+    /// <inheritdoc/>
     /// </summary>
     protected override void OnInitialized()
     {
@@ -129,6 +187,7 @@ public partial class MultiSelects
         Items7 = GenerateItems();
         Items8 = GenerateItems();
         TemplateItems = GenerateItems();
+        EditableItems = GenerateItems();
 
         // 初始化数据
         DataSource =
@@ -154,6 +213,11 @@ public partial class MultiSelects
         LongItems = GenerateDataSource(LongDataSource);
 
         Items = GenerateDataSource(DataSource);
+        Foos = Foo.GenerateFoo(LocalizerFoo);
+        _virtualItemValue1 = $"{Foos[79].Id}, {Foos[78].Id}";
+        _virtualItemValue2 = $"{Foos[45].Id}, {Foos[46].Id}";
+        _virtualItemText1 = $"{Foos[79].Name}, {Foos[78].Name}";
+        _virtualItemText2 = $"{Foos[45].Name}, {Foos[46].Name}";
     }
 
     private static List<SelectedItem> GenerateItems() =>
@@ -169,7 +233,7 @@ public partial class MultiSelects
         new ("Lianyungang", "连云港")
     ];
 
-    private static List<SelectedItem> GenerateDataSource(List<SelectedItem> source) => source.Select(i => new SelectedItem(i.Value, i.Text)).ToList();
+    private static List<SelectedItem> GenerateDataSource(List<SelectedItem> source) => [.. source.Select(i => new SelectedItem(i.Value, i.Text))];
 
     private void AddItems()
     {
@@ -193,12 +257,12 @@ public partial class MultiSelects
 
     private void RemoveListItems()
     {
-        SelectedArrayValues = new[] { "Beijing" };
+        SelectedArrayValues = ["Beijing"];
     }
 
     private void ClearListItems()
     {
-        SelectedArrayValues = Enumerable.Empty<string>();
+        SelectedArrayValues = [];
     }
 
     private void AddArrayItems()
@@ -220,7 +284,7 @@ public partial class MultiSelects
     {
         Logger.Log($"{Localizer["MultiSelectSearchLog"]}：{searchText}");
         SearchItemsSource ??= GenerateItems();
-        return SearchItemsSource.Where(i => i.Text.Contains(searchText, System.StringComparison.OrdinalIgnoreCase));
+        return SearchItemsSource.Where(i => i.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase));
     }
 
     private Task OnSelectedItemsChanged8(IEnumerable<SelectedItem> items)
@@ -309,6 +373,14 @@ public partial class MultiSelects
             Type = "bool",
             ValueList = "true|false",
             DefaultValue = "true"
+        },
+        new()
+        {
+            Name = "ShowSearch",
+            Description = Localizer["MultiSelectsAttribute_ShowSearch"],
+            Type = "bool",
+            ValueList = "true|false",
+            DefaultValue = "false"
         },
         new()
         {
@@ -405,6 +477,22 @@ public partial class MultiSelects
             Type = "bool",
             ValueList = "true|false",
             DefaultValue = "false"
+        },
+        new()
+        {
+            Name = nameof(MultiSelect<string>.IsVirtualize),
+            Description = Localizer["MultiSelectsAttribute_IsVirtualize"],
+            Type = "bool",
+            ValueList = "true|false",
+            DefaultValue = "false"
+        },
+        new()
+        {
+            Name = nameof(MultiSelect<string>.DefaultVirtualizeItemText),
+            Description = Localizer["MultiSelectsAttribute_DefaultVirtualizeItemText"],
+            Type = "string",
+            ValueList = " — ",
+            DefaultValue = " — "
         }
     ];
 }

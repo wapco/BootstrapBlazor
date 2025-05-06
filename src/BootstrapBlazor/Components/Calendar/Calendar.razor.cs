@@ -107,7 +107,7 @@ public partial class Calendar
         PreviousMonth = Localizer[nameof(PreviousMonth)];
         NextMonth = Localizer[nameof(NextMonth)];
         Today = Localizer[nameof(Today)];
-        WeekLists = [.. Localizer[nameof(WeekLists)].Value.Split(',')];
+        WeekLists = GetWeekList();
         PreviousWeek = Localizer[nameof(PreviousWeek)];
         NextWeek = Localizer[nameof(NextWeek)];
         WeekText = Localizer[nameof(WeekText)];
@@ -124,7 +124,7 @@ public partial class Calendar
         get
         {
             var d = Value.AddDays(1 - Value.Day);
-            d = d.AddDays(0 - (int)d.DayOfWeek);
+            d = d.AddDays((int)FirstDayOfWeek - (int)d.DayOfWeek);
             return d;
         }
     }
@@ -162,16 +162,28 @@ public partial class Calendar
     public Func<DateTime, Task>? OnValueChanged { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示周视图 默认为 CalendarVieModel.Month 月视图
+    /// 获得/设置 是否显示周视图 默认为 <see cref="CalendarViewMode.Month"/> 月视图
     /// </summary>
     [Parameter]
     public CalendarViewMode ViewMode { get; set; }
 
     /// <summary>
-    /// 获得/设置 周内容
+    /// 获得/设置 周内容 <see cref="CalendarViewMode.Week"/> 时有效
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// 获得/设置 列头模板
+    /// </summary>
+    [Parameter]
+    public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// 获得/设置 Body 模板仅 <see cref="CalendarViewMode.Month"/> 有效
+    /// </summary>
+    [Parameter]
+    public RenderFragment<BodyTemplateContext>? BodyTemplate { get; set; }
 
     /// <summary>
     /// 获得/设置 单元格模板
@@ -184,6 +196,12 @@ public partial class Calendar
     /// </summary>
     [Parameter]
     public bool ShowYearButtons { get; set; } = true;
+
+    /// <summary>
+    /// 获得/设置 星期第一天 默认 <see cref="DayOfWeek.Sunday"/>
+    /// </summary>
+    [Parameter]
+    public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
 
     /// <summary>
     /// 选中日期时回调此方法
@@ -277,5 +295,20 @@ public partial class Calendar
         };
         val.DefaultCss = GetCalendarCellString(val);
         return val;
+    }
+
+    private BodyTemplateContext GetBodyTemplateContext(DateTime week)
+    {
+        var context = new BodyTemplateContext();
+        context.Values.AddRange(Enumerable.Range(0, 7).Select(i => CreateCellValue(week.AddDays(i))));
+        return context;
+    }
+    private List<string> GetWeekList()
+    {
+        var list = Localizer[nameof(WeekLists)].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        // 调整顺序
+        var firstDayIndex = (int)FirstDayOfWeek;
+        return [.. list.Skip(firstDayIndex), .. list.Take(firstDayIndex)];
     }
 }

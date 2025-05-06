@@ -151,7 +151,8 @@
     "ReverseSelectText": "反选",
     "ClearText": "清除",
     "MinErrorMessage": "最少请选择 {0} 项",
-    "MaxErrorMessage": "最多可以选择 {0} 项"
+    "MaxErrorMessage": "最多可以选择 {0} 项",
+    "NoSearchDataText": "无数据"
   },
   "BootstrapBlazor.Components.Pagination": {
     "GotoNavigatorLabelText": "导航到"
@@ -168,7 +169,8 @@
     "EmptyText": "无数据"
   },
   "BootstrapBlazor.Components.Search": {
-    "SearchButtonText": "搜索"
+    "SearchButtonText": "搜索",
+    "NoDataTip": "无数据"
   },
   "BootstrapBlazor.Components.SearchInput": {
     "OnEnterPlaceholder": "请输入关键字按回车搜索",
@@ -197,7 +199,17 @@
     "CloseCurrentTabText": "关闭当前标签",
     "CloseOtherTabsText": "关闭其他标签",
     "CloseAllTabsText": "关闭所有标签",
-    "NotFoundTabText": "未找到"
+    "NotFoundTabText": "未找到",
+    "RefreshToolbarTooltipText": "刷新",
+    "FullscreenToolbarTooltipText": "全屏",
+    "PrevTabNavLinkTooltipText": "上一个标签",
+    "NextTabNavLinkTooltipText": "下一个标签",
+    "CloseTabNavLinkTooltipText": "关闭",
+    "ContextRefresh": "刷新",
+    "ContextClose": "关闭",
+    "ContextCloseOther": "关闭其他",
+    "ContextCloseAll": "关闭全部",
+    "ContextFullScreen": "全屏"
   },
   "BootstrapBlazor.Components.MultiFilter": {
     "MultiFilterSearchPlaceHolderText": "请输入 ...",
@@ -330,13 +342,17 @@
     "NotSetOnTreeExpandErrorMessage": "未设置 OnExpandNodeAsync 回调委托方法"
   },
   "BootstrapBlazor.Components.TreeView": {
-    "NotSetOnTreeExpandErrorMessage": "未设置 OnExpandNodeAsync 回调委托方法"
+    "NotSetOnTreeExpandErrorMessage": "未设置 OnExpandNodeAsync 回调委托方法",
+    "ToolbarEditTitle": "节点名称编辑",
+    "ToolbarEditLabelText": "更改为"
   },
   "BootstrapBlazor.Components.UploadBase": {
     "DeleteButtonText": "删除",
     "BrowserButtonText": "浏览",
     "FileExtensions": "文件扩展名必须为以下几种格式: {0}",
-    "FileSizeValidation": "文件太大，文件限制大小为 {0}"
+    "FileSizeValidation": "文件太大，文件限制大小为 {0}",
+    "DropUploadText": "拖拽文件到此处上传",
+    "DropFooterText": ""
   },
   "BootstrapBlazor.Components.Handwritten": {
     "SaveButtonText": "保存",

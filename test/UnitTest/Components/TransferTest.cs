@@ -10,7 +10,7 @@ public class TransferTest : BootstrapBlazorTestBase
     [Fact]
     public void Items_Ok()
     {
-        // 未设置 Itms 为空
+        // 未设置 Items 为空
         var cut = Context.RenderComponent<Transfer<string>>();
         cut.Contains("class=\"transfer\"");
 
@@ -18,6 +18,7 @@ public class TransferTest : BootstrapBlazorTestBase
         cut.SetParametersAndRender(pb =>
         {
             pb.Add(a => a.Value, "2");
+            pb.Add(a => a.OnSetItemClass, new Func<SelectedItem, string>(i => $"class-{i.Value}"));
             pb.Add(a => a.Items, new List<SelectedItem>()
             {
                 new("1", "Test1"),
@@ -25,6 +26,16 @@ public class TransferTest : BootstrapBlazorTestBase
             });
         });
         cut.Contains("transfer-panel");
+    }
+
+    [Fact]
+    public void Height_Ok()
+    {
+        var cut = Context.RenderComponent<Transfer<string>>(pb =>
+        {
+            pb.Add(a => a.Height, "200px");
+        });
+        cut.Contains("--bb-transfer-height: 200px;");
     }
 
     [Fact]
@@ -136,7 +147,7 @@ public class TransferTest : BootstrapBlazorTestBase
             pb.AddChildContent<Transfer<string>>(pb =>
             {
                 pb.Add(a => a.Value, foo.Name);
-                pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<string>(Context, v => foo.Name = v));
+                pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<string?>(Context, v => foo.Name = v));
                 pb.Add(a => a.ValueExpression, foo.GenerateValueExpression());
                 pb.Add(a => a.Items, new List<SelectedItem>()
                 {
@@ -187,7 +198,7 @@ public class TransferTest : BootstrapBlazorTestBase
         var cut = Context.RenderComponent<Transfer<string>>(pb =>
         {
             pb.Add(a => a.Value, foo.Name);
-            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<string>(this, v => foo.Name = v));
+            pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<string?>(this, v => foo.Name = v));
             pb.Add(a => a.ValueExpression, Utility.GenerateValueExpression(foo, "Name", typeof(string)));
             pb.Add(a => a.Items, new List<SelectedItem>()
             {

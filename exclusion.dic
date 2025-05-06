@@ -58,6 +58,7 @@ Segmenteds
 Responsives
 resx
 tabset
+tabindex
 Splittings
 Foos
 Localizer
@@ -68,7 +69,6 @@ Goto
 elec
 ahora
 Nuget
-lastest
 bootstrapblazor
 layui
 devui
@@ -108,3 +108,9 @@ Urls
 Pharmacode
 bluetooth
 iframe
+Sqlite
+maxlength
+inputmode
+Totp
+otpauth
+Hotp

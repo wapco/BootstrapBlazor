@@ -5,7 +5,6 @@
 
 using Microsoft.Extensions.Localization;
 using System.Globalization;
-using System.Reflection;
 
 namespace BootstrapBlazor.Components;
 
@@ -101,6 +100,18 @@ public partial class DateTimeRange
     /// </summary>
     [Parameter]
     public bool AutoCloseClickSideBar { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to automatically close the popup after a date range is selected. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool AutoClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether show the selected value. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool ShowSelectedValue { get; set; }
 
     /// <summary>
     /// 获得/设置 清空按钮文字
@@ -252,13 +263,15 @@ public partial class DateTimeRange
     [Parameter]
     public bool ShowHolidays { get; set; }
 
-    [Inject]
-    [NotNull]
-    private IStringLocalizer<DateTimeRange>? Localizer { get; set; }
+    /// <summary>
+    /// Gets or sets the date value changed event callback.
+    /// </summary>
+    [Parameter]
+    public Func<DateTime, Task>? OnDateClick { get; set; }
 
     [Inject]
     [NotNull]
-    private IStringLocalizerFactory? LocalizerFactory { get; set; }
+    private IStringLocalizer<DateTimeRange>? Localizer { get; set; }
 
     [Inject]
     [NotNull]
@@ -280,24 +293,7 @@ public partial class DateTimeRange
     {
         base.OnInitialized();
 
-        if (FieldIdentifier != null)
-        {
-            var pi = FieldIdentifier.Value.Model.GetType().GetPropertyByName(FieldIdentifier.Value.FieldName);
-            if (pi != null)
-            {
-                var required = pi.GetCustomAttribute<RequiredAttribute>(true);
-                if (required != null)
-                {
-                    Rules.Add(new DateTimeRangeRequiredValidator()
-                    {
-                        LocalizerFactory = LocalizerFactory,
-                        ErrorMessage = required.ErrorMessage,
-                        AllowEmptyString = required.AllowEmptyStrings
-                    });
-                }
-            }
-        }
-
+        AddRequiredValidator();
         _showLeftButtons = RenderMode == DateTimeRangeRenderMode.Single;
     }
 
@@ -332,24 +328,7 @@ public partial class DateTimeRange
             new() { Text = Localizer["LastMonth"], StartDateTime = DateTime.Today.AddDays(1- DateTime.Today.Day).AddMonths(-1), EndDateTime = DateTime.Today.AddDays(1- DateTime.Today.Day).AddSeconds(-1) },
         ];
 
-        Value ??= new DateTimeRangeValue();
-        EndValue = Value.End == DateTime.MinValue ? GetEndDateTime(DateTime.Today) : Value.End;
-
-        if (ViewMode == DatePickerViewMode.Year)
-        {
-            var d = DateTime.Today.AddYears(-1);
-            StartValue = Value.Start == DateTime.MinValue ? new DateTime(d.Year, 1, 1) : Value.Start;
-        }
-        else if (ViewMode == DatePickerViewMode.Month)
-        {
-            var d = DateTime.Today.AddMonths(-1);
-            StartValue = Value.Start == DateTime.MinValue ? new DateTime(d.Year, d.Month, 1) : Value.Start;
-        }
-        else
-        {
-            StartValue = EndValue.AddMonths(-1).Date;
-        }
-
+        ResetBodyValue();
         SelectedValue.Start = Value.Start;
         SelectedValue.End = Value.End;
 
@@ -363,6 +342,15 @@ public partial class DateTimeRange
         }
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
+    {
+        TriggerHideCallback = nameof(TriggerHideCallback)
+    });
+
     private async Task OnClickSidebarItem(DateTimeRangeSidebarItem item)
     {
         SelectedValue.Start = item.StartDateTime;
@@ -373,7 +361,6 @@ public partial class DateTimeRange
 
         if (AutoCloseClickSideBar)
         {
-            await InvokeVoidAsync("hide", Id);
             await ClickConfirmButton();
         }
     }
@@ -404,6 +391,7 @@ public partial class DateTimeRange
         {
             EditContext.NotifyFieldChanged(FieldIdentifier.Value);
         }
+        await InvokeVoidAsync("hide", Id);
     }
 
     private Task OnStartDateChanged(DateTime value)
@@ -471,13 +459,14 @@ public partial class DateTimeRange
         {
             EditContext.NotifyFieldChanged(FieldIdentifier.Value);
         }
+        await InvokeVoidAsync("hide", Id);
     }
 
     /// <summary>
     /// 更新值方法
     /// </summary>
     /// <param name="d"></param>
-    private void UpdateValue(DateTime d)
+    private async Task UpdateValue(DateTime d)
     {
         if (SelectedValue.Start == DateTime.MinValue)
         {
@@ -504,7 +493,7 @@ public partial class DateTimeRange
             SelectedValue.End = DateTime.MinValue;
         }
 
-        if (ViewMode == DatePickerViewMode.Year || ViewMode == DatePickerViewMode.Month)
+        if (ViewMode is DatePickerViewMode.Year or DatePickerViewMode.Month)
         {
             if (SelectedValue.Start != DateTime.MinValue)
             {
@@ -515,7 +504,26 @@ public partial class DateTimeRange
                 EndValue = SelectedValue.End;
             }
         }
-        StateHasChanged();
+
+        if (ShowSelectedValue)
+        {
+            Value.Start = SelectedValue.Start;
+            Value.End = SelectedValue.End;
+        }
+
+        if (OnDateClick != null)
+        {
+            await OnDateClick(d);
+        }
+
+        if (AutoClose && SelectedValue.Start != DateTime.MinValue && SelectedValue.End != DateTime.MinValue)
+        {
+            await ClickConfirmButton();
+        }
+        else
+        {
+            StateHasChanged();
+        }
     }
 
     /// <summary>
@@ -526,4 +534,37 @@ public partial class DateTimeRange
     public override bool IsComplexValue(object? propertyValue) => false;
 
     private static DateTime GetEndDateTime(DateTime dt) => dt.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+
+    private void ResetBodyValue()
+    {
+        Value ??= new DateTimeRangeValue();
+        EndValue = Value.End == DateTime.MinValue ? GetEndDateTime(DateTime.Today) : Value.End;
+
+        if (ViewMode == DatePickerViewMode.Year)
+        {
+            var d = DateTime.Today.AddYears(-1);
+            StartValue = Value.Start == DateTime.MinValue ? new DateTime(d.Year, 1, 1) : Value.Start;
+        }
+        else if (ViewMode == DatePickerViewMode.Month)
+        {
+            var d = DateTime.Today.AddMonths(-1);
+            StartValue = Value.Start == DateTime.MinValue ? new DateTime(d.Year, d.Month, 1) : Value.Start;
+        }
+        else
+        {
+            StartValue = EndValue.AddMonths(-1).Date;
+        }
+    }
+
+    /// <summary>
+    /// 客户端弹窗关闭后由 Javascript 调用此方法
+    /// </summary>
+    /// <returns></returns>
+    [JSInvokable]
+    public Task TriggerHideCallback()
+    {
+        ResetBodyValue();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
 }

@@ -107,6 +107,25 @@ public class DrawerTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void BodyContext_Ok()
+    {
+        var cut = Context.RenderComponent<Drawer>(builder =>
+        {
+            builder.Add(a => a.BodyContext, "test-body-context");
+            builder.Add(a => a.ChildContent, s =>
+            {
+                s.OpenComponent<MockContent>(0);
+                s.CloseComponent();
+            });
+        });
+
+        var component = cut.FindComponent<MockContent>();
+        Assert.NotNull(component);
+
+        Assert.Equal("test-body-context", component.Instance.GetBodyContext());
+    }
+
+    [Fact]
     public void ShowBackdrop_Ok()
     {
         var cut = Context.RenderComponent<Drawer>(builder =>
@@ -140,5 +159,68 @@ public class DrawerTest : BootstrapBlazorTestBase
             });
         });
         cut.Contains("--bb-drawer-position: absolute;");
+    }
+
+    [Fact]
+    public void ZIndex_Ok()
+    {
+        var cut = Context.RenderComponent<Drawer>(builder =>
+        {
+            builder.Add(a => a.ZIndex, 1055);
+        });
+        cut.Contains("--bb-drawer-zindex: 1055;");
+    }
+
+    [Fact]
+    public void IsKeyboard_Ok()
+    {
+        var cut = Context.RenderComponent<Drawer>(builder =>
+        {
+            builder.Add(a => a.IsKeyboard, true);
+            builder.Add(a => a.ChildContent, s =>
+            {
+                s.OpenComponent<Button>(0);
+                s.CloseComponent();
+            });
+        });
+        cut.Contains("data-bb-keyboard=\"true\"");
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.IsKeyboard, false);
+        });
+        cut.DoesNotContain("data-bb-keyboard=\"true\"");
+    }
+
+    [Fact]
+    public void BodyScroll_Ok()
+    {
+        var cut = Context.RenderComponent<Drawer>(builder =>
+        {
+            builder.Add(a => a.BodyScroll, true);
+            builder.Add(a => a.ChildContent, s =>
+            {
+                s.OpenComponent<Button>(0);
+                s.CloseComponent();
+            });
+        });
+        cut.Contains("data-bb-scroll=\"true\"");
+    }
+
+    [Fact]
+    public async Task Close_Ok()
+    {
+        Context.JSInterop.Setup<bool>("execute", matcher => true).SetResult(true);
+        var cut = Context.RenderComponent<Drawer>();
+        await cut.InvokeAsync(() => cut.Instance.Close());
+    }
+
+    class MockContent : ComponentBase
+    {
+        [CascadingParameter(Name = "BodyContext")]
+        [NotNull]
+        private object? BodyContext { get; set; }
+
+        public string? GetBodyContext() => BodyContext.ToString();
     }
 }

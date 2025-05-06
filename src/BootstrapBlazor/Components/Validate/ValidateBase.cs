@@ -62,7 +62,7 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
     /// <summary>
     /// Gets or sets the current value of the input.
     /// </summary>
-    protected TValue CurrentValue
+    protected TValue? CurrentValue
     {
         get => Value;
         set
@@ -151,7 +151,7 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
     /// 获得/设置 Value 改变时回调方法
     /// </summary>
     [Parameter]
-    public Func<TValue, Task>? OnValueChanged { get; set; }
+    public Func<TValue?, Task>? OnValueChanged { get; set; }
 
     /// <summary>
     /// 获得/设置 类型转化失败格式化字符串 默认为 null
@@ -192,6 +192,10 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
 
     [Inject, NotNull]
     private IStringLocalizer<ValidateBase<string>>? Localizer { get; set; }
+
+    [Inject]
+    [NotNull]
+    protected IStringLocalizerFactory? LocalizerFactory { get; set; }
 
     /// <summary>
     /// Parses a string to create an instance of <typeparamref name="TValue"/>. Derived classes can override this to change how
@@ -482,7 +486,7 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
 
     private JSModule? ValidateModule { get; set; }
 
-    private Task<JSModule> LoadValidateModule() => JSRuntime.LoadModule("./_content/BootstrapBlazor/modules/validate.js");
+    private Task<JSModule> LoadValidateModule() => JSRuntime.LoadModuleByName("validate");
 
     /// <summary>
     /// 增加客户端 Tooltip 方法
@@ -543,6 +547,21 @@ public abstract class ValidateBase<TValue> : DisplayBase<TValue>, IValidateCompo
         }
 
         await base.DisposeAsync(disposing);
+    }
+
+    /// <summary>
+    /// 增加 <see cref="RequiredValidator"/> 方法
+    /// </summary>
+    protected virtual void AddRequiredValidator()
+    {
+        if (EditContext != null && FieldIdentifier != null)
+        {
+            var validator = FieldIdentifier.Value.GetRequiredValidator(LocalizerFactory);
+            if (validator != null)
+            {
+                Rules.Add(validator);
+            }
+        }
     }
     #endregion
 

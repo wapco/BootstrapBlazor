@@ -22,19 +22,35 @@ public class DrawerServiceTest : BootstrapBlazorTestBase
             OnClickBackdrop = () => Task.CompletedTask,
             OnCloseAsync = () => Task.CompletedTask,
             Placement = Placement.Bottom,
-            ShowBackdrop = true
+            ShowBackdrop = true,
+            BodyContext = "test-body-context",
+            IsKeyboard = true,
+            BodyScroll = true,
+            ZIndex = 1066
         };
         var service = Context.Services.GetRequiredService<DrawerService>();
         var cut = Context.RenderComponent<BootstrapBlazorRoot>();
         await service.Show(option);
+        cut.Contains("data-bb-keyboard=\"true\"");
+        cut.Contains("--bb-drawer-zindex: 1066;");
         var button = cut.Find("button");
         await cut.InvokeAsync(() => button.Click());
+
+        option.ChildContent = null;
+        option.Component = BootstrapDynamicComponent.CreateComponent<DialogCloseButton>();
+        await service.Show(option);
+        button = cut.Find("button");
+        await cut.InvokeAsync(() => button.Click());
+
+        option.Component = null;
+        Assert.Null(option.GetContent());
 
         await service.Show<DrawerDemo>();
         button = cut.Find("button");
         await cut.InvokeAsync(() => button.Click());
 
-        await service.Show(typeof(DrawerDemo));
+        var type = typeof(DrawerDemo);
+        await service.Show(type);
         button = cut.Find("button");
         await cut.InvokeAsync(() => button.Click());
     }

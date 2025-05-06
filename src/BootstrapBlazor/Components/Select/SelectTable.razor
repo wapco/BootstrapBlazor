@@ -31,18 +31,23 @@
             <span class="@AppendClassString"><i class="@DropdownIcon"></i></span>
         }
     </div>
+    @if (GetClearable())
+    {
+        <span class="@ClearClassString" @onclick="OnClearValue"><i class="@ClearIcon"></i></span>
+    }
     <CascadingValue Value="this" IsFixed="true">
         @TableColumns?.Invoke(new TItem())
     </CascadingValue>
     <RenderTemplate>
         <div class="dropdown-menu dropdown-table" style="@GetStyleString">
-            <Table TableColumns="TableColumns" IsFixedHeader="true" IsBordered="true" IsStriped="true"
+            <Table TableColumns="TableColumns" IsFixedHeader="true" IsBordered="true" IsStriped="true" @ref="_table"
                    RenderMode="TableRenderMode.Table" ClickToSelect="true" AutoGenerateColumns="AutoGenerateColumns"
                    ShowSearch="ShowSearch" SearchMode="SearchMode.Top"
                    SearchModel="SearchModel" SearchTemplate="SearchTemplate" CollapsedTopSearch="CollapsedTopSearch"
                    CustomerSearchModel="CustomerSearchModel" CustomerSearchTemplate="CustomerSearchTemplate"
                    IsPagination="IsPagination" PageItemsSource="PageItemsSource" ShowGotoNavigator="false" MaxPageLinkCount="3"
-                   OnClickRowCallback="OnClickRowCallback" OnQueryAsync="OnQueryAsync"></Table>
+                   OnClickRowCallback="OnClickRowCallback" OnQueryAsync="OnQueryAsync"
+                   ShowEmpty="ShowEmpty" EmptyTemplate="EmptyTemplate"></Table>
         </div>
     </RenderTemplate>
 </div>

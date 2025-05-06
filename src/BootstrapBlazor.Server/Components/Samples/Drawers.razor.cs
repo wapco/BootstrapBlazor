@@ -53,6 +53,14 @@ public sealed partial class Drawers
 
     private void OpenNoBackdropDrawer() => IsShowBackdropOpen = true;
 
+    private bool IsKeyboardOpen { get; set; }
+
+    private void OpenKeyboardDrawer() => IsKeyboardOpen = true;
+
+    private bool IsBodyScrollOpen { get; set; }
+
+    private void OpenBodyScrollDrawer() => IsBodyScrollOpen = true;
+
     private async Task DrawerServiceShow() => await DrawerService.Show(new DrawerOption()
     {
         Placement = Placement.Right,
@@ -134,9 +142,25 @@ public sealed partial class Drawers
         },
         new()
         {
+            Name = "BodyScroll",
+            Description = "Where the enable body scrolling when drawer is shown",
+            Type = "bool",
+            ValueList = "true|false",
+            DefaultValue = "false"
+        },
+        new()
+        {
             Name = "ChildContent",
             Description = "Subassembly",
             Type = "RenderFragment",
+            ValueList = " — ",
+            DefaultValue = " — "
+        },
+        new()
+        {
+            Name = "ZIndex",
+            Description = "sets the z-order",
+            Type = "int?",
             ValueList = " — ",
             DefaultValue = " — "
         },

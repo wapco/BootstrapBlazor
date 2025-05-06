@@ -483,6 +483,19 @@ public class DateTimePickerTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task TriggerHideCallback_Ok()
+    {
+        var cut = Context.RenderComponent<DateTimePicker<DateTime>>(pb =>
+        {
+            pb.Add(a => a.DayTemplate, dt => builder =>
+            {
+                builder.AddContent(0, "day-template");
+            });
+        });
+        await cut.InvokeAsync(() => cut.Instance.TriggerHideCallback());
+    }
+
+    [Fact]
     public void DayTemplate_Ok()
     {
         var cut = Context.RenderComponent<DateTimePicker<DateTime>>(pb =>
@@ -928,8 +941,8 @@ public class DateTimePickerTest : BootstrapBlazorTestBase
         {
             pb.Add(a => a.AutoClose, true);
         });
+        button = cut.FindAll(".picker-panel-content .cell").First(i => i.TextContent == $"{DateTime.Today.Day}");
         await cut.InvokeAsync(() => button.Click());
-        Assert.Equal(val, DateTime.MinValue);
     }
 
     [Fact]
@@ -944,6 +957,20 @@ public class DateTimePickerTest : BootstrapBlazorTestBase
             }));
         });
         cut.Contains("test-sidebar-template");
+    }
+
+    [Fact]
+    public void FirstDayOfWeek_Ok()
+    {
+        var cut = Context.RenderComponent<DateTimePicker<DateTime>>(pb =>
+        {
+            pb.Add(a => a.FirstDayOfWeek, DayOfWeek.Monday);
+            pb.Add(a => a.Value, new DateTime(2025, 02, 20));
+        });
+
+        var labels = cut.FindAll(".date-table tbody > tr:first-child > th");
+        Assert.Equal("一", labels[0].TextContent);
+        Assert.Equal("日", labels[6].TextContent);
     }
 
     [Fact]

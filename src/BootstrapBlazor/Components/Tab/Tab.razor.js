@@ -13,13 +13,19 @@ const resize = tab => {
     if (wrap.classList.contains('extend')) {
         return
     }
+
+    const link = wrap.querySelector('.nav-link-bar');
+    if (link === null) {
+        return;
+    }
+
     const scroll = tab.scroll
-    const lastItem = [...tabNav.querySelectorAll('.tabs-item')].pop()
+    const lastItem = [...tabNav.querySelectorAll('.tabs-item-wrap')].pop()
     if (lastItem) {
         if (tab.vertical) {
             const tabHeight = scroll.offsetHeight
             let itemHeight = 0
-            tabNav.querySelectorAll('.tabs-item').forEach(v => {
+            tabNav.querySelectorAll('.tabs-item-wrap').forEach(v => {
                 itemHeight += v.offsetHeight
             })
             if (itemHeight > tabHeight) {
@@ -33,7 +39,7 @@ const resize = tab => {
             // Item 总宽度大于 Nav 宽度
             const tabWidth = scroll.offsetWidth
             let itemWidth = 0
-            tabNav.querySelectorAll('.tabs-item').forEach(v => {
+            tabNav.querySelectorAll('.tabs-item-wrap').forEach(v => {
                 itemWidth += v.offsetWidth
             })
             if (itemWidth > tabWidth) {
@@ -49,7 +55,10 @@ const resize = tab => {
 const active = tab => {
     resize(tab)
 
-    const activeTab = tab.tabNav.querySelector('.tabs-item.active')
+    const activeTab = tab.tabNav.querySelector('.tabs-item-wrap.active')
+    if (activeTab === null) {
+        return
+    }
     if (activeTab) {
         if (tab.vertical) {
             const top = getPosition(activeTab).top - getPosition(activeTab.parentNode).top + activeTab.offsetHeight
@@ -63,7 +72,6 @@ const active = tab => {
             }
         }
         else {
-            // mark sure display total active tabitem
             const right = getPosition(activeTab).left - getPosition(activeTab.parentNode).left + activeTab.offsetWidth
             const navWidth = tab.scroll.offsetWidth
             const marginX = navWidth - right + 2
@@ -97,17 +105,21 @@ const active = tab => {
 }
 
 const setDraggable = tab => {
-    disposeDragItems(tab.dragItems)
+    disposeDragItems(tab.dragItems);
+
+    if (tab.el.querySelector('.tabs-item-wrap[draggable="true"]') === null) {
+        return;
+    }
 
     let dragItem = null;
     let index = 0
 
-    tab.dragItems = [...tab.el.firstChild.querySelectorAll('.tabs-item')]
+    tab.dragItems = [...tab.el.firstChild.querySelectorAll('.tabs-item-wrap')]
     tab.dragItems.forEach(item => {
         EventHandler.on(item, 'dragstart', e => {
             item.parentNode.classList.add('tab-dragging')
             item.classList.add('tab-drag')
-            tab.dragItems = [...tab.el.firstChild.querySelectorAll('.tabs-item')]
+            tab.dragItems = [...tab.el.firstChild.querySelectorAll('.tabs-item-wrap')]
             index = tab.dragItems.indexOf(item)
             dragItem = item
             e.dataTransfer.effectAllowed = 'move'
@@ -170,11 +182,18 @@ export function init(id, invoke, method) {
     const tab = { el, invoke, method }
     Data.set(id, tab)
 
-    tab.header = el.firstChild
+    const headerId = el.getAttribute("data-bb-header-id");
+    if (headerId) {
+        const header = document.getElementById(headerId)
+        tab.header = header.querySelector('.tabs > .tabs-header');
+    }
+    else {
+        tab.header = el.firstChild
+    }
+
     tab.wrap = tab.header.firstChild
     tab.scroll = tab.wrap.querySelector('.tabs-nav-scroll')
     tab.tabNav = tab.scroll.firstChild
-
     tab.resizeHandler = () => {
         resize(tab)
     }

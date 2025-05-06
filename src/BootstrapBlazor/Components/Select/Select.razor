@@ -1,33 +1,29 @@
 ﻿@namespace BootstrapBlazor.Components
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @typeparam TValue
-@inherits SingleSelectBase<TValue>
+@inherits SimpleSelectBase<TValue>
 @attribute [BootstrapModuleAutoLoader(JSObjectReference = true)]
 
 @if (IsShowLabel)
 {
-    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText"/>
+    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
 }
-<div @attributes="AdditionalAttributes" id="@Id" class="@ClassString">
+<div @attributes="AdditionalAttributes" id="@Id" class="@ClassString" data-bb-scroll-behavior="@ScrollIntoViewBehaviorString">
     <CascadingValue Value="this" IsFixed="true">
         @Options
     </CascadingValue>
     <RenderTemplate>
-        @{
-            ResetSelectedItem();
-        }
         <div class="dropdown-toggle" @onclick="@OnInternalClickAsync" data-bs-toggle="@ToggleString" data-bs-placement="@PlacementString"
              data-bs-offset="@OffsetString" data-bs-custom-class="@CustomClassString">
             @if (DisplayTemplate != null)
             {
                 <div id="@InputId" class="@InputClassString" tabindex="0">
-                    @DisplayTemplate(SelectedItem)
+                    @DisplayTemplate(SelectedRow)
                 </div>
             }
             else
             {
-                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedItem?.Text"
-                       @onchange="OnChange" readonly="@ReadonlyString"/>
+                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedRow?.Text" @onchange="OnChange" readonly="@ReadonlyString"/>
             }
             <span class="@AppendClassString"><i class="@DropdownIcon"></i></span>
         </div>
@@ -36,74 +32,61 @@
             <span class="@ClearClassString" @onclick="OnClearValue"><i class="@ClearIcon"></i></span>
         }
         <div class="dropdown-menu">
+            @if (ShowSearch)
+            {
+                <div class="dropdown-menu-search">
+                    <SearchInput @bind-Value="SearchText"></SearchInput>
+                </div>
+            }
+            @if (ShowLoading)
+            {
+                <div class="text-center">
+                    <Spinner Color="Color.Primary"/>
+                </div>
+            }
             @if (IsVirtualize)
             {
-                @if (ShowSearch)
-                {
-                    <div class="@SearchClassString">
-                        <SearchInput @bind-Value="SearchText" OnValueChanged="@SearchTextChanged"></SearchInput>
-                    </div>
-                }
-
-                @if (ShowLoading)
-                {
-                    <div class="text-center">
-                        <Spinner Color="Color.Primary"/>
-                    </div>
-                }
-
-                <div class="dropdown-virtual">
+                <div class="dropdown-menu-body dropdown-virtual">
                     @if (OnQueryAsync == null)
                     {
-                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow"/>
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow">
+                        </Virtualize>
                     }
                     else
                     {
-                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems" Placeholder="RenderPlaceHolderRow"
-                                    ItemContent="RenderRow" @ref="VirtualizeElement"/>
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems"
+                                    Placeholder="RenderPlaceHolderRow" ItemContent="RenderRow" @ref="_virtualizeElement">
+                        </Virtualize>
                     }
                 </div>
             }
+            else if (Rows.Count == 0)
+            {
+                <div class="dropdown-item">@NoSearchDataText</div>
+            }
             else
             {
-                @if (ShowSearch)
-                {
-                    <div class="@SearchClassString">
-                        <SearchInput @bind-Value="SearchText"></SearchInput>
-                    </div>
-                }
-
-                @if (ShowLoading)
-                {
-                    <div class="text-center">
-                        <Spinner Color="Color.Primary"/>
-                    </div>
-                }
-
-                @foreach (var itemGroup in _dataSource.GroupBy(i => i.GroupName))
-                {
-                    if (!string.IsNullOrEmpty(itemGroup.Key))
+                <div class="dropdown-menu-body">
+                    @foreach (var itemGroup in Rows.GroupBy(i => i.GroupName))
                     {
-                        if (GroupItemTemplate != null)
+                        if (!string.IsNullOrEmpty(itemGroup.Key))
                         {
-                            @GroupItemTemplate(itemGroup.Key)
+                            if (GroupItemTemplate != null)
+                            {
+                                @GroupItemTemplate(itemGroup.Key)
+                            }
+                            else
+                            {
+                                <Divider Text="@itemGroup.Key"/>
+                            }
                         }
-                        else
+
+                        @foreach (var item in itemGroup)
                         {
-                            <Divider Text="@itemGroup.Key"/>
+                            @RenderRow(item)
                         }
                     }
-
-                    @foreach (var item in itemGroup)
-                    {
-                        @RenderRow(item)
-                    }
-                }
-
-                @if (!_dataSource.Any())
-                {
-                    <div class="dropdown-item">@NoSearchDataText</div>
-                }
+                </div>
             }
         </div>
         @if (!IsPopover)
@@ -114,26 +97,24 @@
 </div>
 
 @code {
-
     RenderFragment<SelectedItem> RenderRow => item =>
-        @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
-            @if (ItemTemplate != null)
-            {
-                @ItemTemplate(item)
-            }
-            else if (IsMarkupString)
-            {
-                @((MarkupString)item.Text)
-            }
-            else
-            {
-                @item.Text
-            }
-        </div>;
+    @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
+        @if (ItemTemplate != null)
+        {
+            @ItemTemplate(item)
+        }
+        else if (IsMarkupString)
+        {
+            @((MarkupString)item.Text)
+        }
+        else
+        {
+            @item.Text
+        }
+    </div>;
 
     RenderFragment<PlaceholderContext> RenderPlaceHolderRow => context =>
-        @<div class="dropdown-item">
-            <div class="is-ph"></div>
-        </div>;
-
+    @<div class="dropdown-item">
+        <div class="is-ph"></div>
+    </div>;
 }

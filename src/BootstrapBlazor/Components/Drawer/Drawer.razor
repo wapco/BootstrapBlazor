@@ -1,17 +1,19 @@
 ﻿@namespace BootstrapBlazor.Components
 @inherits BootstrapModuleComponentBase
-@attribute [BootstrapModuleAutoLoader]
+@attribute [BootstrapModuleAutoLoader(JSObjectReference = true)]
 
-<div @attributes="@AdditionalAttributes" tabindex="-1" class="@ClassString" style="@StyleString" id="@Id">
+<div @attributes="@AdditionalAttributes" tabindex="-1" class="@ClassString" style="@StyleString" id="@Id"
+     data-bb-keyboard="@KeyboardString" data-bb-scroll="@BodyScrollString">
     @if (ShowBackdrop)
     {
-        <div tabindex="-1" class="drawer-backdrop" @onclick="@OnContainerClick">
-        </div>
+        @RenderBackdrop()
     }
     <div tabindex="-1" class="@DrawerClassString" style="@DrawerStyleString" @onclick:stopPropagation>
         <div class="drawer-content">
-            <CascadingValue Value="Close" IsFixed=" true">
-                @ChildContent
+            <CascadingValue Name="BodyContext" Value="BodyContext" IsFixed="true">
+                <CascadingValue Value="Close" IsFixed=" true">
+                    @ChildContent
+                </CascadingValue>
             </CascadingValue>
         </div>
         @if (AllowResize)

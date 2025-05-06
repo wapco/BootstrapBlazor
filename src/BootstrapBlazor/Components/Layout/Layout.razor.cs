@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Localization;
@@ -14,9 +13,69 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// Layout 组件
 /// </summary>
-public partial class Layout : IHandlerException
+public partial class Layout : IHandlerException, ITabHeader
 {
     private bool IsSmallScreen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tab style. Default is <see cref="TabStyle.Default"/>.
+    /// </summary>
+    [Parameter]
+    public TabStyle TabStyle { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether show the toolbar. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool ShowToolbar { get; set; }
+
+    /// <summary>
+    /// Gets or sets the template of the toolbar button. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<Tab>? ToolbarTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether show the full screen button. Default is true.
+    /// </summary>
+    [Parameter]
+    public bool ShowFullscreenToolbarButton { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the full screen toolbar button icon string. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? FullscreenToolbarButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the full screen toolbar button tooltip string. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? FullscreenToolbarTooltipText { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether show the full screen button. Default is true.
+    /// </summary>
+    [Parameter]
+    public bool ShowRefreshToolbarButton { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the refresh toolbar button icon string. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? RefreshToolbarButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the refresh toolbar button tooltip string. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? RefreshToolbarTooltipText { get; set; }
+
+    /// <summary>
+    /// Gets or sets the refresh toolbar button click event callback. Default is null.
+    /// </summary>
+    [Parameter]
+    public Func<Task>? OnToolbarRefreshCallback { get; set; }
 
     /// <summary>
     /// 获得/设置 侧边栏状态
@@ -67,19 +126,47 @@ public partial class Layout : IHandlerException
     public RenderFragment? Side { get; set; }
 
     /// <summary>
-    /// 获得/设置 NotAuthorized 模板
+    /// 获得/设置 是否显示分割栏 默认 false 不显示
+    /// 仅在 左右布局时有效
+    /// </summary>
+    [Parameter]
+    public bool ShowSplitBar { get; set; }
+
+    /// <summary>
+    /// 获得/设置 是否显示分割栏 默认 false 不显示
+    /// 仅在 左右布局时有效
+    /// </summary>
+    [Parameter]
+    [ExcludeFromCodeCoverage]
+    [Obsolete("已弃用，请使用 ShowSplitBar 单词拼写错误；Deprecated. Please use 'ShowSplitBar' instead. The word 'Splitebar' is misspelled.")]
+    public bool ShowSplitebar { get; set; }
+
+    /// <summary>
+    /// 获得/设置 侧边栏最小宽度 默认 null 未设置
+    /// </summary>
+    [Parameter]
+    public int? SidebarMinWidth { get; set; }
+
+    /// <summary>
+    /// 获得/设置 侧边栏最大宽度 默认 null 未设置
+    /// </summary>
+    [Parameter]
+    public int? SidebarMaxWidth { get; set; }
+
+    /// <summary>
+    /// 获得/设置 NotAuthorized 模板 默认 null NET6.0/7.0 有效
     /// </summary>
     [Parameter]
     public RenderFragment? NotAuthorized { get; set; }
 
     /// <summary>
-    /// 获得/设置 NotFound 模板
+    /// 获得/设置 NotFound 模板 默认 null NET6.0/7.0 有效
     /// </summary>
     [Parameter]
     public RenderFragment? NotFound { get; set; }
 
     /// <summary>
-    /// 获得/设置 NotFound 标签文本
+    /// 获得/设置 NotFound 标签文本 默认 null NET6.0/7.0 有效
     /// </summary>
     [Parameter]
     [NotNull]
@@ -122,6 +209,12 @@ public partial class Layout : IHandlerException
     /// </summary>
     [Parameter]
     public bool UseTabSet { get; set; }
+
+    /// <summary>
+    /// 获得/设置 是否固定多标签 Header 默认 false
+    /// </summary>
+    [Parameter]
+    public bool IsFixedTabHeader { get; set; }
 
     /// <summary>
     /// 获得/设置 是否仅渲染 Active 标签
@@ -178,7 +271,7 @@ public partial class Layout : IHandlerException
     public Func<bool, Task>? OnCollapsed { get; set; }
 
     /// <summary>
-    /// 获得/设置 默认标签页 关闭所以标签页时自动打开此地址 默认 null 未设置
+    /// 获得/设置 默认标签页 关闭所有标签页时自动打开此地址 默认 null 未设置
     /// </summary>
     [Parameter]
     public string TabDefaultUrl { get; set; } = "";
@@ -213,6 +306,60 @@ public partial class Layout : IHandlerException
     [Parameter]
     public string NotAuthorizeUrl { get; set; } = "/Account/Login";
 
+    /// <summary>
+    /// Gets or sets whether enable tab context menu. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool ShowTabContextMenu { get; set; }
+
+    /// <summary>
+    /// Gets or sets the template of before tab context menu. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<Tab>? BeforeTabContextMenuTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the template of tab context menu. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<Tab>? TabContextMenuTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of tab item context menu refresh button. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? TabContextMenuRefreshIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of tab item context menu close button. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? TabContextMenuCloseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of tab item context menu close other button. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? TabContextMenuCloseOtherIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of tab item context menu close all button. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? TabContextMenuCloseAllIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets before popup context menu callback. Default is null.
+    /// </summary>
+    [Parameter]
+    public Func<TabItem, Task<bool>>? OnBeforeShowContextMenu { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether show the tab in header. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool ShowTabInHeader { get; set; }
+
     [Inject]
     [NotNull]
     private NavigationManager? Navigation { get; set; }
@@ -233,8 +380,10 @@ public partial class Layout : IHandlerException
     /// </summary>
     private string? ClassString => CssBuilder.Default("layout")
         .AddClass("has-sidebar", Side != null && IsFullSide)
-        .AddClass("is-page", IsPage)
         .AddClass("has-footer", ShowFooter && Footer != null)
+        .AddClass("is-collapsed", IsCollapsed)
+        .AddClass("is-fixed-tab", IsFixedTabHeader && UseTabSet)
+        .AddClass("is-page", IsPage)
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
@@ -249,7 +398,6 @@ public partial class Layout : IHandlerException
     /// </summary>
     private string? FooterClassString => CssBuilder.Default("layout-footer")
         .AddClass("is-fixed", IsFixedFooter)
-        .AddClass("is-collapsed", IsCollapsed)
         .Build();
 
     /// <summary>
@@ -263,7 +411,6 @@ public partial class Layout : IHandlerException
     /// 获得 侧边栏样式
     /// </summary>
     private string? SideClassString => CssBuilder.Default("layout-side")
-        .AddClass("is-collapsed", IsCollapsed)
         .AddClass("is-fixed-header", IsFixedHeader)
         .AddClass("is-fixed-footer", IsFixedFooter)
         .Build();
@@ -272,21 +419,7 @@ public partial class Layout : IHandlerException
     /// 获得 侧边栏 Style 字符串
     /// </summary>
     private string? SideStyleString => CssBuilder.Default()
-        .AddClass($"width: {SideWidth.ConvertToPercentString()}", !IsCollapsed && !string.IsNullOrEmpty(SideWidth) && SideWidth != "0")
-        .Build();
-
-    /// <summary>
-    /// 获得 Main 样式
-    /// </summary>
-    private string? MainClassString => CssBuilder.Default("layout-main")
-        .AddClass("is-collapsed", IsCollapsed)
-        .Build();
-
-    /// <summary>
-    /// 获得 展开收缩 Bar 样式
-    /// </summary>
-    private string? CollapseBarClassString => CssBuilder.Default("layout-header-bar")
-        .AddClass("is-collapsed", IsCollapsed)
+        .AddClass($"--bb-layout-sidebar-width: {SideWidth.ConvertToPercentString()}", !string.IsNullOrEmpty(SideWidth) && SideWidth != "0")
         .Build();
 
     /// <summary>
@@ -299,14 +432,12 @@ public partial class Layout : IHandlerException
     /// 获得/设置 Gets or sets a collection of additional assemblies that should be searched for components that can match URIs.
     /// </summary>
     [Parameter]
-    [NotNull]
     public IEnumerable<Assembly>? AdditionalAssemblies { get; set; }
 
     /// <summary>
     /// 获得/设置 鼠标悬停提示文字信息
     /// </summary>
     [Parameter]
-    [NotNull]
     public string? TooltipText { get; set; }
 
     /// <summary>
@@ -327,17 +458,17 @@ public partial class Layout : IHandlerException
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
+    [Inject, NotNull]
+    private IServiceProvider? ServiceProvider { get; set; }
+
     [Inject]
     [NotNull]
     private IStringLocalizer<Layout>? Localizer { get; set; }
 
-    [Inject]
-    private IAuthorizationPolicyProvider? AuthorizationPolicyProvider { get; set; }
+    private bool _init;
+    private LayoutHeader? _layoutHeader = null;
 
-    [Inject]
-    private IAuthorizationService? AuthorizationService { get; set; }
-
-    private bool IsInit { get; set; }
+    private ITabHeader? TabHeader => ShowTabInHeader ? this : null;
 
     /// <summary>
     /// <inheritdoc/>
@@ -367,13 +498,13 @@ public partial class Layout : IHandlerException
         if (AuthenticationStateTask != null)
         {
             // wasm 模式下 开启权限必须提供 AdditionalAssemblies 参数
-            AdditionalAssemblies ??= new[] { Assembly.GetEntryAssembly()! };
+            AdditionalAssemblies ??= [Assembly.GetEntryAssembly()!];
 
-            var url = Navigation.ToBaseRelativePath(Navigation.Uri);
-            var context = RouteTableFactory.Create(AdditionalAssemblies, url);
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var context = RouteTableFactory.Create(AdditionalAssemblies, uri.LocalPath);
             if (context.Handler != null)
             {
-                IsAuthenticated = await context.Handler.IsAuthorizedAsync(AuthenticationStateTask, AuthorizationPolicyProvider, AuthorizationService, Resource);
+                IsAuthenticated = await context.Handler.IsAuthorizedAsync(ServiceProvider, AuthenticationStateTask, Resource);
 
                 // 检查当前 Url
                 if (OnAuthorizing != null)
@@ -387,7 +518,7 @@ public partial class Layout : IHandlerException
             IsAuthenticated = true;
         }
 
-        IsInit = true;
+        _init = true;
     }
 
     /// <summary>
@@ -398,8 +529,6 @@ public partial class Layout : IHandlerException
         base.OnParametersSet();
 
         TooltipText ??= Localizer[nameof(TooltipText)];
-        SideWidth ??= "300";
-
         MenuBarIcon ??= IconTheme.GetIconByKey(ComponentIcons.LayoutMenuBarIcon);
     }
 
@@ -458,12 +587,26 @@ public partial class Layout : IHandlerException
     }
 
     /// <summary>
-    /// 点击 收缩展开按钮时回调此方法
+    /// 点击菜单时回调此方法
     /// </summary>
     /// <returns></returns>
-    private async Task CollapseMenu()
+    private async Task ClickMenu(MenuItem item)
     {
-        IsCollapsed = !IsCollapsed;
+        // 小屏幕时生效
+        if (IsSmallScreen && !item.Items.Any())
+        {
+            IsCollapsed = false;
+            await TriggerCollapseChanged();
+        }
+
+        if (OnClickMenu != null)
+        {
+            await OnClickMenu(item);
+        }
+    }
+
+    private async Task TriggerCollapseChanged()
+    {
         if (IsCollapsedChanged.HasDelegate)
         {
             await IsCollapsedChanged.InvokeAsync(IsCollapsed);
@@ -475,23 +618,12 @@ public partial class Layout : IHandlerException
         }
     }
 
-    /// <summary>
-    /// 点击菜单时回调此方法
-    /// </summary>
-    /// <returns></returns>
-    private Func<MenuItem, Task> ClickMenu() => async item =>
+    private async Task ToggleSidebar()
     {
-        // 小屏幕时生效
-        if (IsSmallScreen && !item.Items.Any())
-        {
-            await CollapseMenu();
-        }
+        IsCollapsed = !IsCollapsed;
 
-        if (OnClickMenu != null)
-        {
-            await OnClickMenu(item);
-        }
-    };
+        await TriggerCollapseChanged();
+    }
 
     /// <summary>
     /// 上次渲染错误内容
@@ -509,6 +641,31 @@ public partial class Layout : IHandlerException
         StateHasChanged();
         return Task.CompletedTask;
     }
+
+    private string? GetTargetString() => IsFixedTabHeader ? ".tabs-body" : null;
+
+    private RenderFragment RenderTabHeader() => builder =>
+    {
+        builder.OpenComponent<LayoutHeader>(0);
+        builder.AddComponentReferenceCapture(1, instance => _layoutHeader = (LayoutHeader)instance);
+        builder.CloseComponent();
+    };
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <param name="renderFragment"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    public void Render(RenderFragment renderFragment)
+    {
+        _layoutHeader?.Render(renderFragment);
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    public string GetId() => $"{Id}_tab_header";
 
     /// <summary>
     /// <inheritdoc/>

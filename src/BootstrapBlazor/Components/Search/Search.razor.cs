@@ -8,97 +8,169 @@ using Microsoft.Extensions.Localization;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Search 组件
+/// Search component
 /// </summary>
-public partial class Search
+public partial class Search<TValue>
 {
-    [NotNull]
-    private string? ButtonIcon { get; set; }
+    /// <summary>
+    /// Gets or sets the icon template. Default is null if not set.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SearchContext<TValue>>? IconTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示清除按钮 默认为 false 不显示
+    /// Gets or sets whether to show the clear button. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool IsClearable { get; set; }
+
+    /// <summary>
+    /// Gets or sets the clear icon. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? ClearIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to show the clear button. Default is false.
     /// </summary>
     [Parameter]
     public bool ShowClearButton { get; set; }
 
     /// <summary>
-    /// Clear button icon
+    /// Gets or sets the icon of clear button. Default is null.
     /// </summary>
     [Parameter]
     public string? ClearButtonIcon { get; set; }
 
     /// <summary>
-    /// Clear button text
+    /// Gets or sets the text of clear button. Default is null.
     /// </summary>
     [Parameter]
     public string? ClearButtonText { get; set; }
 
     /// <summary>
-    /// Clear button color
+    /// Gets or sets the color of clear button. Default is <see cref="Color.Primary"/>.
     /// </summary>
     [Parameter]
-    public Color ClearButtonColor { get; set; } = Color.Secondary;
+    public Color ClearButtonColor { get; set; } = Color.Primary;
 
     /// <summary>
-    /// 获得/设置 搜索按钮颜色
+    /// Gets or sets whether to show the search button. Default is true.
+    /// </summary>
+    [Parameter]
+    public bool ShowSearchButton { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the search button color. Default is <see cref="Color.Primary"/>.
     /// </summary>
     [Parameter]
     public Color SearchButtonColor { get; set; } = Color.Primary;
 
     /// <summary>
-    /// 获得/设置 搜索按钮图标
+    /// Gets or sets the search button icon. Default is null.
     /// </summary>
     [Parameter]
     public string? SearchButtonIcon { get; set; }
 
     /// <summary>
-    /// 获得/设置 正在搜索按钮图标
+    /// Gets or sets the loading icon for the search button. Default is null.
     /// </summary>
     [Parameter]
     public string? SearchButtonLoadingIcon { get; set; }
 
     /// <summary>
-    /// 获得/设置 点击搜索后是否自动清空搜索框
-    /// </summary>
-    [Parameter]
-    public bool IsAutoClearAfterSearch { get; set; }
-
-    /// <summary>
-    /// 获得/设置 搜索模式是否为输入即触发 默认 false 点击搜索按钮触发
-    /// </summary>
-    [Parameter]
-    public bool IsOnInputTrigger { get; set; }
-
-    /// <summary>
-    /// 获得/设置 搜索按钮文字
+    /// Gets or sets the search button text. Default is null.
     /// </summary>
     [Parameter]
     [NotNull]
     public string? SearchButtonText { get; set; }
 
     /// <summary>
-    /// 获得/设置 点击搜索按钮时回调委托
+    /// Gets or sets the button template. Default is null.
     /// </summary>
     [Parameter]
-    public Func<string, Task>? OnSearch { get; set; }
+    public RenderFragment<SearchContext<TValue>>? ButtonTemplate { get; set; }
 
     /// <summary>
-    /// 获得/设置 点击清空按钮时回调委托
+    /// Gets or sets the prefix button template. Default is null.
     /// </summary>
     [Parameter]
-    public Func<string, Task>? OnClear { get; set; }
+    public RenderFragment<SearchContext<TValue>>? PrefixButtonTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to show the prefix icon. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool ShowPrefixIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the prefix icon. Default is null.
+    /// </summary>
+    [Parameter]
+    public string? PrefixIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the prefix icon template. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SearchContext<TValue>>? PrefixIconTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to automatically clear the search box after searching. Deprecated.
+    /// </summary>
+    [Parameter]
+    [Obsolete("Deprecated. Just delete it.")]
+    [ExcludeFromCodeCoverage]
+    public bool IsAutoClearAfterSearch { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the search is triggered by input. Default is true. If false, the search button must be clicked to trigger.
+    /// </summary>
+    [Parameter]
+    public bool IsTriggerSearchByInput { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the callback delegate when the search button is clicked.
+    /// </summary>
+    [Parameter]
+    public Func<string, Task<IEnumerable<TValue>>>? OnSearch { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback method to get display text. Default is null, using ToString() method.
+    /// </summary>
+    [Parameter]
+    [NotNull]
+    public Func<TValue, string?>? OnGetDisplayText { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event callback when the clear button is clicked. Default is null.
+    /// </summary>
+    [Parameter]
+    public Func<Task>? OnClear { get; set; }
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Search>? Localizer { get; set; }
+    private IStringLocalizer<Search<TValue>>? Localizer { get; set; }
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    protected override string? ClassString => CssBuilder.Default("search")
+    private string? ClassString => CssBuilder.Default("search auto-complete")
         .AddClassFromAttributes(AdditionalAttributes)
-        .AddClass(base.ClassString)
         .Build();
+
+    private string? UseInputString => IsTriggerSearchByInput ? null : "false";
+
+    private string? ShowDropdownListOnFocusString => IsTriggerSearchByInput ? "true" : null;
+
+    [NotNull]
+    private string? ButtonIcon { get; set; }
+
+    [NotNull]
+    private List<TValue>? _filterItems = null;
+
+    [NotNull]
+    private SearchContext<TValue>? _context = null;
+
+    [NotNull]
+    private RenderTemplate? _dropdown = null;
 
     /// <summary>
     /// <inheritdoc/>
@@ -107,10 +179,7 @@ public partial class Search
     {
         base.OnInitialized();
 
-        SearchButtonText ??= Localizer[nameof(SearchButtonText)];
-
-        SkipEnter = true;
-        SkipEsc = true;
+        _context = new SearchContext<TValue>(this, OnSearchClick, OnClearClick);
     }
 
     /// <summary>
@@ -120,92 +189,90 @@ public partial class Search
     {
         base.OnParametersSet();
 
+        ClearIcon ??= IconTheme.GetIconByKey(ComponentIcons.InputClearIcon);
         ClearButtonIcon ??= IconTheme.GetIconByKey(ComponentIcons.SearchClearButtonIcon);
         SearchButtonIcon ??= IconTheme.GetIconByKey(ComponentIcons.SearchButtonIcon);
         SearchButtonLoadingIcon ??= IconTheme.GetIconByKey(ComponentIcons.SearchButtonLoadingIcon);
+        PrefixIcon ??= IconTheme.GetIconByKey(ComponentIcons.SearchButtonIcon);
 
-        ButtonIcon = SearchButtonIcon;
+        SearchButtonText ??= Localizer[nameof(SearchButtonText)];
+        ButtonIcon ??= SearchButtonIcon;
+        NoDataTip ??= Localizer[nameof(NoDataTip)];
+        _filterItems ??= [];
+
+        if (Debounce == 0)
+        {
+            Debounce = 200;
+        }
     }
 
-    /// <summary>
-    /// 点击搜索按钮时触发此方法
-    /// </summary>
-    /// <returns></returns>
-    protected async Task OnSearchClick()
+    private string _displayText = "";
+    private async Task OnSearchClick()
     {
         if (OnSearch != null)
         {
             ButtonIcon = SearchButtonLoadingIcon;
-            await OnSearch(CurrentValueAsString);
+            await Task.Yield();
+
+            var items = await OnSearch(_displayText);
+            _filterItems = [.. items];
             ButtonIcon = SearchButtonIcon;
+            if (IsTriggerSearchByInput == false)
+            {
+                await InvokeVoidAsync("showList", Id);
+            }
         }
-
-        if (IsAutoClearAfterSearch)
-        {
-            CurrentValueAsString = "";
-        }
-
-        await FocusAsync();
     }
 
-    /// <summary>
-    /// 点击搜索按钮时触发此方法
-    /// </summary>
-    /// <returns></returns>
-    protected async Task OnClearClick()
+    private async Task OnClearClick()
     {
+        _displayText = "";
         if (OnClear != null)
         {
-            await OnClear(CurrentValueAsString);
+            await OnClear();
         }
-        CurrentValueAsString = "";
+        await OnSearchClick();
     }
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    protected override async Task CustomKeyUp(string key)
+    private string? GetDisplayText(TValue item)
     {
-        if (!string.IsNullOrEmpty(CurrentValueAsString))
+        var displayText = item?.ToString();
+        if (OnGetDisplayText != null)
         {
-            if (key == "Escape")
-            {
-                if (OnEscAsync != null)
-                {
-                    await OnEscAsync(Value);
-                }
+            displayText = OnGetDisplayText(item);
+        }
+        return displayText;
+    }
 
-                // 清空
-                await OnClearClick();
-            }
+    private async Task OnClickItem(TValue val)
+    {
+        CurrentValue = val;
+        _displayText = GetDisplayText(val) ?? "";
 
-            if (IsOnInputTrigger || key == "Enter")
-            {
-                if (OnEnterAsync != null)
-                {
-                    await OnEnterAsync(Value);
-                }
+        if (OnSelectedItemChanged != null)
+        {
+            await OnSelectedItemChanged(val);
+        }
 
-                // 搜索
-                await OnSearchClick();
-            }
+        if (OnBlurAsync != null)
+        {
+            await OnBlurAsync(Value);
         }
     }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// TriggerFilter method called by Javascript.
     /// </summary>
-    /// <param name="item"></param>
-    /// <returns></returns>
-    protected override async Task OnClickItem(string item)
+    /// <param name="val"></param>
+    [JSInvokable]
+    public async Task TriggerFilter(string val)
     {
-        await base.OnClickItem(item);
-
-        if (IsOnInputTrigger)
+        _displayText = val;
+        if (IsTriggerSearchByInput)
         {
             await OnSearchClick();
+            StateHasChanged();
         }
+        _dropdown.Render();
     }
 }

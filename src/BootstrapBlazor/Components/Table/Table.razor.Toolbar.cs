@@ -16,6 +16,12 @@ public partial class Table<TItem>
     public bool ShowToolbar { get; set; }
 
     /// <summary>
+    /// Gets or sets the template of table toolbar. Default is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ToolbarTemplate { get; set; }
+
+    /// <summary>
     /// 获得/设置 首次加载是否显示加载骨架屏 默认 false 不显示 使用 <see cref="ShowLoadingInFirstRender" /> 参数值
     /// </summary>
     [Parameter]
@@ -464,7 +470,7 @@ public partial class Table<TItem>
     {
         // 不可见列
         var items = VisibleColumns.Where(i => i.Visible);
-        return Columns.Where(i => !i.GetIgnore() && items.Any(v => v.Name == i.GetFieldName()));
+        return Columns.Where(i => !i.GetIgnore() && items.Any(v => v.Name == i.GetFieldName()) && ScreenSize >= i.ShownWithBreakPoint);
     }
 
     private bool GetColumnsListState(ColumnVisibleItem item) => VisibleColumns.Find(i => i.Name == item.Name) is { Visible: true } && VisibleColumns.Where(i => i.Visible).DistinctBy(i => i.Name).Count(i => i.Visible) == 1;
@@ -598,22 +604,16 @@ public partial class Table<TItem>
 
     private async Task ShowToastAsync(string title, string content, ToastCategory category = ToastCategory.Information)
     {
-        var option = new ToastOption
-        {
-            Category = category,
-            Title = title,
-            Content = content
-        };
+        var option = GetToastOption(title);
+        option.Category = category;
+        option.Content = content;
         await Toast.Show(option);
     }
 
     private async Task ShowDeleteToastAsync(string title, string content, ToastCategory category = ToastCategory.Information)
     {
-        var option = new ToastOption
-        {
-            Category = category,
-            Title = title
-        };
+        var option = GetToastOption(title);
+        option.Category = category;
         option.Content = string.Format(content, Math.Ceiling(option.Delay / 1000.0));
         await Toast.Show(option);
     }
@@ -622,7 +622,7 @@ public partial class Table<TItem>
     /// 取消保存方法
     /// </summary>
     /// <returns></returns>
-    protected void CancelSave()
+    protected async Task CancelSave()
     {
         if (EditMode == EditMode.EditForm)
         {
@@ -634,6 +634,11 @@ public partial class Table<TItem>
             SelectedRows.Clear();
             AddInCell = false;
             EditInCell = false;
+        }
+
+        if (OnAfterCancelSaveAsync != null)
+        {
+            await OnAfterCancelSaveAsync();
         }
     }
 
@@ -649,7 +654,7 @@ public partial class Table<TItem>
         if (DynamicContext != null)
         {
             await DynamicContext.SetValue(context.Model);
-            RowsCache = null;
+            _rowsCache = null;
             valid = true;
         }
         else
@@ -668,11 +673,8 @@ public partial class Table<TItem>
         }
         if (ShowToastAfterSaveOrDeleteModel)
         {
-            var option = new ToastOption
-            {
-                Category = valid ? ToastCategory.Success : ToastCategory.Error,
-                Title = SaveButtonToastTitle
-            };
+            var option = GetToastOption(SaveButtonToastTitle);
+            option.Category = valid ? ToastCategory.Success : ToastCategory.Error;
             option.Content = string.Format(SaveButtonToastResultContent, valid ? SuccessText : FailText, Math.Ceiling(option.Delay / 1000.0));
             await Toast.Show(option);
         }
@@ -850,6 +852,7 @@ public partial class Table<TItem>
     protected async Task ShowEditDialog(ItemChangedType changedType)
     {
         var saved = false;
+        var triggerFromSave = false;
         var option = new EditDialogOption<TItem>()
         {
             Class = "modal-dialog-table",
@@ -860,10 +863,18 @@ public partial class Table<TItem>
             IsDraggable = EditDialogIsDraggable,
             ShowMaximizeButton = EditDialogShowMaximizeButton,
             FullScreenSize = EditDialogFullScreenSize,
-            OnCloseAsync = () => OnCloseEditDialogCallbackAsync(saved),
+            OnCloseAsync = async () =>
+            {
+                if (triggerFromSave == false && OnAfterCancelSaveAsync != null)
+                {
+                    await OnAfterCancelSaveAsync();
+                }
+                await OnCloseEditDialogCallbackAsync(saved);
+            },
             OnEditAsync = async context =>
             {
                 saved = await OnSaveEditCallbackAsync(context, changedType);
+                triggerFromSave = true;
                 return saved;
             }
         };
@@ -879,7 +890,14 @@ public partial class Table<TItem>
         var saved = false;
         var editOption = new TableEditDrawerOption<TItem>()
         {
-            OnCloseAsync = () => OnCloseEditDialogCallbackAsync(saved),
+            OnCloseAsync = async () =>
+            {
+                if (OnAfterCancelSaveAsync != null)
+                {
+                    await OnAfterCancelSaveAsync();
+                }
+                await OnCloseEditDialogCallbackAsync(saved);
+            },
             OnEditAsync = async context =>
             {
                 saved = await OnSaveEditCallbackAsync(context, changedType);
@@ -888,7 +906,14 @@ public partial class Table<TItem>
         };
         AppendOptions(editOption, changedType);
 
-        var option = new DrawerOption() { Class = "drawer-table-edit", Placement = Placement.Right, AllowResize = true, IsBackdrop = true, Width = "600px" };
+        var option = new DrawerOption()
+        {
+            Class = "drawer-table-edit",
+            Placement = Placement.Right,
+            AllowResize = true,
+            IsBackdrop = true,
+            Width = "600px"
+        };
         if (OnBeforeShowDrawer != null)
         {
             await OnBeforeShowDrawer(option);
@@ -1002,11 +1027,8 @@ public partial class Table<TItem>
 
             if (ShowToastAfterSaveOrDeleteModel)
             {
-                var option = new ToastOption()
-                {
-                    Title = DeleteButtonToastTitle,
-                    Category = ret ? ToastCategory.Success : ToastCategory.Error
-                };
+                var option = GetToastOption(DeleteButtonToastTitle);
+                option.Category = ret ? ToastCategory.Success : ToastCategory.Error;
                 option.Content = string.Format(DeleteButtonToastResultContent, ret ? SuccessText : FailText, Math.Ceiling(option.Delay / 1000.0));
                 await Toast.Show(option);
             }
@@ -1086,7 +1108,7 @@ public partial class Table<TItem>
 
     private void QueryDynamicItems(QueryPageOptions queryOption, IDynamicObjectContext? context)
     {
-        RowsCache = null;
+        _rowsCache = null;
         if (context != null)
         {
             var items = context.GetItems();
@@ -1116,11 +1138,8 @@ public partial class Table<TItem>
         }
         else if (ShowToastBeforeExport)
         {
-            var option = new ToastOption
-            {
-                Title = ExportToastTitle,
-                Category = ToastCategory.Information
-            };
+            var option = GetToastOption(ExportToastTitle);
+            option.Category = ToastCategory.Information;
             option.Content = string.Format(ExportToastInProgressContent, Math.Ceiling(option.Delay / 1000.0));
             await Toast.Show(option);
         }
@@ -1133,14 +1152,24 @@ public partial class Table<TItem>
         }
         else if (ShowToastAfterExport)
         {
-            var option = new ToastOption
-            {
-                Title = ExportToastTitle,
-                Category = ret ? ToastCategory.Success : ToastCategory.Error
-            };
+            var option = GetToastOption(ExportToastTitle);
+            option.Category = ret ? ToastCategory.Success : ToastCategory.Error;
             option.Content = string.Format(ExportToastContent, ret ? SuccessText : FailText, Math.Ceiling(option.Delay / 1000.0));
             await Toast.Show(option);
         }
+    }
+
+    private ToastOption GetToastOption(string title)
+    {
+        var option = new ToastOption()
+        {
+            Title = title,
+        };
+        if (Options.CurrentValue.ToastDelay > 0)
+        {
+            option.Delay = Options.CurrentValue.ToastDelay;
+        }
+        return option;
     }
 
     private Task ExportAsync() => ExecuteExportAsync(() => OnExportAsync != null

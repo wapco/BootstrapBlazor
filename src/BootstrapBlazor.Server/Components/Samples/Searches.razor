@@ -1,5 +1,7 @@
 ﻿@page "/search"
 @inject IStringLocalizer<Searches> Localizer
+@inject IStringLocalizer<Foo> LocalizerFoo
+@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["SearchesTitle"]</h3>
 
@@ -8,60 +10,187 @@
 <DemoBlock Title="@Localizer["SearchesNormalTitle"]"
            Introduction="@Localizer["SearchesNormalIntro"]"
            Name="Normal">
-    <p>@((MarkupString)Localizer["SearchesNormalDescription"].Value)</p>
-    <Search IgnoreCase="true"
-            IsLikeMatch="true"
-            IsAutoFocus="true"
+    <section ignore>@((MarkupString)Localizer["SearchesNormalDescription"].Value)</section>
+    <Search IsAutoFocus="true"
             PlaceHolder="@Localizer["SearchesPlaceHolder"]"
-            Items="@Items"
             OnSearch="@OnSearch"
-            IsSelectAllTextOnFocus="true" />
-    <ConsoleLogger @ref="Logger" />
-</DemoBlock>
-
-<DemoBlock Title="@Localizer["SearchesClearValueTitle"]"
-           Introduction="@Localizer["SearchesClearValueIntro"]"
-           Name="ClearValue">
-    <Search IgnoreCase="true"
-            IsLikeMatch="true"
-            IsAutoClearAfterSearch="true"
-            PlaceHolder="@Localizer["SearchesPlaceHolder"]"
-            Items="@Items"
-            OnSearch="@OnClearSearch" />
-    <ConsoleLogger @ref="ClearLogger" />
+            IsSelectAllTextOnFocus="true"></Search>
+    <ConsoleLogger @ref="Logger"></ConsoleLogger>
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["SearchesDisplayButtonTitle"]"
            Introduction="@Localizer["SearchesDisplayButtonIntro"]"
            Name="DisplayButton">
-    <Search IgnoreCase="true"
-            IsLikeMatch="true"
-            PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+    <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
             ShowClearButton="true"
-            Items="@Items"
-            OnSearch="@OnDisplaySearch"
-            OnClear="@OnClear"></Search>
-    <ConsoleLogger @ref="DisplayLogger" />
+            OnSearch="@OnDisplaySearch"></Search>
+    <ConsoleLogger @ref="DisplayLogger"></ConsoleLogger>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["SearchesItemTemplateTitle"]"
+           Introduction="@Localizer["SearchesItemTemplateIntro"]"
+           Name="ItemTemplate">
+    <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+            OnGetDisplayText="OnGetDisplayText"
+            OnSearch="@OnSearchFoo">
+        <ItemTemplate>
+            <div class="search-result">
+                <div class="search-result-avatar">
+                    <img src="@WebsiteOption.CurrentValue.GetAvatarUrl(context.Id)" alt="avatar" />
+                </div>
+                <div class="search-result-main">
+                    <div class="search-result-name">@context.Name</div>
+                    <div class="search-result-address">@context.Address</div>
+                </div>
+                <div class="search-result-circle">
+                    <Circle Value="@context.Count" Color="Color.Info" StrokeWidth="4" Width="60" />
+                </div>
+            </div>
+        </ItemTemplate>
+    </Search>
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["SearchesKeyboardsTitle"]"
            Introduction="@Localizer["SearchesKeyboardsIntro"]"
            Name="keyboards">
-    <Search IgnoreCase="true"
-            IsLikeMatch="true"
-            PlaceHolder="@Localizer["SearchesPlaceHolder"]"
-            IsOnInputTrigger="true"
-            Items="@Items"
-            OnSearch="@OnKeyboardSearch" />
-    <ConsoleLogger @ref="KeyboardLogger" />
+    <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+            IsTriggerSearchByInput="false"
+            OnSearch="@OnKeyboardSearch"></Search>
+    <ConsoleLogger @ref="KeyboardLogger"></ConsoleLogger>
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["SearchesValidateFormTitle"]"
            Introduction="@Localizer["SearchesValidateFormIntro"]"
            Name="ValidateForm">
     <ValidateForm Model="@Model">
-        <Search Items="StaticItems" IsOnInputTrigger="true" @bind-Value="Model.Name" />
+        <Search @bind-Value="Model.Name" OnSearch="@OnModelSearch"></Search>
     </ValidateForm>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["SearchesShowPrefixIconTitle"]"
+           Introduction="@Localizer["SearchesShowPrefixIconIntro"]"
+           Name="ShowPrefixIcon">
+    <section ignore>@((MarkupString)Localizer["SearchesShowPrefixIconDescription"].Value)</section>
+    <div class="row g-3">
+        <div class="col-12 col-sm-6">
+            <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+                    OnSearch="@OnModelSearch"
+                    ShowClearButton="false" ShowSearchButton="false"
+                    ShowPrefixIcon="true" PrefixIcon="fa fa-flag"></Search>
+        </div>
+        <div class="col-12 col-sm-6">
+            <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+                    OnSearch="@OnModelSearch"
+                    ShowClearButton="false" ShowSearchButton="false"
+                    ShowPrefixIcon="true">
+                <PrefixIconTemplate>
+                    <div class="search-custom-prefix">
+                        <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 16V42" stroke="#d0021b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 29V42" stroke="#d0021b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 19V6" stroke="#d0021b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 6V32" stroke="#d0021b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 16C13.7614 16 16 13.7614 16 11C16 8.23858 13.7614 6 11 6C8.23858 6 6 8.23858 6 11C6 13.7614 8.23858 16 11 16Z" fill="none" stroke="#d0021b" stroke-width="3" stroke-linejoin="round"/><path d="M24 29C26.7614 29 29 26.7614 29 24C29 21.2386 26.7614 19 24 19C21.2386 19 19 21.2386 19 24C19 26.7614 21.2386 29 24 29Z" fill="none" stroke="#d0021b" stroke-width="3" stroke-linejoin="round"/><path d="M37 42C39.7614 42 42 39.7614 42 37C42 34.2386 39.7614 32 37 32C34.2386 32 32 34.2386 32 37C32 39.7614 34.2386 42 37 42Z" fill="none" stroke="#d0021b" stroke-width="3" stroke-linejoin="round"/></svg>
+                    </div>
+                </PrefixIconTemplate>
+            </Search>
+        </div>
+    </div>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["SearchesIconTemplateTitle"]"
+           Introduction="@Localizer["SearchesIconTemplateIntro"]"
+           Name="IconTemplate">
+    <section ignore>
+        <p>@((MarkupString)Localizer["SearchesIconTemplateDesc"].Value)</p>
+    </section>
+    <div class="row g-3">
+        <div class="col-12">
+            <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+                    OnSearch="@OnModelSearch"
+                    IsClearable="true" ShowSearchButton="false"
+                    ShowPrefixIcon="true" PrefixIcon="fa fa-flag">
+                <IconTemplate>
+                    <i class="search-icon fa-solid fa-camera" @onclick="() => OnClickCamera(context)"></i>
+                </IconTemplate>
+            </Search>
+        </div>
+    </div>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["SearchesButtonTemplateTitle"]"
+           Introduction="@Localizer["SearchesButtonTemplateIntro"]"
+           Name="ButtonTemplate">
+    <section ignore>
+        <p>@((MarkupString)Localizer["SearchesButtonTemplateDesc"].Value)</p>
+        <p>@((MarkupString)Localizer["SearchesButtonTemplateDesc2"].Value)</p>
+        <Pre>[Parameter, EditorRequired, NotNull]
+public SearchContext&lt;TValue&gt;? Context { get; set; }
+
+[Inject, NotNull]
+private ToastService? ToastService { get; set; }
+
+private async Task OnClickSearch()
+{
+    await Context.OnSearchAsync();
+
+    await ToastService.Information("Search-ButtonTemplate", "Click Search1 Button");
+}
+
+private async Task OnClickClear()
+{
+    await Context.OnClearAsync();
+
+    await ToastService.Information("Search-ButtonTemplate", "Click Clear1 Button");
+}</Pre>
+    </section>
+    <div class="row g-3">
+        <div class="col-12">
+            <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+                    OnSearch="@OnModelSearch"
+                    IsClearable="true"
+                    ShowPrefixIcon="true" PrefixIcon="fa fa-flag">
+                <PrefixButtonTemplate>
+                    <Button Text="Text1"></Button>
+                    <Button Text="Text2"></Button>
+                </PrefixButtonTemplate>
+                <ButtonTemplate>
+                    <SearchButtonTemplateDemo Context="context"></SearchButtonTemplateDemo>
+                </ButtonTemplate>
+            </Search>
+        </div>
+    </div>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["SearchesIsClearableTitle"]"
+           Introduction="@Localizer["SearchesIsClearableIntro"]"
+           Name="ButtonTemplate">
+    <section ignore>
+        <div class="row g-3">
+            <div class="col-12 col-sm-4">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="IsClearable"></BootstrapInputGroupLabel>
+                    <Checkbox @bind-Value="_isClearable"></Checkbox>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-4">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="ShowClearButton"></BootstrapInputGroupLabel>
+                    <Checkbox @bind-Value="_showClearButton"></Checkbox>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-4">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="ShowSearchButton"></BootstrapInputGroupLabel>
+                    <Checkbox @bind-Value="_showSearchButton"></Checkbox>
+                </BootstrapInputGroup>
+            </div>
+        </div>
+    </section>
+    <div class="row g-3">
+        <div class="col-12 col-sm-6">
+            <Search PlaceHolder="@Localizer["SearchesPlaceHolder"]"
+                    OnSearch="@OnModelSearch" Debounce="200"
+                    IsClearable="_isClearable" ShowClearButton="_showClearButton" ShowSearchButton="_showSearchButton"
+                    ShowPrefixIcon="true" PrefixIcon="fa-brands fa-github">
+            </Search>
+        </div>
+    </div>
 </DemoBlock>
 
 <AttributeTable Items="@GetAttributes()" />

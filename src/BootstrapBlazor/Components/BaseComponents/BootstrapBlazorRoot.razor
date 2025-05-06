@@ -15,11 +15,10 @@
         <Download></Download>
         <Mask></Mask>
         <ConnectionHub></ConnectionHub>
-
+        <BootstrapBlazorRootOutlet></BootstrapBlazorRootOutlet>
         @foreach (var com in Generators)
         {
             @com.Generator()
         }
     </ErrorLogger>
 </CascadingValue>
-

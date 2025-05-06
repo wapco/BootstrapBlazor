@@ -18,7 +18,7 @@ public partial class Downloads
     {
         try
         {
-            var filePath = Path.Combine(SiteOptions.CurrentValue.WebRootPath, "favicon.png");
+            var filePath = Path.Combine(WebsiteOption.CurrentValue.WebRootPath, "favicon.png");
             await using var stream = File.OpenRead(filePath);
             await DownloadService.DownloadFromStreamAsync("favicon.png", stream);
         }
@@ -48,12 +48,11 @@ public partial class Downloads
     {
         try
         {
-            await DownloadService.DownloadFolderAsync("test.zip", SiteOptions.CurrentValue.WebRootPath);
+            await DownloadService.DownloadFolderAsync("test.zip", WebsiteOption.CurrentValue.WebRootPath);
         }
-        catch (FileNotFoundException msg)
+        catch (Exception ex)
         {
-
-            await ToastService.Error("下载", msg.Message);
+            await ToastService.Error("下载", ex.Message);
         }
     }
 

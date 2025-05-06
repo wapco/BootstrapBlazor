@@ -8,7 +8,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// 确认弹窗按钮组件
 /// </summary>
-[BootstrapModuleAutoLoader("Button/PopConfirmButton.razor.js")]
+[BootstrapModuleAutoLoader("Button/PopConfirmButton.razor.js", JSObjectReference = true)]
 public abstract class PopConfirmButtonBase : ButtonBase
 {
     /// <summary>
@@ -35,7 +35,7 @@ public abstract class PopConfirmButtonBase : ButtonBase
     public Placement Placement { get; set; }
 
     /// <summary>
-    /// 获得/设置 弹窗触发方式 默认 click
+    /// 获得/设置 弹窗触发方式 默认 click 可设置 hover focus
     /// </summary>
     [Parameter]
     public string? Trigger { get; set; }
@@ -57,7 +57,6 @@ public abstract class PopConfirmButtonBase : ButtonBase
     /// 获得/设置 点击确认时回调方法
     /// </summary>
     [Parameter]
-    [NotNull]
     public Func<Task>? OnConfirm { get; set; }
 
     /// <summary>
@@ -70,7 +69,6 @@ public abstract class PopConfirmButtonBase : ButtonBase
     /// 获得/设置 点击关闭时回调方法
     /// </summary>
     [Parameter]
-    [NotNull]
     public Func<Task>? OnClose { get; set; }
 
     /// <summary>
@@ -106,6 +104,12 @@ public abstract class PopConfirmButtonBase : ButtonBase
     public string? CloseButtonText { get; set; }
 
     /// <summary>
+    /// 获得/设置 关闭按钮显示图标
+    /// </summary>
+    [Parameter]
+    public string? CloseButtonIcon { get; set; }
+
+    /// <summary>
     /// 获得/设置 确认按钮显示文字 默认为 确定
     /// </summary>
     [Parameter]
@@ -117,6 +121,12 @@ public abstract class PopConfirmButtonBase : ButtonBase
     /// </summary>
     [Parameter]
     public Color ConfirmButtonColor { get; set; } = Color.Primary;
+
+    /// <summary>
+    /// 获得/设置 确认按钮显示图标
+    /// </summary>
+    [Parameter]
+    public string? ConfirmButtonIcon { get; set; }
 
     /// <summary>
     /// 获得/设置 确认框图标
@@ -148,12 +158,28 @@ public abstract class PopConfirmButtonBase : ButtonBase
         ConfirmIcon ??= IconTheme.GetIconByKey(ComponentIcons.PopConfirmButtonConfirmIcon);
         Trigger ??= "click";
 
-        OnClose ??= () => Task.CompletedTask;
-        OnConfirm ??= () => Task.CompletedTask;
-
         if (Placement != Placement.Top && Placement != Placement.Right && Placement != Placement.Bottom && Placement != Placement.Left)
         {
             Placement = Placement.Auto;
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, nameof(TriggerCloseCallback));
+
+    /// <summary>
+    /// Trigger OnClose event callback.
+    /// </summary>
+    /// <returns></returns>
+    [JSInvokable]
+    public async Task TriggerCloseCallback()
+    {
+        if (OnClose != null)
+        {
+            await OnClose();
         }
     }
 }

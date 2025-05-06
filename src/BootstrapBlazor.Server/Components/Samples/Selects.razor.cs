@@ -41,13 +41,18 @@ public sealed partial class Selects
     [NotNull]
     private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
 
-    private bool _showSearch;
-
-    private bool _isShowSearchClearable;
-
-    private bool _isClearable;
-
+    private bool _showSearch = true;
+    private bool _showPopoverSearch = true;
+    private bool _isShowSearchClearable = true;
+    private bool _isClearable = true;
     private string? _fooName;
+
+    private readonly List<SelectedItem> _enumValueDemoItems = [
+        new("0", "Primary"),
+        new("1", "Middle")
+    ];
+
+    private EnumEducation _enumValueDemo = EnumEducation.Primary;
 
     /// <summary>
     /// <inheritdoc/>
@@ -61,18 +66,13 @@ public sealed partial class Selects
         Foos = Foo.GenerateFoo(LocalizerFoo);
     }
 
-    private IEnumerable<SelectedItem> OnSearchTextChanged(string searchText)
-    {
-        return Foos.Where(i => i.Name!.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Select(i => new SelectedItem(i.Name!, i.Name!));
-    }
-
     private async Task<QueryData<SelectedItem>> OnQueryAsync(VirtualizeQueryOption option)
     {
         await Task.Delay(200);
         var items = Foos;
         if (!string.IsNullOrEmpty(option.SearchText))
         {
-            items = items.Where(i => i.Name!.Contains(option.SearchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            items = [.. Foos.Where(i => i.Name!.Contains(option.SearchText, StringComparison.OrdinalIgnoreCase))];
         }
         return new QueryData<SelectedItem>
         {
@@ -97,7 +97,18 @@ public sealed partial class Selects
 
     private Foo BindingModel { get; set; } = new Foo();
 
-    private Foo ClearableModel { get; set; } = new Foo();
+    private MockModel ClearableModel { get; set; } = new();
+
+    class MockModel
+    {
+        public string? NullableName { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public int Count { get; set; } = 1;
+
+        public int? NullableCount { get; set; }
+    }
 
     private SelectedItem? Item { get; set; }
 
@@ -209,8 +220,8 @@ public sealed partial class Selects
     private IEnumerable<SelectedItem> NullableBoolItems { get; set; } = new SelectedItem[]
     {
         new() { Text = "空值", Value = "" },
-        new() { Text = "True 值", Value = "true" },
-        new() { Text = "False 值", Value = "false" }
+        new() { Text = "True 值", Value = "True" },
+        new() { Text = "False 值", Value = "False" }
     };
 
     private readonly SelectedItem[] StringItems =
@@ -224,6 +235,14 @@ public sealed partial class Selects
         new("abc", "abc"),
         new("abcd", "abcd"),
         new("abcde", "abcde")
+    ];
+
+    private readonly SelectedItem[] IntItems =
+    [
+        new("1", "1"),
+        new("12", "12"),
+        new("123", "123"),
+        new("1234", "1234")
     ];
 
     private static Task<bool> OnBeforeSelectedItemChange(SelectedItem item)
@@ -246,15 +265,6 @@ public sealed partial class Selects
         StateHasChanged();
         return Task.CompletedTask;
     }
-
-    private readonly List<SelectedItem<Foo>> _genericItems =
-    [
-        new() { Text = "Foo1", Value = new Foo() { Id = 1, Address = "Address_F001" } },
-        new() { Text = "Foo2", Value = new Foo() { Id = 2, Address = "Address_F002" } },
-        new() { Text = "Foo3", Value = new Foo() { Id = 3, Address = "Address_F003" } }
-    ];
-
-    private Foo? _selectedFoo;
 
     /// <summary>
     /// 获得事件方法
@@ -405,6 +415,22 @@ public sealed partial class Selects
             Type = "bool",
             ValueList = "true|false",
             DefaultValue = "false"
+        },
+        new()
+        {
+            Name = nameof(Select<string>.IsVirtualize),
+            Description = Localizer["SelectsIsVirtualize"],
+            Type = "bool",
+            ValueList = "true|false",
+            DefaultValue = "false"
+        },
+        new()
+        {
+            Name = nameof(Select<string>.DefaultVirtualizeItemText),
+            Description = Localizer["SelectsDefaultVirtualizeItemText"],
+            Type = "string",
+            ValueList = " — ",
+            DefaultValue = " — "
         }
     ];
 }

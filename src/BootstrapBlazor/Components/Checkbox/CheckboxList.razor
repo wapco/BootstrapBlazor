@@ -25,27 +25,22 @@ else
     <div @attributes="@AdditionalAttributes" id="@Id" class="@ClassString" tabindex="0" hidefocus="true">
         @foreach (var item in Items)
         {
-            <div class="@CheckboxItemClassString">
+            <div @key="item" class="@CheckboxItemClassString">
                 <Checkbox TValue="bool" IsDisabled="GetDisabledState(item)"
                           ShowAfterLabel="true" ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip"
-                          DisplayText="@item.Text" OnBeforeStateChanged="_onBeforeStateChangedCallback!"
-                          Value="@item.Active" OnStateChanged="@((state, v) => OnStateChanged(item, v))">
-                </Checkbox>
+                          DisplayText="@item.Text" OnBeforeStateChanged="_onBeforeStateChangedCallback"
+                          Value="@item.Active" OnStateChanged="@((state, v) => OnStateChanged(item, v))"
+                          ChildContent="GetChildContent(item)"></Checkbox>
             </div>
         }
         @if (CustomOption != null)
         {
             <div class="@CheckboxItemClassString">
-                <Checkbox class="checkbox-item-custom d-flex align-items-center" TValue="bool" IsDisabled="GetDisabledState(CustomOption)"
-                          ShowAfterLabel="true" ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip"
-                          OnBeforeStateChanged="_onBeforeStateChangedCallback!"
-                          Value="@CustomOption.Active" OnStateChanged="@((state, v) => OnStateChanged(CustomOption, v))">
-                </Checkbox>
+                <Checkbox class="checkbox-item-custom d-flex align-items-center" TValue="bool" IsDisabled="GetDisabledState(CustomOption)" ShowAfterLabel="true"
+                          ShowLabel="false" ShowLabelTooltip="ShowLabelTooltip" OnBeforeStateChanged="_onBeforeStateChangedCallback!" Value="@CustomOption.Active"
+                          OnStateChanged="@((state, v) => OnStateChanged(CustomOption, v))"></Checkbox>
                 <BootstrapInput ShowLabel="false" Value="CustomOption.Text" OnValueChanged="CustomOptionTextChanged"></BootstrapInput>
             </div>
         }
     </div>
 }
-
-
-

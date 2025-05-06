@@ -14,13 +14,19 @@ public class JSModuleExtensionsTest : BootstrapBlazorTestBase
     {
         var jsRuntime = Context.Services.GetRequiredService<IJSRuntime>();
         await jsRuntime.LoadModule("./mock.js", "test");
-    }
 
-    [Fact]
-    public async Task LoadModule_Exception()
-    {
-        var jsRuntime = new MockJSRuntime();
-        await Assert.ThrowsAsync<TaskCanceledException>(() => jsRuntime.LoadModule("./mock.js", "test"));
+        var jsRuntime1 = new MockJSRuntime();
+        var module = await jsRuntime1.LoadModule("./mock.js", "test");
+        Assert.NotNull(module);
+
+        var jsRuntime2 = new JSExceptionJSRuntime();
+        await Assert.ThrowsAsync<JSException>(() => jsRuntime2.LoadModule("./mock.js", "test"));
+
+        var jsRuntime3 = new JSDisconnectedExceptionJSRuntime();
+        Assert.NotNull(jsRuntime3.LoadModule("./mock.js", "test"));
+
+        var jsRuntime4 = new ObjectDisposedExceptionJSRuntime();
+        Assert.NotNull(jsRuntime4.LoadModule("./mock.js", "test"));
     }
 
     [Fact]
@@ -104,6 +110,45 @@ public class JSModuleExtensionsTest : BootstrapBlazorTestBase
         public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             throw new TaskCanceledException();
+        }
+    }
+
+    class JSExceptionJSRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object?[]? args)
+        {
+            throw new JSException("test-js-exception");
+        }
+
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            throw new JSException("test-js-exception");
+        }
+    }
+
+    class JSDisconnectedExceptionJSRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object?[]? args)
+        {
+            throw new JSDisconnectedException("test-js-exception");
+        }
+
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            throw new JSDisconnectedException("test-js-exception");
+        }
+    }
+
+    class ObjectDisposedExceptionJSRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object?[]? args)
+        {
+            throw new ObjectDisposedException("test-js-exception");
+        }
+
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            throw new ObjectDisposedException("test-js-exception");
         }
     }
 }

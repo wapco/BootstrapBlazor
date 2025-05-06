@@ -59,6 +59,7 @@ public class AutoGenerateClassTest
             ComponentType = typeof(Select<string>),
             Step = "1",
             Rows = 1,
+            Cols = 6,
             LookupStringComparison = StringComparison.Ordinal,
             LookupServiceKey = "test-lookup",
             LookupServiceData = true,
@@ -70,10 +71,7 @@ public class AutoGenerateClassTest
             HeaderTextWrap = true,
             IsMarkupString = true,
 
-            Required = true,
-            RequiredErrorMessage = "test",
-            IsRequiredWhenAdd = true,
-            IsRequiredWhenEdit = true
+            RequiredErrorMessage = "test"
         };
         Assert.Equal(1, attr.Order);
         Assert.True(attr.Ignore);
@@ -96,6 +94,7 @@ public class AutoGenerateClassTest
         Assert.Equal(typeof(Select<string>), attr.ComponentType);
         Assert.Equal("1", attr.Step);
         Assert.Equal(1, attr.Rows);
+        Assert.Equal(6, attr.Cols);
         Assert.Equal(StringComparison.Ordinal, attr.LookupStringComparison);
         Assert.Equal("Test", attr.GroupName);
         Assert.Equal(1, attr.GroupOrder);
@@ -201,6 +200,11 @@ public class AutoGenerateClassTest
         attrInterface.ToolboxTemplate = col => builder => builder.AddContent(0, "test");
         Assert.NotNull(attrInterface.ToolboxTemplate);
 
+        attrInterface.IsRequiredWhenAdd = true;
+        Assert.True(attrInterface.IsRequiredWhenAdd);
+        attrInterface.IsRequiredWhenEdit = true;
+        Assert.True(attrInterface.IsRequiredWhenEdit);
+
         var attrEditor = (IEditorItem)attr;
         attrEditor.Items = null;
         Assert.Null(attrEditor.Items);
@@ -223,13 +227,21 @@ public class AutoGenerateClassTest
         attrEditor.IsPopover = true;
         Assert.True(attrEditor.IsPopover);
 
+        attrEditor.LookupService = new LookupService();
+        Assert.NotNull(attrEditor.LookupService);
+
+        attrEditor.Required = true;
+        Assert.True(attrEditor.Required);
+
         // 增加 GetDisplay 单元覆盖率
         attr.Text = null;
         Assert.Equal(string.Empty, attr.GetDisplayName());
 
-        Assert.True(attr.Required);
-        Assert.True(attr.IsRequiredWhenEdit);
-        Assert.True(attr.IsRequiredWhenAdd);
         Assert.Equal("test", attr.RequiredErrorMessage);
+    }
+
+    class LookupService : LookupServiceBase
+    {
+        public override IEnumerable<SelectedItem>? GetItemsByKey(string? key, object? data) => null;
     }
 }

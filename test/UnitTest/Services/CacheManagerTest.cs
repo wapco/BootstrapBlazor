@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.Extensions.Caching.Memory;
+
 namespace UnitTest.Services;
 
 public class CacheManagerTest : BootstrapBlazorTestBase
@@ -14,16 +16,32 @@ public class CacheManagerTest : BootstrapBlazorTestBase
         var v = Cache.GetStartTime();
         Assert.Equal(DateTimeOffset.MinValue, v);
 
-        Cache.GetOrCreate("BootstrapBlazor_StartTime", entry =>
-        {
-            return 10;
-        });
-        var v1 = Cache.GetStartTime();
-        Assert.Equal(DateTimeOffset.MinValue, v);
-
-        Cache.Clear("BootstrapBlazor_StartTime");
         Cache.SetStartTime();
-        Assert.True(DateTime.Now > Cache.GetStartTime());
+        Assert.Equal(1, Cache.Count);
+        Cache.Clear("BootstrapBlazor_StartTime");
+        Assert.Equal(1, Cache.Count);
+
+        Cache.Clear();
+        Assert.Equal(1, Cache.Count);
+        Assert.NotEqual(DateTimeOffset.MinValue, Cache.GetStartTime());
+    }
+
+    [Fact]
+    public void GetStartTime_Number()
+    {
+        var context = new TestContext();
+        context.Services.AddBootstrapBlazor();
+        var cache = context.Services.GetRequiredService<ICacheManager>();
+
+        var v = cache.GetOrCreate("BootstrapBlazor_StartTime", entry =>
+        {
+            return 1;
+        });
+        Assert.Equal(1, v);
+
+        var v2 = cache.GetStartTime();
+        Assert.Equal(DateTimeOffset.MinValue, v2);
+        Assert.Empty(Cache.Keys);
     }
 
     [Fact]
@@ -48,6 +66,23 @@ public class CacheManagerTest : BootstrapBlazorTestBase
 
         actual = await GetOrCreateAsync(key);
         Assert.Equal(1, actual);
+
+        await Cache.GetOrCreateAsync("test-GetOrCreateAsync", async entry =>
+        {
+            await Task.Delay(1);
+            entry.Priority = CacheItemPriority.NeverRemove;
+            return "test";
+        });
+        Cache.Clear();
+        Assert.True(Cache.TryGetValue("test-GetOrCreateAsync", out string? v));
+        Assert.Equal("test", v);
+
+        await Cache.GetOrCreateAsync("test", async entry =>
+        {
+            await Task.Delay(1);
+            entry.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(1);
+            return "test";
+        });
 
         Task<int> GetOrCreateAsync(object key) => Cache.GetOrCreateAsync<int>(key, entry =>
         {
@@ -87,6 +122,7 @@ public class CacheManagerTest : BootstrapBlazorTestBase
 
         int GetOrCreate(string key) => Cache.GetOrCreate<int>(key, entry =>
         {
+            entry.SlidingExpiration = TimeSpan.FromSeconds(1);
             val++;
             return val;
         });
@@ -105,8 +141,23 @@ public class CacheManagerTest : BootstrapBlazorTestBase
 
         int GetOrCreate(string key) => Cache.GetOrCreate<int>(key, entry =>
         {
+            entry.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(1);
             val++;
             return val;
         });
+    }
+
+    [Fact]
+    public void TryGetCacheEntry()
+    {
+        Cache.GetOrCreate("test_01", entry =>
+        {
+            return 1;
+        });
+        Assert.True(Cache.TryGetCacheEntry("test_01", out var entry));
+        Assert.NotNull(entry);
+
+        Assert.False(Cache.TryGetCacheEntry(null, out var v));
+        Assert.Null(v);
     }
 }
