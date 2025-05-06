@@ -114,6 +114,12 @@ public partial class FlipClock
     [Parameter]
     public TimeSpan? StartValue { get; set; }
 
+    /// <summary>
+    /// 上次 倒计时或者计时的开始时间
+    /// </summary>
+    /// <returns></returns>
+    private TimeSpan? PrevStartValue { get; set; }
+
     private string? ClassString => CssBuilder.Default("bb-flip-clock")
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
@@ -138,6 +144,21 @@ public partial class FlipClock
     /// </summary>
     /// <returns></returns>
     protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, new { Invoke = Interop, OnCompleted = nameof(OnCompleted), ViewMode = ViewMode.ToString(), StartValue = GetTicks() });
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (PrevStartValue != StartValue)
+        {
+            PrevStartValue = StartValue;
+            await InvokeInitAsync();
+        }
+    }
 
     private double GetTicks() => StartValue?.TotalMilliseconds ?? 0;
 

@@ -5,6 +5,7 @@ export function init(id, options) {
         ...{
             viewMode: 'DateTime',
             startValue: 0,
+            requestId: null,
             onCompleted: null
         },
         ...options
@@ -27,6 +28,9 @@ export function init(id, options) {
             now = new Date(new Date().getTimezoneOffset() * 60 * 1000 - options.startValue + counter);
         }
         else if (countDown) {
+            if (options.startValue === 0) {
+                return { hours: 0, minutes: 0, seconds: 0 };
+            }
             counter += 1000;
             now = new Date(new Date().getTimezoneOffset() * 60 * 1000 + options.startValue - counter);
         }
@@ -74,10 +78,10 @@ export function init(id, options) {
             options.invoke.invokeMethodAsync(options.onCompleted);
             return;
         }
-        requestAnimationFrame(flip);
+        options.requestId = requestAnimationFrame(flip);
     }
 
-    requestAnimationFrame(flip);
+    options.requestId = requestAnimationFrame(flip);
 
     Data.set(id, { el, options });
 }
@@ -85,7 +89,10 @@ export function init(id, options) {
 export function dispose(id) {
     const clock = Data.get(id)
     if (clock) {
-
+        if (clock.options.requestId) {
+            cancelAnimationFrame(clock.options.requestId);
+            clock.options.requestId = null;
+        }
     }
 }
 
