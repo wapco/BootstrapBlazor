@@ -50,7 +50,7 @@ public class DialogOption
     /// <summary>
     /// Gets or sets whether the dialog content scrolls when it is too long, default is false
     /// </summary>
-    public bool IsScrolling { get; set; } = false;
+    public bool IsScrolling { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether to show the resize button, default is false

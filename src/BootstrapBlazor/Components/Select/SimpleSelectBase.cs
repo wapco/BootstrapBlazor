@@ -80,12 +80,12 @@ public abstract class SimpleSelectBase<TValue> : SelectBase<TValue>
         if (!Items.Any())
         {
             ShowLoading = true;
-            StateHasChanged();
         }
 
         var items = await OnQueryItemsAsync.Invoke();
         if (items != null)
         {
+            _itemsCache = null;
             Items = items;
 
             IsVirtualize = items.Count > 50;

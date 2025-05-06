@@ -67,72 +67,77 @@
                 <Spinner Color="Color.Primary"/>
             </div>
         }
-        @if (ShowToolbar)
-        {
-            <div class="toolbar">
-                @if (ShowDefaultButtons)
-                {
-                    <DynamicElement TagName="button" type="button" class="btn" OnClick="SelectAll">@SelectAllText</DynamicElement>
-                    <DynamicElement TagName="button" type="button" class="btn" OnClick="InvertSelect">@ReverseSelectText</DynamicElement>
-                    <DynamicElement TagName="button" type="button" class="btn" OnClick="Clear">@ClearText</DynamicElement>
-                }
-                @ButtonTemplate
-            </div>
-        }
-        @if (IsVirtualize)
-        {
-            <div class="dropdown-menu-body dropdown-virtual">
-                @if (OnQueryAsync == null)
-                {
-                    <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow">
-                    </Virtualize>
-                }
-                else
-                {
-                    <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems"
-                                Placeholder="RenderPlaceHolderRow" ItemContent="RenderRow" @ref="_virtualizeElement">
-                    </Virtualize>
-                }
-            </div>
-        }
-        else if (Rows.Count == 0)
-        {
-            <div class="dropdown-item">@NoSearchDataText</div>
-        }
         else
         {
-            <div class="dropdown-menu-body">
-                @foreach (var itemGroup in Rows.GroupBy(i => i.GroupName))
-                {
-                    if (!string.IsNullOrEmpty(itemGroup.Key))
+            @if (ShowToolbar)
+            {
+                <div class="toolbar">
+                    @if (ShowDefaultButtons)
                     {
-                        if (GroupItemTemplate != null)
-                        {
-                            @GroupItemTemplate(itemGroup.Key)
-                        }
-                        else
-                        {
-                            <Divider Text="@itemGroup.Key" />
-                        }
+                        <DynamicElement TagName="button" type="button" class="btn" OnClick="SelectAll">@SelectAllText</DynamicElement>
+                        <DynamicElement TagName="button" type="button" class="btn" OnClick="InvertSelect">@ReverseSelectText</DynamicElement>
+                        <DynamicElement TagName="button" type="button" class="btn" OnClick="Clear">@ClearText</DynamicElement>
                     }
-                    @foreach (var item in itemGroup)
-                    {
-                        @RenderRow(item)
-                    }
+                    @ButtonTemplate
+                </div>
+            }
 
-                    if (!string.IsNullOrEmpty(itemGroup.Key))
+            @if (IsVirtualize)
+            {
+                <div class="dropdown-menu-body dropdown-virtual">
+                    @if (OnQueryAsync == null)
                     {
-                        if (GroupItemTemplate != null)
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" Items="@GetVirtualItems()" ChildContent="RenderRow">
+                        </Virtualize>
+                    }
+                    else
+                    {
+                        <Virtualize ItemSize="RowHeight" OverscanCount="OverscanCount" ItemsProvider="LoadItems"
+                                    Placeholder="RenderPlaceHolderRow" ItemContent="RenderRow" @ref="_virtualizeElement">
+                        </Virtualize>
+                    }
+                </div>
+            }
+            else if (Rows.Count == 0)
+            {
+                <div class="dropdown-item">@NoSearchDataText</div>
+            }
+            else
+            {
+                <div class="dropdown-menu-body">
+                    @foreach (var itemGroup in Rows.GroupBy(i => i.GroupName))
+                    {
+                        if (!string.IsNullOrEmpty(itemGroup.Key))
                         {
-                            @GroupItemTemplate(itemGroup.Key)
+                            if (GroupItemTemplate != null)
+                            {
+                                @GroupItemTemplate(itemGroup.Key)
+                            }
+                            else
+                            {
+                                <Divider Text="@itemGroup.Key"/>
+                            }
                         }
-                        else
+
+                        @foreach (var item in itemGroup)
                         {
-                            <Divider Text="@itemGroup.Key" />
+                            @RenderRow(item)
+                        }
+
+                        if (!string.IsNullOrEmpty(itemGroup.Key))
+                        {
+                            if (GroupItemTemplate != null)
+                            {
+                                @GroupItemTemplate(itemGroup.Key)
+                            }
+                            else
+                            {
+                                <Divider Text="@itemGroup.Key"/>
+                            }
                         }
                     }
-                }
-            </div>
+                </div>
+            }
         }
     </div>
 </div>
