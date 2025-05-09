@@ -160,6 +160,8 @@ public partial class Select<TValue> : ISelect, ILookup
 
     private SelectedItem? SelectedItem { get; set; }
 
+    private SelectedItem NullItem => new("", "");
+
     private SelectedItem? SelectedRow
     {
         get
@@ -318,6 +320,11 @@ public partial class Select<TValue> : ISelect, ILookup
     protected override List<SelectedItem> GetRowsByItems()
     {
         var items = new List<SelectedItem>();
+        if (IsClearable)
+        {
+            items.Add(NullItem);
+        }
+
         if (Items != null)
         {
             items.AddRange(Items);

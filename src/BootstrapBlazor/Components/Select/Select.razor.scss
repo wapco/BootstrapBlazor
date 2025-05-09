@@ -52,7 +52,7 @@
     height: 0;
     border-width: 0 6px 6px;
     border-style: solid;
-    border-color: transparent transparent rgba(0,0,0,.15);
+    border-color: transparent transparent rgba(0, 0, 0, .15);
     position: absolute;
     left: 20px;
     margin-block-start: 4px;
@@ -239,4 +239,9 @@
 .select .dropdown-toggle:after,
 .btn-popover-confirm.dropdown-toggle:after {
     content: none;
+}
+
+.select.is-clearable .dropdown-menu .dropdown-item:empty,
+.select.is-clearable .dropdown-virtual .dropdown-item:empty {
+    display: none;
 }

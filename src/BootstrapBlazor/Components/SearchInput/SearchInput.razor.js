@@ -25,7 +25,7 @@ export function init(component, elem, changeOnEnter) {
     });
 
     EventHandler.on(elem, 'click', '.search-clear', e => {
-        component.invokeMethodAsync("SearchValueChanged", "");
+        onSearchValueChange("");
         e.preventDefault();
         e.stopPropagation();
     })

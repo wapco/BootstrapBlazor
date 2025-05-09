@@ -11,7 +11,8 @@
     "ValidationError_StringArrayLength": "{0}最少选择{1}项且最多选择{2}项",
     "ValidationError_ThisFieldMustLessThanOrEqual": "{0}必须小于等于{1}.",
     "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0}必须大于等于{1}.",
-    "ValidationError_ThisFieldValueOutOfRange": "{0}必须大于等于{1}且小于等于{2}"
+    "ValidationError_ThisFieldValueOutOfRange": "{0}必须大于等于{1}且小于等于{2}",
+    "ValidationError_ThisStringFieldValueOutOfRange": "{0}长度必须在{2}和{1}之间"
   },
   "BootstrapBlazor.Components.AutoComplete": {
     "NoDataTip": "无匹配数据",
