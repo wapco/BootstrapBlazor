@@ -12,11 +12,6 @@ namespace BootstrapBlazor.Components;
 /// </summary>
 public class CustomOptionValidator : RequiredValidator
 {
-    /// <summary>
-    /// 获得/设置 IStringLocalizerFactory 注入服务实例 默认为 null
-    /// </summary>
-    public IStringLocalizerFactory? LocalizerFactory { get; set; }
-
     /// <inheritdoc/>
     public override void Validate(object? propertyValue, ValidationContext context, List<ValidationResult> results)
     {

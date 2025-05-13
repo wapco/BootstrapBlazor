@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.Extensions.Localization;
 using System.Collections;
 
 namespace BootstrapBlazor.Components;
@@ -108,6 +109,9 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
     [Parameter]
     public RenderFragment<SelectedItem>? ItemTemplate { get; set; }
 
+    [Inject, NotNull]
+    private IStringLocalizer<ValidateBase<string>>? Localizer { get; set; }
+
     /// <summary>
     /// 自定义选项
     /// </summary>
@@ -138,7 +142,7 @@ public partial class CheckboxList<TValue> : ValidateBase<TValue>
         {
             Rules.Add(new CustomOptionValidator()
             {
-                LocalizerFactory = LocalizerFactory, ErrorMessage = "ValidationError_CustomOptionTextIsRequired"
+                ErrorMessage = Localizer["CustomOptionTextIsRequired"]
             });
         }
     }

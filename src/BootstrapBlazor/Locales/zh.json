@@ -1,10 +1,8 @@
 ﻿{
   "BootstrapBlazor.Components.ValidatorBase": {
-    "CustomOptionValidator": "请填写自定义选项文本",
     "RequiredValidator": "{0}为必填项. ",
     "MinValidator": "至少选择{0}项",
     "MaxValidator": "至多选择{0}项",
-    "ValidationError_CustomOptionTextIsRequired": "请填写自定义选项文本",
     "ValidationError_ThisFieldIsRequired": "{0}为必填项. ",
     "ValidationError_StringArrayMinLength": "{0}至少选择{1}项",
     "ValidationError_StringArrayMaxLength": "{0}至多选择{1}项",
@@ -418,6 +416,7 @@
     "LightModeText": "明亮"
   },
   "BootstrapBlazor.Components.ValidateBase": {
-    "DefaultRequiredErrorMessage": "{0}是必填项"
+    "DefaultRequiredErrorMessage": "{0}是必填项",
+    "CustomOptionTextIsRequired": "请填写自定义选项文本"
   }
 }

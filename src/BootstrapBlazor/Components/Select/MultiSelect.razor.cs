@@ -219,6 +219,21 @@ public partial class MultiSelect<TValue>
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (OnQueryItemsAsync != null && !string.IsNullOrEmpty(CurrentValueAsString))
+        {
+            SelectedItems.Clear();
+            var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            SelectedItems.AddRange(Rows.Where(item => list.Any(i => i.Trim() == item.Value)));
+        }
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
     /// <param name="firstRender"></param>
     protected override void OnAfterRender(bool firstRender)
     {

@@ -171,6 +171,25 @@ public partial class Select<TValue> : ISelect, ILookup
         }
     }
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (OnQueryItemsAsync != null && !string.IsNullOrEmpty(CurrentValueAsString))
+        {
+            if (IsVirtualize && DefaultVirtualizeItemText == null)
+            {
+                DefaultVirtualizeItemText = Items.FirstOrDefault(x => x.Value == CurrentValueAsString)?.Text;
+                _defaultVirtualizedItemText = DefaultVirtualizeItemText ?? CurrentValueAsString;
+            }
+
+            SelectedItem = GetSelectedRow();
+        }
+    }
+
     private SelectedItem? GetSelectedRow()
     {
         if (Value is null)
@@ -180,12 +199,17 @@ public partial class Select<TValue> : ISelect, ILookup
             return null;
         }
 
+        if (OnQueryItemsAsync != null && Items == null)
+        {
+            _init = false;
+            return null;
+        }
+
         var item = IsVirtualize ? GetItemByVirtualized() : GetItemByRows();
         if (item != null)
         {
             if (_init && DisableItemChangedWhenFirstRender)
             {
-
             }
             else
             {
@@ -193,6 +217,7 @@ public partial class Select<TValue> : ISelect, ILookup
                 _init = false;
             }
         }
+
         return item;
     }
 
@@ -203,9 +228,9 @@ public partial class Select<TValue> : ISelect, ILookup
     private SelectedItem? GetItemByRows()
     {
         var item = GetItemWithEnumValue()
-            ?? Rows.Find(i => i.Value == CurrentValueAsString)
-            ?? Rows.Find(i => i.Active)
-            ?? Rows.FirstOrDefault(i => !i.IsDisabled);
+                   ?? Rows.Find(i => i.Value == CurrentValueAsString)
+                   ?? Rows.Find(i => i.Active)
+                   ?? Rows.FirstOrDefault(i => !i.IsDisabled);
         return item;
     }
 
@@ -279,14 +304,15 @@ public partial class Select<TValue> : ISelect, ILookup
     /// <param name="result"></param>
     /// <param name="validationErrorMessage"></param>
     /// <returns></returns>
-    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage) => ValueType == typeof(SelectedItem)
-        ? TryParseSelectItem(value, out result, out validationErrorMessage)
-        : base.TryParseValueFromString(value, out result, out validationErrorMessage);
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage) =>
+        ValueType == typeof(SelectedItem)
+            ? TryParseSelectItem(value, out result, out validationErrorMessage)
+            : base.TryParseValueFromString(value, out result, out validationErrorMessage);
 
     private bool TryParseSelectItem(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage)
     {
         SelectedItem = Rows.FirstOrDefault(i => i.Value == value)
-            ?? GetVirtualizeItem(value);
+                       ?? GetVirtualizeItem(value);
 
         // support SelectedItem? type
         result = SelectedItem != null ? (TValue)(object)SelectedItem : default;
@@ -301,17 +327,15 @@ public partial class Select<TValue> : ISelect, ILookup
         {
             item = _result.Items.FirstOrDefault(i => i.Value == value);
         }
+
         return item;
     }
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
-    {
-        ConfirmMethodCallback = nameof(ConfirmSelectedItem),
-        SearchMethodCallback = nameof(TriggerOnSearch)
-    });
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop,
+        new { ConfirmMethodCallback = nameof(ConfirmSelectedItem), SearchMethodCallback = nameof(TriggerOnSearch) });
 
     /// <summary>
     /// <inheritdoc/>
@@ -329,6 +353,7 @@ public partial class Select<TValue> : ISelect, ILookup
         {
             items.AddRange(Items);
         }
+
         items.AddRange(_children);
         return items;
     }
@@ -362,17 +387,13 @@ public partial class Select<TValue> : ISelect, ILookup
             if (ret)
             {
                 // Return true to show modal
-                var option = new SwalOption()
-                {
-                    Category = SwalCategory,
-                    Title = SwalTitle,
-                    Content = SwalContent
-                };
+                var option = new SwalOption() { Category = SwalCategory, Title = SwalTitle, Content = SwalContent };
                 if (!string.IsNullOrEmpty(SwalFooter))
                 {
                     option.ShowFooter = true;
                     option.FooterTemplate = builder => builder.AddContent(0, SwalFooter);
                 }
+
                 ret = await SwalService.ShowModal(option);
             }
             else
@@ -381,6 +402,7 @@ public partial class Select<TValue> : ISelect, ILookup
                 ret = true;
             }
         }
+
         if (ret)
         {
             _defaultVirtualizedItemText = item.Text;
@@ -439,6 +461,7 @@ public partial class Select<TValue> : ISelect, ILookup
                 items.AddRange(Items);
                 Items = items;
             }
+
             CurrentValueAsString = v;
 
             if (OnInputChangedCallback != null)

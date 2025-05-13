@@ -102,11 +102,12 @@ public abstract class SimpleSelectBase<TValue> : SelectBase<TValue>
     {
         await base.OnInitializedAsync();
 
-        if (!string.IsNullOrEmpty(CurrentValueAsString) && OnQueryItemsAsync != null && (Items == null))
+        if (OnQueryItemsAsync != null && !string.IsNullOrEmpty(CurrentValueAsString) && (Items == null))
         {
             var items = await OnQueryItemsAsync.Invoke();
             if (items != null)
             {
+                _itemsCache = null;
                 Items = items;
 
                 IsVirtualize = items.Count > 50;
@@ -190,15 +191,18 @@ public abstract class SimpleSelectBase<TValue> : SelectBase<TValue>
         {
             ClearSearchText();
         }
+
         if (OnClearAsync != null)
         {
             await OnClearAsync();
         }
+
         CurrentValue = default;
         if (OnQueryAsync != null)
         {
             await _virtualizeElement.RefreshDataAsync();
         }
+
         _lastSelectedValueString = string.Empty;
     }
 }
