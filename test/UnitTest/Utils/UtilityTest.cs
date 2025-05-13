@@ -254,7 +254,7 @@ public class UtilityTest : BootstrapBlazorTestBase
     public void CreateComponentByFieldType_Ok()
     {
         var editor = new MockNullDisplayNameColumn("Name", typeof(string)) { Readonly = true };
-        var fragment = new RenderFragment(builder => builder.CreateComponentByFieldType(new BootstrapBlazorRoot(), editor, new Foo() { Name = "Test-Component" }));
+        var fragment = new RenderFragment(builder => builder.CreateComponentByFieldType(new BootstrapBlazorRoot(), editor, new Foo() { Name = "Test-Component" }, skipValidate: true));
         var cut = Context.Render(builder => builder.AddContent(0, fragment));
         Assert.Contains("value=\"Test-Component\"", cut.Markup);
     }
@@ -581,12 +581,13 @@ public class UtilityTest : BootstrapBlazorTestBase
     {
         var cols = Utility.GetTableColumns<Cat>(new InternalTableColumn[]
         {
-            new(nameof(Cat.Name), typeof(string)) { Text = "test-Name", LookupServiceData = true, IsVisibleWhenAdd = false, IsVisibleWhenEdit = false }
+            new(nameof(Cat.Name), typeof(string)) { Text = "test-Name", LookupServiceData = true, IsVisibleWhenAdd = false, IsVisibleWhenEdit = false, IgnoreWhenExport = true }
         });
         Assert.Equal(2, cols.Count());
         Assert.Equal(true, cols.First().LookupServiceData);
         Assert.False(cols.First().IsVisibleWhenAdd);
         Assert.False(cols.First().IsVisibleWhenEdit);
+        Assert.True(cols.First().IgnoreWhenExport);
     }
 
     [Fact]

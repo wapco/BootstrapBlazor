@@ -105,11 +105,11 @@ public abstract class SelectBase<TValue> : PopoverSelectBase<TValue>
     public float RowHeight { get; set; } = 33f;
 
     /// <summary>
-    /// Gets or sets the overscan count for virtual scrolling. Default is 4.
+    /// Gets or sets the overscan count for virtual scrolling. Default is 6.
     /// </summary>
     /// <remarks>Effective when <see cref="IsVirtualize"/> is set to true.</remarks>
     [Parameter]
-    public int OverscanCount { get; set; } = 4;
+    public int OverscanCount { get; set; } = 6;
 
     /// <summary>
     /// Gets or sets the callback method when the clear button is clicked. Default is null.

@@ -580,6 +580,7 @@ public class TableTest : BootstrapBlazorTestBase
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.IsExcel, true);
+                pb.Add(a => a.EnableKeyboardNavigationCell, true);
                 pb.Add(a => a.Items, items);
                 pb.Add(a => a.OnSaveAsync, (foo, changedItem) =>
                 {
@@ -8208,6 +8209,37 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void IgnoreWhenExport_Ok()
+    {
+        var items = new Foo[] { new() { Name = "Name", Address = "Address" } };
+        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.Items, items);
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Address");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.AddAttribute(3, "IgnoreWhenExport", true);
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        var table = cut.FindComponent<Table<Foo>>();
+        var columns = table.Instance.GetVisibleColumns();
+        Assert.Single(columns);
+    }
+
+    [Fact]
     public void OnSelectedRows_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
@@ -8633,6 +8665,84 @@ public class TableTest : BootstrapBlazorTestBase
             });
             return Task.CompletedTask;
         });
+    }
+
+    [Fact]
+    public void Modify_Ok()
+    {
+        var cut = Context.RenderComponent<Table<Foo>>(pb =>
+        {
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+            });
+            pb.Add(a => a.ShowExtendEditButton, false);
+            pb.Add(a => a.ShowExtendDeleteButton, false);
+        });
+        Assert.True(ProhibitEdit(cut.Instance));
+        Assert.True(ProhibitDelete(cut.Instance));
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.ShowExtendEditButton, true);
+            pb.Add(a => a.ShowExtendDeleteButton, true);
+            pb.Add(a => a.DisableExtendEditButton, true);
+            pb.Add(a => a.DisableExtendDeleteButton, true);
+        });
+        Assert.True(ProhibitEdit(cut.Instance));
+        Assert.True(ProhibitDelete(cut.Instance));
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.ShowExtendEditButton, true);
+            pb.Add(a => a.ShowExtendDeleteButton, true);
+            pb.Add(a => a.DisableExtendEditButton, false);
+            pb.Add(a => a.DisableExtendDeleteButton, false);
+            pb.Add(a => a.SelectedRows, [new Foo()]);
+            pb.Add(a => a.DisableExtendEditButtonCallback, rows =>
+            {
+                return true;
+            });
+            pb.Add(a => a.DisableExtendDeleteButtonCallback, rows =>
+            {
+                return true;
+            });
+        });
+        Assert.True(ProhibitEdit(cut.Instance));
+        Assert.True(ProhibitDelete(cut.Instance));
+    }
+
+    static bool ProhibitEdit(Table<Foo> @this)
+    {
+        var ret = false;
+        var methodInfo = @this.GetType().GetMethod("ProhibitEdit", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (methodInfo != null)
+        {
+            var result = methodInfo.Invoke(@this, null);
+            if (result is bool d)
+            {
+                ret = d;
+            }
+        }
+        return ret;
+    }
+
+    static bool ProhibitDelete(Table<Foo> @this)
+    {
+        var ret = false;
+        var methodInfo = @this.GetType().GetMethod("ProhibitDelete", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (methodInfo != null)
+        {
+            var result = methodInfo.Invoke(@this, null);
+            if (result is bool d)
+            {
+                ret = d;
+            }
+        }
+        return ret;
     }
 
     class MockFoo(string name)

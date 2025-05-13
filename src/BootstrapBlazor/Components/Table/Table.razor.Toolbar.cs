@@ -470,7 +470,7 @@ public partial class Table<TItem>
     {
         // 不可见列
         var items = VisibleColumns.Where(i => i.Visible);
-        return Columns.Where(i => !i.GetIgnore() && items.Any(v => v.Name == i.GetFieldName()) && ScreenSize >= i.ShownWithBreakPoint);
+        return Columns.Where(i => !i.GetIgnoreExport() && !i.GetIgnore() && items.Any(v => v.Name == i.GetFieldName()) && ScreenSize >= i.ShownWithBreakPoint);
     }
 
     private bool GetColumnsListState(ColumnVisibleItem item) => VisibleColumns.Find(i => i.Name == item.Name) is { Visible: true } && VisibleColumns.Where(i => i.Visible).DistinctBy(i => i.Name).Count(i => i.Visible) == 1;
@@ -544,8 +544,8 @@ public partial class Table<TItem>
     {
         if (SelectedRows.Count == 1)
         {
-            // 检查是否选中了不可编辑行（行内无编辑按钮）
-            if (ShowExtendEditButtonCallback != null && !ShowExtendEditButtonCallback(SelectedRows[0]))
+            // 检查是否选中了不可编辑行（行内无编辑按钮），同时检查按钮禁用状态（禁用时不可编辑）
+            if (ProhibitEdit())
             {
                 // 提示不可编辑
                 await ShowToastAsync(EditButtonToastTitle, EditButtonToastReadonlyContent);
@@ -992,7 +992,7 @@ public partial class Table<TItem>
         {
             await ShowDeleteToastAsync(DeleteButtonToastTitle, DeleteButtonToastContent);
         }
-        else if (ShowExtendDeleteButtonCallback != null && SelectedRows.Any(i => !ShowExtendDeleteButtonCallback(i)))
+        else if (ProhibitDelete())
         {
             await ShowDeleteToastAsync(DeleteButtonToastTitle, DeleteButtonToastCanNotDeleteContent);
         }
@@ -1002,6 +1002,16 @@ public partial class Table<TItem>
         }
         return ret;
     }
+
+    private bool ProhibitEdit() => (ShowExtendEditButtonCallback != null && !ShowExtendEditButtonCallback(SelectedRows[0]))
+                || !ShowExtendEditButton
+                || (DisableExtendEditButtonCallback != null && DisableExtendEditButtonCallback(SelectedRows[0]))
+                || DisableExtendEditButton;
+
+    private bool ProhibitDelete() => (ShowExtendDeleteButtonCallback != null && SelectedRows.Any(i => !ShowExtendDeleteButtonCallback(i)))
+            || !ShowExtendDeleteButton
+            || (DisableExtendDeleteButtonCallback != null && SelectedRows.Any(x => DisableExtendDeleteButtonCallback(x)))
+            || DisableExtendDeleteButton;
 
     /// <summary>
     /// 删除数据方法
