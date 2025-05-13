@@ -265,12 +265,14 @@ public partial class ValidateForm
         else
         {
             // 遍历所有可验证组件进行数据验证
+            int skipValidateCount = 0;
             foreach (var key in _validatorCache.Keys)
             {
                 // 验证 DataAnnotations
                 var (fieldIdentifier, validator) = _validatorCache[key];
                 if (!validator.IsNeedValidate)
                 {
+                    skipValidateCount++;
                     continue;
                 }
 
@@ -291,6 +293,11 @@ public partial class ValidateForm
                 }
                 _validateResults.TryAdd(validator, messages);
                 results.AddRange(messages);
+            }
+
+            if (skipValidateCount == _validatorCache.Count)
+            {
+                _invalid = false;
             }
 
             // 验证 IValidatableObject
