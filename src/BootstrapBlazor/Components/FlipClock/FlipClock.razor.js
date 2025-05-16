@@ -20,25 +20,45 @@ export function init(id, options) {
     const listSecond = el.querySelector('.bb-flip-clock-list.second');
     const countDown = options.viewMode === "CountDown";
 
-    let counter = 0;
+    let startTimestamp = Date.now(); // 起始时间（毫秒）
     const getDate = () => {
-        let now;
+        const now = Date.now();
+        const elapsed = now - startTimestamp;
+
         if (options.viewMode === "Count") {
-            counter += 1000;
-            now = new Date(new Date().getTimezoneOffset() * 60 * 1000 - options.startValue + counter);
+            const totalMs = options.startValue + elapsed;
+            const totalSeconds = Math.floor(totalMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return { hours, minutes, seconds };
         }
-        else if (countDown) {
+
+        if (countDown) {
             if (options.startValue === 0) {
                 return { hours: 0, minutes: 0, seconds: 0 };
             }
-            counter += 1000;
-            now = new Date(new Date().getTimezoneOffset() * 60 * 1000 + options.startValue - counter);
+
+            const remaining = options.startValue - elapsed;
+            if (remaining <= 0) {
+                return { hours: 0, minutes: 0, seconds: 0 };
+            }
+
+            const totalSeconds = Math.floor(remaining / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return { hours, minutes, seconds };
         }
-        else {
-            now = new Date();
-        }
-        return { hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds() };
-    }
+
+        // viewMode: 'DateTime'
+        const date = new Date();
+        return {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+            seconds: date.getSeconds()
+        };
+    };
 
     let lastHour;
     let lastMinute;

@@ -969,6 +969,29 @@
         </div>
     </td>;
 
+    private RenderFragment RenderSearchButtons => builder =>
+    {
+        var sequence = 0;
+        if (ShowResetButton)
+        {
+            builder.OpenComponent<Button>(sequence++);
+            builder.AddAttribute(sequence++, "Color", Color.Secondary);
+            builder.AddAttribute(sequence++, "Icon", ResetSearchButtonIcon);
+            builder.AddAttribute(sequence++, "Text", ResetSearchButtonText);
+            builder.AddAttribute(sequence++, "OnClickWithoutRender", (Func<Task>?)ClearSearchClick);
+            builder.CloseComponent();
+        }
+        if (ShowSearchButton)
+        {
+            builder.OpenComponent<Button>(sequence++);
+            builder.AddAttribute(sequence++, "Color", Color.Secondary);
+            builder.AddAttribute(sequence++, "Icon", SearchButtonIcon);
+            builder.AddAttribute(sequence++, "Text", SearchButtonText);
+            builder.AddAttribute(sequence++, "OnClickWithoutRender", (Func<Task>?)SearchClick);
+            builder.CloseComponent();
+        }
+    };
+
     RenderFragment RenderSearch =>
     @<Card IsCollapsible="true" HeaderText="@SearchModalTitle" Collapsed="CollapsedTopSearch">
         <HeaderTemplate>
@@ -988,32 +1011,10 @@
                         </BootstrapInput>
                     }
                 }
-                @if (ShowResetButton)
-                {
-                    <Button Color="Color.Secondary" Icon="@ResetSearchButtonIcon" OnClickWithoutRender="ClearSearchClick">
-                        <span class="d-none d-sm-inline-block">@ResetSearchButtonText</span>
-                    </Button>
-                }
-                @if (ShowSearchButton)
-                {
-                    <Button Color="Color.Secondary" Icon="@SearchButtonIcon" OnClickWithoutRender="SearchClick">
-                        <span class="d-none d-sm-inline-block">@SearchButtonText</span>
-                    </Button>
-                }
+                @RenderSearchButtons
             </div>
             <div class="table-search-buttons input-group input-group-xs">
-                @if (ShowResetButton)
-                {
-                    <Button Color="Color.Secondary" Icon="@ResetSearchButtonIcon" OnClickWithoutRender="ClearSearchClick">
-                        <span class="d-none d-sm-inline-block">@ResetSearchButtonText</span>
-                    </Button>
-                }
-                @if (ShowSearchButton)
-                {
-                    <Button Color="Color.Secondary" Icon="@SearchButtonIcon" OnClickWithoutRender="SearchClick">
-                        <span class="d-none d-sm-inline-block">@SearchButtonText</span>
-                    </Button>
-                }
+                @RenderSearchButtons
             </div>
         </HeaderTemplate>
         <BodyTemplate>

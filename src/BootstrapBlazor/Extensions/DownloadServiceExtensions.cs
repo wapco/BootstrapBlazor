@@ -60,7 +60,7 @@ public static class DownloadServiceExtensions
     /// <param name="downloadFileName">文件名</param>
     /// <param name="url">文件地址</param>
     /// <returns></returns>
-    public static Task DownloadFromUrlAsync(this DownloadService download, string downloadFileName, string url) => download.DownloadFromUrlAsync(new DownloadOption() { FileName = downloadFileName, Url = url });
+    public static Task DownloadFromUrlAsync(this DownloadService download, string? downloadFileName, string url) => download.DownloadFromUrlAsync(new DownloadOption() { FileName = downloadFileName, Url = url });
 
     /// <summary>
     /// 下载文件扩展方法
