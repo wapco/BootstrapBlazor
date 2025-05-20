@@ -1,0 +1,416 @@
+﻿{
+  "BootstrapBlazor.Components.ValidatorBase": {
+    "CommonValidator": "Ez a mező kötelező.",
+    "RequiredValidator": "{0} kötelező.",
+    "MinValidator": "Válasszon ki legalább {0} elemet.",
+    "MaxValidator": "Legfeljebb {0} elemet választhat ki.",
+    "ValidationError_ThisFieldIsRequired": "{0} kötelező.",
+    "ValidationError_StringArrayMinLength": "{0}-nak legalább {1} elemet kell kiválasztania.",
+    "ValidationError_StringArrayMaxLength": "{0}-nak legfeljebb {1} elemet lehet kiválasztania.",
+    "ValidationError_StringArrayLength": "{0}-nak legalább {1} és legfeljebb {2} elemet kell kiválasztania.",
+    "ValidationError_ThisFieldMustLessThanOrEqual": "{0} kisebb vagy egyenlő kell legyen, mint {1}.",
+    "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0} nagyobb vagy egyenlő kell legyen, mint {1}.",
+    "ValidationError_ThisFieldValueOutOfRange": "{0} értéke {1} és {2} között kell legyen, beleértve a határokat.",
+    "ValidationError_ThisStringFieldValueOutOfRange": "{0} hosszának {2} és {1} között kell lennie."
+  },
+  "BootstrapBlazor.Components.AutoComplete": {
+    "NoDataTip": "Nincs adat",
+    "PlaceHolder": "Kérem, írjon be valamit"
+  },
+  "BootstrapBlazor.Components.Captcha": {
+    "HeaderText": "Captcha",
+    "BarText": "Csúsztassa jobbra a rejtvény megoldásához",
+    "FailedText": "Betöltés sikertelen",
+    "LoadText": "Betöltés ..."
+  },
+  "BootstrapBlazor.Components.Calendar": {
+    "PreviousYear": "Előző év",
+    "PreviousMonth": "Előző hónap",
+    "Today": "Ma",
+    "NextMonth": "Következő hónap",
+    "NextYear": "Következő év",
+    "PreviousWeek": "Előző hét",
+    "WeekText": "Hét",
+    "NextWeek": "Következő hét",
+    "WeekHeaderText": "",
+    "WeekLists": "Vas,Hét,Ked,Sze,Csü,Pén,Szo",
+    "WeekNumberText": "{0} hét",
+    "Months": "Január,Február,Március,Április,Május,Június,Július,Augusztus,Szeptember,Október,November,December",
+    "Title": "{0} {1}"
+  },
+  "BootstrapBlazor.Components.Cascader": {
+    "PlaceHolder": "Kérem válasszon ..."
+  },
+  "BootstrapBlazor.Components.Console": {
+    "HeaderText": "Monitor",
+    "LightTitle": "Fény",
+    "ClearButtonText": "Törlés",
+    "AutoScrollText": "Automatikus görgetés"
+  },
+  "BootstrapBlazor.Components.DateTimePicker": {
+    "DatePlaceHolder": "Válasszon dátumot",
+    "TimePlaceHolder": "Válasszon időt",
+    "DateTimePlaceHolderText": "Kérem válasszon ...",
+    "DatePlaceHolderText": "Kérem válasszon ...",
+    "TimeFormat": "hh\\:mm\\:ss",
+    "DateFormat": "dd.MM.yyyy",
+    "DateTimeFormat": "dd.MM.yyyy HH\\:mm\\:ss",
+    "AiraPrevYearLabel": "Előző év",
+    "AiraNextYearLabel": "Következő év",
+    "AiraPrevMonthLabel": "Előző hónap",
+    "AiraNextMonthLabel": "Következő hónap",
+    "ClearButtonText": "Törlés",
+    "NowButtonText": "Most",
+    "ConfirmButtonText": "Ok",
+    "CancelButtonText": "Mégse",
+    "YearText": "{0}",
+    "MonthText": "{0}",
+    "YearPeriodText": "{0} - {1}",
+    "Months": "Jan,Feb,Márc,Ápr,Máj,Jún,Júl,Aug,Szept,Okt,Nov,Dec",
+    "MonthLists": "Jan,Feb,Márc,Ápr,Máj,Jún,Júl,Aug,Szept,Okt,Nov,Dec",
+    "WeekLists": "Vas,Hét,Ked,Sze,Csü,Pén,Szo",
+    "GenericTypeErroMessage": "A DateTimePicker csak a DateTime, DateTime?, DateTimeOffset, DateTimeOffset? típusokat támogatja",
+    "Today": "Ma",
+    "Yesterday": "Tegnap",
+    "Week": "Egy hete",
+    "Month": "MM.yyyy",
+    "Date": "dd.MM.yyyy",
+    "DateMinute": "dd.MM.yyyy HH:mm:ss",
+    "DateTime": "dd.MM.yyyy HH:mm:ss"
+  },
+  "BootstrapBlazor.Components.DateTimeRange": {
+    "SeparateText": "–",
+    "StartPlaceHolderText": "Kezdő dátum",
+    "EndPlaceHolderText": "Befejező dátum",
+    "ClearButtonText": "Törlés",
+    "TodayButtonText": "Ma",
+    "ConfirmButtonText": "Ok",
+    "DateTimeFormat": "dd.MM.yyyy HH:mm:ss",
+    "DateFormat": "dd.MM.yyyy",
+    "Last7Days": "Az elmúlt 7 nap",
+    "Last30Days": "Az elmúlt 30 nap",
+    "ThisMonth": "Ez a hónap",
+    "LastMonth": "Előző hónap"
+  },
+  "BootstrapBlazor.Components.BootstrapInputNumber": {
+    "ParsingErrorMessage": "A(z) {0} mezőnek számnak kell lennie."
+  },
+  "BootstrapBlazor.Components.ResultDialogOption": {
+    "ButtonYesText": "Igen",
+    "ButtonNoText": "Nem",
+    "ButtonCloseText": "Bezárás"
+  },
+  "BootstrapBlazor.Components.DropdownList": {
+    "PlaceHolder": "Kérem válasszon ..."
+  },
+  "BootstrapBlazor.Components.Editor": {
+    "PlaceHolder": "Kattintson a szerkesztéshez"
+  },
+  "BootstrapBlazor.Components.EditorForm": {
+    "ModelInvalidOperationExceptionMessage": "A ValidateForm MODEL nem egyezik a(z) {0} MODEL-lel",
+    "PlaceHolderText": "Kérem, írjon be valamit ..."
+  },
+  "BootstrapBlazor.Components.Empty": {
+    "Text": "Nincs adat"
+  },
+  "BootstrapBlazor.Components.EqualToValidator": {
+    "ErrorMessage": "Kérem, adja meg újra ugyanazt az értéket"
+  },
+  "BootstrapBlazor.Components.ErrorLogger": {
+    "ToastTitle": "Alkalmazáshiba"
+  },
+  "BootstrapBlazor.Components.GoTop": {
+    "TooltipText": "Ugrás a tetejére"
+  },
+  "BootstrapBlazor.Components.Layout": {
+    "TooltipText": "Kattintson az oldalsáv kibontásához/összecsukásához"
+  },
+  "BootstrapBlazor.Components.Logout": {
+    "PrefixDisplayNameText": "Üdvözöljük",
+    "PrefixUserNameText": "Fiók:"
+  },
+  "BootstrapBlazor.Components.LogoutLink": {
+    "Text": "Kijelentkezés"
+  },
+  "BootstrapBlazor.Components.Menu": {
+    "InvalidOperationExceptionMessage": "A SideMenu komponens nem használható önállóan. Kérjük, használja a Menu komponenst az IsVertical = true beállítással."
+  },
+  "BootstrapBlazor.Components.ModalDialog": {
+    "CloseButtonText": "Bezárás",
+    "SaveButtonText": "Mentés",
+    "PrintButtonText": "Nyomtatás",
+    "ExportPdfButtonText": "PDF exportálása"
+  },
+  "BootstrapBlazor.Components.MultiSelect": {
+    "PlaceHolder": "Válasszon elemeket ...",
+    "SelectAllText": "Mind",
+    "ReverseSelectText": "Megfordít",
+    "ClearText": "Törlés",
+    "MinErrorMessage": "Válasszon ki legalább {0} elemet",
+    "MaxErrorMessage": "Legfeljebb {0} elemet választhat",
+    "NoSearchDataText": "Nincs találat"
+  },
+  "BootstrapBlazor.Components.Pagination": {
+    "GotoNavigatorLabelText": "Ugrás"
+  },
+  "BootstrapBlazor.Components.PopConfirmButton": {
+    "CloseButtonText": "Mégse",
+    "ConfirmButtonText": "Ok",
+    "Content": "Biztosan végrehajtja ezt a műveletet?"
+  },
+  "BootstrapBlazor.Components.PrintButton": {
+    "Text": "Nyomtatás"
+  },
+  "BootstrapBlazor.Components.Repeater": {
+    "EmptyText": "Nincs adat"
+  },
+  "BootstrapBlazor.Components.Search": {
+    "SearchButtonText": "Keresés",
+    "NoDataTip": "Nincs találat"
+  },
+  "BootstrapBlazor.Components.SearchInput": {
+    "OnEnterPlaceholder": "Írjon be egy kulcsszót, majd nyomja meg az Entert a kereséshez",
+    "PlaceHolder": "Kérem, adjon meg egy kulcsszót a kereséshez"
+  },
+  "BootstrapBlazor.Components.Select": {
+    "PlaceHolder": "Kérem válasszon ...",
+    "NoSearchDataText": "Nincs találat"
+  },
+  "BootstrapBlazor.Components.SelectTree": {
+    "PlaceHolder": "Kérem válasszon ..."
+  },
+  "BootstrapBlazor.Components.StringLengthValidator": {
+    "ErrorMessage": "Kérem, adjon meg egy értéket, amely nem nagyobb, mint {{0}}"
+  },
+  "BootstrapBlazor.Components.SweetAlert": {
+    "CloseButtonText": "Bezárás",
+    "CancelButtonText": "Mégse",
+    "ConfirmButtonText": "Megerősítés"
+  },
+  "BootstrapBlazor.Components.Switch": {
+    "OnInnerText": "Be",
+    "OffInnerText": "Ki"
+  },
+  "BootstrapBlazor.Components.Tab": {
+    "CloseCurrentTabText": "Bezárás",
+    "CloseOtherTabsText": "Másokat bezár",
+    "CloseAllTabsText": "Mindet bezár",
+    "NotFoundTabText": "Nem található",
+    "RefreshToolbarTooltipText": "Frissítés",
+    "FullscreenToolbarTooltipText": "Teljes képernyő",
+    "PrevTabNavLinkTooltipText": "Előző fül",
+    "NextTabNavLinkTooltipText": "Következő fül",
+    "CloseTabNavLinkTooltipText": "Bezárás",
+    "ContextRefresh": "Frissítés",
+    "ContextClose": "Bezárás",
+    "ContextCloseOther": "Másokat bezár",
+    "ContextCloseAll": "Mindet bezár",
+    "ContextFullScreen": "Teljes képernyő"
+  },
+  "BootstrapBlazor.Components.Table": {
+    "AddButtonText": "Hozzáadás",
+    "EditButtonText": "Szerkesztés",
+    "UpdateButtonText": "Frissítés",
+    "DeleteButtonText": "Törlés",
+    "CancelButtonText": "Mégse",
+    "SaveButtonText": "Mentés",
+    "CloseButtonText": "Bezárás",
+    "CancelDeleteButtonText": "Mégse",
+    "ConfirmDeleteButtonText": "Törlés",
+    "ConfirmDeleteContentText": "Biztosan törli az összes kijelölt sort?",
+    "RefreshButtonText": "Frissítés",
+    "CardViewButtonText": "Nézet",
+    "ColumnButtonTitleText": "Oszlopok megjelenítése/elrejtése",
+    "ColumnButtonText": "Oszlopok",
+    "ExportButtonText": "Exportálás",
+    "SearchPlaceholderText": "Keresés",
+    "SearchButtonText": "Keresés",
+    "ResetSearchButtonText": "Visszaállítás",
+    "AdvanceButtonText": "Speciális keresés",
+    "AdvancedSortModalTitle": "Rendezés",
+    "AdvancedSortButtonText": "Speciális rendezés",
+    "CheckboxDisplayText": "Mind",
+    "EditModalTitle": "Szerkesztés",
+    "AddModalTitle": "Új",
+    "LineNoText": "Szám",
+    "ColumnButtonTemplateHeaderText": "Műveletek",
+    "SearchTooltip": "<div class='search-input-tooltip'>Kérem, adjon meg ...</br><kbd>Enter</kbd> Keresés <kbd>ESC</kbd> Törlés</div>",
+    "SearchModalTitle": "Keresés",
+    "AddButtonToastTitle": "Adat hozzáadása",
+    "AddButtonToastContent": "Az adat hozzáadása sikertelen. Kérem, biztosítsa az OnAddAsync metódust",
+    "EditButtonToastTitle": "Adat mentése",
+    "EditButtonToastNotSelectContent": "Az adat mentése sikertelen. Kérem, biztosítsa az OnSaveAsync metódust",
+    "EditButtonToastReadonlyContent": "A kiválasztott adat nem szerkeszthető",
+    "EditButtonToastMoreSelectContent": "Csak egy sor szerkeszthető",
+    "EditButtonToastNoSaveMethodContent": "Nem lehet szerkeszteni az adatot. Kérem, biztosítsa az OnSaveAsync metódust",
+    "SaveButtonToastTitle": "Adat mentése",
+    "SaveButtonToastContent": "Az adat mentése sikertelen. Kérem, biztosítsa az OnSaveAsync metódust",
+    "SaveButtonToastResultContent": "Az adat mentése {0}, automatikus bezárás {1} mp múlva",
+    "SuccessText": "Sikeres",
+    "FailText": "Sikertelen",
+    "DeleteButtonToastTitle": "Adat törlése",
+    "DeleteButtonToastContent": "Kérem, válasszon törlendő sorokat, automatikus bezárás {0} mp múlva",
+    "DeleteButtonToastResultContent": "Az adat törlése {0}, automatikus bezárás {1} mp múlva",
+    "DeleteButtonToastCanNotDeleteContent": "A kiválasztott adatok között vannak törölhetetlen adatok, automatikus bezárás {0} mp múlva",
+    "DataServiceInvalidOperationText": "Nem lehet értéket biztosítani a(z) 'DataService' tulajdonsághoz a(z) 'BootstrapBlazor.Components.Table`1[[{0}]]' típuson. Nincs regisztrált szolgáltatás a(z) 'BootstrapBlazor.Components.IDataService`1[{0}]' típusra.",
+    "NotSetOnTreeExpandErrorMessage": "Az OnTreeExpand paraméter nincs beállítva",
+    "UnsetText": "Növekvő",
+    "SortAscText": "Csökkenő",
+    "SortDescText": "Nincs beállítva",
+    "EmptyText": "Nincs adat",
+    "ExportToastTitle": "Exportálás",
+    "ExportToastContent": "Adat exportálása {0}, automatikus bezárás {1} mp múlva",
+    "ExportToastInProgressContent": "Adatok exportálása, kérem várjon, automatikus bezárás {0} mp múlva",
+    "ExportCsvDropdownItemText": "MS-Csv",
+    "ExportExcelDropdownItemText": "MS-Excel",
+    "ExportPdfDropdownItemText": "Pdf",
+    "PageInfoText": "{0} - {1} Összesen {2}",
+    "PageItemsText": "{0}/oldal",
+    "CopyColumnTooltipText": "Másolja az egész oszlop adatát a vágólapra",
+    "CopyColumnCopiedTooltipText": "Másolva!",
+    "ColumnWidthTooltipPrefix": "szélesség: ",
+    "ColumnToolboxTitle": "Eszközök",
+    "AlignLeftText": "Balra",
+    "AlignLeftTooltipText": "Kattintson, hogy az oszlop szövegét balra igazítsa",
+    "AlignCenterText": "Középre",
+    "AlignCenterTooltipText": "Kattintson, hogy az oszlop szövegét középre igazítsa",
+    "AlignRightText": "Jobbra",
+    "AlignRightTooltipText": "Kattintson, hogy az oszlop szövegét jobbra igazítsa"
+  },
+  "BootstrapBlazor.Components.EditDialog": {
+    "CloseButtonText": "Bezárás",
+    "SaveButtonText": "Mentés"
+  },
+  "BootstrapBlazor.Components.TableColumnFilter": {
+    "ClearButtonText": "Törlés",
+    "FilterButtonText": "Szűrés",
+    "BoolFilter.AllText": "Mind",
+    "BoolFilter.TrueText": "Igaz",
+    "BoolFilter.FalseText": "Hamis",
+    "GreaterThanOrEqual": "Nagyobb vagy egyenlő",
+    "LessThanOrEqual": "Kisebb vagy egyenlő",
+    "GreaterThan": "Nagyobb",
+    "LessThan": "Kisebb",
+    "Equal": "Egyenlő",
+    "NotEqual": "Nem egyenlő",
+    "Contains": "Tartalmazza",
+    "NotContains": "Nem tartalmazza",
+    "EnumFilter.AllText": "Mind",
+    "NotSupportedMessage": "Nem támogatott szűrőtípus, kérem testreszabni a szűrőt a FilterTemplate használatával",
+    "MultiFilterSearchPlaceHolderText": "Kérem írjon be ...",
+    "MultiFilterSelectAllText": "Összes kijelölése"
+  },
+  "BootstrapBlazor.Components.FilterLogicItem": {
+    "And": "És",
+    "Or": "Vagy"
+  },
+  "BootstrapBlazor.Components.SearchDialog": {
+    "ResetButtonText": "Visszaállítás",
+    "QueryButtonText": "Lekérdezés"
+  },
+  "BootstrapBlazor.Components.SwitchButton": {
+    "OnText": "Be",
+    "OffText": "Ki"
+  },
+  "BootstrapBlazor.Components.Timer": {
+    "PauseText": "Szünet",
+    "ResumeText": "Folytatás",
+    "CancelText": "Mégse",
+    "StarText": "Indítás"
+  },
+  "BootstrapBlazor.Components.Toggle": {
+    "OnText": "Kibontás",
+    "OffText": "Összecsukás"
+  },
+  "BootstrapBlazor.Components.Transfer": {
+    "LeftPanelText": "Mind",
+    "RightPanelText": "Kijelölve",
+    "MinErrorMessage": "Legalább {0} elemet válasszon ki",
+    "MaxErrorMessage": "Legfeljebb {0} elem választható ki"
+  },
+  "BootstrapBlazor.Components.TransferPanel": {
+    "SearchPlaceHolderString": "Kérem írjon be ...",
+    "Text": "Lista"
+  },
+  "BootstrapBlazor.Components.Tree": {
+    "NotSetOnTreeExpandErrorMessage": "Az OnExpandNodeAsync paraméter nincs beállítva"
+  },
+  "BootstrapBlazor.Components.TreeView": {
+    "NotSetOnTreeExpandErrorMessage": "Az OnExpandNodeAsync paraméter nincs beállítva",
+    "ToolbarEditTitle": "Fa csomópont szerkesztése",
+    "ToolbarEditLabelText": "Átnevezés"
+  },
+  "BootstrapBlazor.Components.UploadBase": {
+    "DeleteButtonText": "Törlés",
+    "BrowserButtonText": "Böngésző",
+    "FileExtensions": "A fájlnak az alábbi kiterjesztések egyikével kell rendelkeznie: {0}",
+    "FileSizeValidation": "A fájl mérete kisebb kell legyen, mint {0}",
+    "DropUploadText": "Húzza ide a fájlokat vagy <em>kattintson a feltöltéshez</em>",
+    "DropFooterText": ""
+  },
+  "BootstrapBlazor.Components.Handwritten": {
+    "SaveButtonText": "Mentés",
+    "ClearButtonText": "Törlés"
+  },
+  "BootstrapBlazor.Components.SignaturePad": {
+    "SignAboveLabel": "Írjon a mezőbe",
+    "ClearBtnTitle": "Törlés",
+    "SignatureAlertText": "Kérem, először adjon meg aláírást",
+    "ChangeColorBtnTitle": "Szín módosítása",
+    "UndoBtnTitle": "Visszavonás",
+    "CloseBtnTitle": "Bezárás",
+    "SaveBase64BtnTitle": "OK",
+    "SavePNGBtnTitle": "PNG",
+    "SaveJPGBtnTitle": "JPG",
+    "SaveSVGBtnTitle": "SVG"
+  },
+  "BootstrapBlazor.Components.NullableBoolItemsAttribute": {
+    "NullValueDisplayText": "Kérem válasszon ...",
+    "TrueValueDisplayText": "Igaz",
+    "FalseValueDisplayText": "Hamis"
+  },
+  "BootstrapBlazor.Components.InsertRowMode": {
+    "Last": "Utolsó",
+    "First": "Első"
+  },
+  "BootstrapBlazor.Components.IconDialog": {
+    "LabelText": "Ikon",
+    "LabelFullText": "Html",
+    "ButtonText": "Másolás",
+    "DialogHeaderText": "Kiválasztott ikon",
+    "CopiedTooltipText": "Másolva"
+  },
+  "BootstrapBlazor.Components.Splitting": {
+    "Text": "Betöltés ..."
+  },
+  "BootstrapBlazor.Components.QueryBuilder": {
+    "And": "és",
+    "Or": "vagy",
+    "GreaterThanOrEqual": "Nagyobb vagy egyenlő",
+    "LessThanOrEqual": "Kisebb vagy egyenlő",
+    "GreaterThan": "Nagyobb",
+    "LessThan": "Kisebb",
+    "Equal": "Egyenlő",
+    "NotEqual": "Nem egyenlő",
+    "Contains": "Tartalmazza",
+    "NotContains": "Nem tartalmazza",
+    "GroupText": "Csoport",
+    "ItemText": "Elem"
+  },
+  "BootstrapBlazor.Components.TableAdvancedSortDialog": {
+    "AscText": "Növekvő",
+    "DescText": "Csökkenő"
+  },
+  "BootstrapBlazor.Components.ClockPicker": {
+    "AMText": "DE",
+    "PMText": "DU"
+  },
+  "BootstrapBlazor.Components.ThemeProvider": {
+    "AutoModeText": "Automatikus",
+    "DarkModeText": "Sötét",
+    "LightModeText": "Világos"
+  },
+  "BootstrapBlazor.Components.ValidateBase": {
+    "DefaultRequiredErrorMessage": "{0} megadása kötelező."
+  }
+}

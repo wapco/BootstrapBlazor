@@ -1,4 +1,18 @@
 ﻿{
+  "BootstrapBlazor.Components.ValidatorBase": {
+    "CommonValidator": "This field is required.",
+    "RequiredValidator": "{0} is required.",
+    "MinValidator": "Select at least {0} item(s).",
+    "MaxValidator": "Select at most {0} item(s).",
+    "ValidationError_ThisFieldIsRequired": "{0} is required.",
+    "ValidationError_StringArrayMinLength": "{0} requires selecting at least {1} item(s).",
+    "ValidationError_StringArrayMaxLength": "{0} requires selecting at most {1} item(s).",
+    "ValidationError_StringArrayLength": "{0} requires selecting at least {1} and at most {2} item(s).",
+    "ValidationError_ThisFieldMustLessThanOrEqual": "{0} must be less than or equal to {1}.",
+    "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0} must be greater than or equal to {1}.",
+    "ValidationError_ThisFieldValueOutOfRange": "{0} must be between {1} and {2}, inclusive.",
+    "ValidationError_ThisStringFieldValueOutOfRange": "{0} length must be between {2} and {1}."
+  },
   "BootstrapBlazor.Components.AutoComplete": {
     "NoDataTip": "No Data",
     "PlaceHolder": "Please Input"
@@ -71,7 +85,7 @@
     "ClearButtonText": "Clear",
     "TodayButtonText": "Today",
     "ConfirmButtonText": "Ok",
-    "DateTimeFormat": "M/d/yyyy hh\\:mm\\:ss tt",
+    "DateTimeFormat": "M/d/yyyy hh\\:mm\\:ss",
     "DateFormat": "M/d/yyyy",
     "Last7Days": "Last 7 Days",
     "Last30Days": "Last 30 Days",

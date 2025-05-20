@@ -1,0 +1,210 @@
+﻿{
+  "BootstrapBlazor.Components.ValidatorBase": {
+    "CommonValidator": "Dieses Feld ist erforderlich.",
+    "RequiredValidator": "{0} ist erforderlich.",
+    "MinValidator": "Wählen Sie mindestens {0} Element(e).",
+    "MaxValidator": "Wählen Sie höchstens {0} Element(e).",
+    "ValidationError_ThisFieldIsRequired": "{0} ist erforderlich.",
+    "ValidationError_StringArrayMinLength": "{0} erfordert die Auswahl von mindestens {1} Element(en).",
+    "ValidationError_StringArrayMaxLength": "{0} erfordert die Auswahl von höchstens {1} Element(en).",
+    "ValidationError_StringArrayLength": "{0} erfordert die Auswahl von mindestens {1} und höchstens {2} Element(en).",
+    "ValidationError_ThisFieldMustLessThanOrEqual": "{0} muss kleiner oder gleich {1} sein.",
+    "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0} muss größer oder gleich {1} sein.",
+    "ValidationError_ThisFieldValueOutOfRange": "{0} muss zwischen {1} und {2} liegen (einschließlich).",
+    "ValidationError_ThisStringFieldValueOutOfRange": "Die Länge von {0} muss zwischen {2} und {1} liegen."
+  },
+  "BootstrapBlazor.Components.AutoComplete": {
+    "NoDataTip": "Keine Daten",
+    "PlaceHolder": "Bitte eingeben"
+  },
+  "BootstrapBlazor.Components.Captcha": {
+    "HeaderText": "Captcha",
+    "BarText": "Schieben Sie nach rechts, um das Puzzle zu lösen",
+    "FailedText": "Laden fehlgeschlagen",
+    "LoadText": "Wird geladen ..."
+  },
+  "BootstrapBlazor.Components.Calendar": {
+    "PreviousYear": "Vorheriges Jahr",
+    "PreviousMonth": "Vorheriger Monat",
+    "Today": "Heute",
+    "NextMonth": "Nächster Monat",
+    "NextYear": "Nächstes Jahr",
+    "PreviousWeek": "Vorherige Woche",
+    "WeekText": "Woche",
+    "NextWeek": "Nächste Woche",
+    "WeekHeaderText": "",
+    "WeekLists": "So,Mo,Di,Mi,Do,Fr,Sa",
+    "WeekNumberText": "{0} Wochen",
+    "Months": "Januar,Februar,März,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember",
+    "Title": "{0} {1}"
+  },
+  "BootstrapBlazor.Components.Cascader": {
+    "PlaceHolder": "Bitte auswählen ..."
+  },
+  "BootstrapBlazor.Components.Console": {
+    "HeaderText": "Überwachung",
+    "LightTitle": "Licht",
+    "ClearButtonText": "Löschen",
+    "AutoScrollText": "Automatisch scrollen"
+  },
+  "BootstrapBlazor.Components.DateTimePicker": {
+    "DatePlaceHolder": "Datum auswählen",
+    "TimePlaceHolder": "Uhrzeit auswählen",
+    "DateTimePlaceHolderText": "Bitte auswählen ...",
+    "DatePlaceHolderText": "Bitte auswählen ...",
+    "TimeFormat": "hh\\:mm\\:ss",
+    "DateFormat": "d.M.yyyy",
+    "DateTimeFormat": "d.M.yyyy HH\\:mm\\:ss",
+    "AiraPrevYearLabel": "Vorheriges Jahr",
+    "AiraNextYearLabel": "Nächstes Jahr",
+    "AiraPrevMonthLabel": "Vorheriger Monat",
+    "AiraNextMonthLabel": "Nächster Monat",
+    "ClearButtonText": "Löschen",
+    "NowButtonText": "Jetzt",
+    "ConfirmButtonText": "Ok",
+    "CancelButtonText": "Abbrechen",
+    "YearText": "{0}",
+    "MonthText": "{0}",
+    "YearPeriodText": "{0} - {1}",
+    "Months": "Jan,Feb,Mär,Apr,Mai,Jun,Jul,Aug,Sep,Okt,Nov,Dez",
+    "MonthLists": "Jan,Feb,Mär,Apr,Mai,Jun,Jul,Aug,Sep,Okt,Nov,Dez",
+    "WeekLists": "So,Mo,Di,Mi,Do,Fr,Sa",
+    "GenericTypeErroMessage": "DateTimePicker unterstützt nur DateTime, DateTime?, DateTimeOffset, DateTimeOffset?",
+    "Today": "Heute",
+    "Yesterday": "Gestern",
+    "Week": "Vor einer Woche",
+    "Month": "M/yyyy",
+    "Date": "d.M.yyyy",
+    "DateMinute": "d.M.yyyy HH:mm",
+    "DateTime": "d.M.yyyy HH:mm:ss"
+  },
+  "BootstrapBlazor.Components.DateTimeRange": {
+    "SeparateText": "Bis",
+    "StartPlaceHolderText": "Startdatum",
+    "EndPlaceHolderText": "Enddatum",
+    "ClearButtonText": "Löschen",
+    "TodayButtonText": "Heute",
+    "ConfirmButtonText": "Ok",
+    "DateTimeFormat": "d.M.yyyy hh\\:mm\\:ss",
+    "DateFormat": "d.M.yyyy",
+    "Last7Days": "Letzte 7 Tage",
+    "Last30Days": "Letzte 30 Tage",
+    "ThisMonth": "Diesen Monat",
+    "LastMonth": "Letzter Monat"
+  },
+  "BootstrapBlazor.Components.BootstrapInputNumber": {
+    "ParsingErrorMessage": "Das Feld {0} muss eine Zahl sein."
+  },
+  "BootstrapBlazor.Components.ResultDialogOption": {
+    "ButtonYesText": "Ja",
+    "ButtonNoText": "Nein",
+    "ButtonCloseText": "Schließen"
+  },
+  "BootstrapBlazor.Components.DropdownList": {
+    "PlaceHolder": "Bitte auswählen ..."
+  },
+  "BootstrapBlazor.Components.Editor": {
+    "PlaceHolder": "Zum Bearbeiten klicken"
+  },
+  "BootstrapBlazor.Components.EditorForm": {
+    "ModelInvalidOperationExceptionMessage": "ValidateForm-MODEL stimmt nicht mit {0}-MODEL überein",
+    "PlaceHolderText": "Bitte eingeben ..."
+  },
+  "BootstrapBlazor.Components.Empty": {
+    "Text": "Keine Daten"
+  },
+  "BootstrapBlazor.Components.EqualToValidator": {
+    "ErrorMessage": "Bitte denselben Wert erneut eingeben"
+  },
+  "BootstrapBlazor.Components.ErrorLogger": {
+    "ToastTitle": "Anwendungsfehler"
+  },
+  "BootstrapBlazor.Components.GoTop": {
+    "TooltipText": "Nach oben"
+  },
+  "BootstrapBlazor.Components.Layout": {
+    "TooltipText": "Klicken zum Ein-/Ausklappen der Seitenleiste"
+  },
+  "BootstrapBlazor.Components.Logout": {
+    "PrefixDisplayNameText": "Willkommen",
+    "PrefixUserNameText": "Konto:"
+  },
+  "BootstrapBlazor.Components.LogoutLink": {
+    "Text": "Abmelden"
+  },
+  "BootstrapBlazor.Components.Menu": {
+    "InvalidOperationExceptionMessage": "SideMenu-Komponente kann nicht unabhängig verwendet werden. Bitte verwenden Sie die Menu-Komponente mit IsVertical = true"
+  },
+  "BootstrapBlazor.Components.ModalDialog": {
+    "CloseButtonText": "Schließen",
+    "SaveButtonText": "Speichern",
+    "PrintButtonText": "Drucken",
+    "ExportPdfButtonText": "PDF exportieren"
+  },
+  "BootstrapBlazor.Components.MultiSelect": {
+    "PlaceHolder": "Elemente auswählen ...",
+    "SelectAllText": "Alle",
+    "ReverseSelectText": "Umkehren",
+    "ClearText": "Löschen",
+    "MinErrorMessage": "Wählen Sie mindestens {0} Elemente",
+    "MaxErrorMessage": "Es dürfen höchstens {0} Elemente ausgewählt werden",
+    "NoSearchDataText": "Keine Ergebnisse"
+  },
+  "BootstrapBlazor.Components.Pagination": {
+    "GotoNavigatorLabelText": "Gehe zu"
+  },
+  "BootstrapBlazor.Components.PopConfirmButton": {
+    "CloseButtonText": "Abbrechen",
+    "ConfirmButtonText": "Ok",
+    "Content": "Sind Sie sicher, dass Sie diese Aktion ausführen möchten?"
+  },
+  "BootstrapBlazor.Components.PrintButton": {
+    "Text": "Drucken"
+  },
+  "BootstrapBlazor.Components.Repeater": {
+    "EmptyText": "Keine Daten"
+  },
+  "BootstrapBlazor.Components.Search": {
+    "SearchButtonText": "Suchen",
+    "NoDataTip": "Keine Einträge gefunden"
+  },
+  "BootstrapBlazor.Components.SearchInput": {
+    "OnEnterPlaceholder": "Drücken Sie Enter, nachdem Sie ein Stichwort eingegeben haben",
+    "PlaceHolder": "Bitte Stichwort eingeben"
+  },
+  "BootstrapBlazor.Components.Select": {
+    "PlaceHolder": "Bitte auswählen ...",
+    "NoSearchDataText": "Keine Ergebnisse"
+  },
+  "BootstrapBlazor.Components.SelectTree": {
+    "PlaceHolder": "Bitte auswählen ..."
+  },
+  "BootstrapBlazor.Components.StringLengthValidator": {
+    "ErrorMessage": "Bitte einen Wert eingeben, der kleiner oder gleich {{0}} ist"
+  },
+  "BootstrapBlazor.Components.SweetAlert": {
+    "CloseButtonText": "Schließen",
+    "CancelButtonText": "Abbrechen",
+    "ConfirmButtonText": "Bestätigen"
+  },
+  "BootstrapBlazor.Components.Switch": {
+    "OnInnerText": "Ein",
+    "OffInnerText": "Aus"
+  },
+  "BootstrapBlazor.Components.Tab": {
+    "CloseCurrentTabText": "Schließen",
+    "CloseOtherTabsText": "Andere schließen",
+    "CloseAllTabsText": "Alle schließen",
+    "NotFoundTabText": "Nicht gefunden",
+    "RefreshToolbarTooltipText": "Aktualisieren",
+    "FullscreenToolbarTooltipText": "Vollbild",
+    "PrevTabNavLinkTooltipText": "Vorheriger Tab",
+    "NextTabNavLinkTooltipText": "Nächster Tab",
+    "CloseTabNavLinkTooltipText": "Schließen",
+    "ContextRefresh": "Aktualisieren",
+    "ContextClose": "Schließen",
+    "ContextCloseOther": "Andere Tabs schließen",
+    "ContextCloseAll": "Alle Tabs schließen",
+    "ContextFullScreen": "Vollbild"
+  }
+}

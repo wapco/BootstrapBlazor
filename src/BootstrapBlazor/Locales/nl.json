@@ -1,0 +1,416 @@
+﻿{
+  "BootstrapBlazor.Components.ValidatorBase": {
+    "CommonValidator": "Dit veld is verplicht.",
+    "RequiredValidator": "{0} is verplicht.",
+    "MinValidator": "Selecteer ten minste {0} item(s).",
+    "MaxValidator": "Selecteer maximaal {0} item(s).",
+    "ValidationError_ThisFieldIsRequired": "{0} is verplicht.",
+    "ValidationError_StringArrayMinLength": "{0} vereist dat je ten minste {1} item(s) selecteert.",
+    "ValidationError_StringArrayMaxLength": "{0} vereist dat je maximaal {1} item(s) selecteert.",
+    "ValidationError_StringArrayLength": "{0} vereist dat je ten minste {1} en maximaal {2} item(s) selecteert.",
+    "ValidationError_ThisFieldMustLessThanOrEqual": "{0} moet minder dan of gelijk zijn aan {1}.",
+    "ValidationError_ThisFieldMustGreaterThanOrEqual": "{0} moet groter dan of gelijk zijn aan {1}.",
+    "ValidationError_ThisFieldValueOutOfRange": "{0} moet tussen {1} en {2} liggen, inclusief.",
+    "ValidationError_ThisStringFieldValueOutOfRange": "De lengte van {0} moet tussen {2} en {1} liggen."
+  },
+  "BootstrapBlazor.Components.AutoComplete": {
+    "NoDataTip": "Geen gegevens",
+    "PlaceHolder": "Voer in alstublieft"
+  },
+  "BootstrapBlazor.Components.Captcha": {
+    "HeaderText": "Captcha",
+    "BarText": "Schuif naar rechts om de puzzel op te lossen",
+    "FailedText": "Laden mislukt",
+    "LoadText": "Bezig met laden ..."
+  },
+  "BootstrapBlazor.Components.Calendar": {
+    "PreviousYear": "Vorig jaar",
+    "PreviousMonth": "Vorige maand",
+    "Today": "Vandaag",
+    "NextMonth": "Volgende maand",
+    "NextYear": "Volgend jaar",
+    "PreviousWeek": "Vorige week",
+    "WeekText": "Week",
+    "NextWeek": "Volgende week",
+    "WeekHeaderText": "",
+    "WeekLists": "Zo,Ma,Di,Wo,Do,Vr,Za",
+    "WeekNumberText": "{0} weken",
+    "Months": "Januari,Februari,Maart,April,Mei,Juni,Juli,Augustus,September,Oktober,November,December",
+    "Title": "{0} {1}"
+  },
+  "BootstrapBlazor.Components.Cascader": {
+    "PlaceHolder": "Maak alstublieft een keuze ..."
+  },
+  "BootstrapBlazor.Components.Console": {
+    "HeaderText": "Monitor",
+    "LightTitle": "Licht",
+    "ClearButtonText": "Wissen",
+    "AutoScrollText": "Automatisch scrollen"
+  },
+  "BootstrapBlazor.Components.DateTimePicker": {
+    "DatePlaceHolder": "Selecteer datum",
+    "TimePlaceHolder": "Selecteer tijd",
+    "DateTimePlaceHolderText": "Maak alstublieft een keuze ...",
+    "DatePlaceHolderText": "Maak alstublieft een keuze ...",
+    "TimeFormat": "hh\\:mm\\:ss",
+    "DateFormat": "dd-MM-yyyy",
+    "DateTimeFormat": "dd-MM-yyyy HH\\:mm\\:ss",
+    "AiraPrevYearLabel": "Vorig jaar",
+    "AiraNextYearLabel": "Volgend jaar",
+    "AiraPrevMonthLabel": "Vorige maand",
+    "AiraNextMonthLabel": "Volgende maand",
+    "ClearButtonText": "Wissen",
+    "NowButtonText": "Nu",
+    "ConfirmButtonText": "Ok",
+    "CancelButtonText": "Annuleren",
+    "YearText": "{0}",
+    "MonthText": "{0}",
+    "YearPeriodText": "{0} - {1}",
+    "Months": "Jan,Feb,Mrt,Apr,Mei,Jun,Jul,Aug,Sep,Okt,Nov,Dec",
+    "MonthLists": "Jan,Feb,Mrt,Apr,Mei,Jun,Jul,Aug,Sep,Okt,Nov,Dec",
+    "WeekLists": "Zo,Ma,Di,Wo,Do,Vr,Za",
+    "GenericTypeErroMessage": "DateTimePicker ondersteunt alleen DateTime DateTime? DateTimeOffset DateTimeOffset?",
+    "Today": "Vandaag",
+    "Yesterday": "Gisteren",
+    "Week": "Een week geleden",
+    "Month": "yyyy-MM",
+    "Date": "dd-MM-yyyy",
+    "DateMinute": "dd-MM-yyyy hh:mm",
+    "DateTime": "dd-MM-yyyy hh:mm:ss"
+  },
+  "BootstrapBlazor.Components.DateTimeRange": {
+    "SeparateText": "Tot",
+    "StartPlaceHolderText": "Begindatum",
+    "EndPlaceHolderText": "Einddatum",
+    "ClearButtonText": "Wissen",
+    "TodayButtonText": "Vandaag",
+    "ConfirmButtonText": "Ok",
+    "DateTimeFormat": "dd-MM-yyyy hh:mm:ss",
+    "DateFormat": "dd-MM-yyyy",
+    "Last7Days": "Laatste 7 dagen",
+    "Last30Days": "Laatste 30 dagen",
+    "ThisMonth": "Deze maand",
+    "LastMonth": "Vorige maand"
+  },
+  "BootstrapBlazor.Components.BootstrapInputNumber": {
+    "ParsingErrorMessage": "Het veld {0} moet een nummer zijn."
+  },
+  "BootstrapBlazor.Components.ResultDialogOption": {
+    "ButtonYesText": "Ja",
+    "ButtonNoText": "Nee",
+    "ButtonCloseText": "Sluiten"
+  },
+  "BootstrapBlazor.Components.DropdownList": {
+    "PlaceHolder": "Maak alstublieft een keuze ..."
+  },
+  "BootstrapBlazor.Components.Editor": {
+    "PlaceHolder": "Klik om te bewerken"
+  },
+  "BootstrapBlazor.Components.EditorForm": {
+    "ModelInvalidOperationExceptionMessage": "ValidateForm MODEL komt niet overeen met {0} MODEL",
+    "PlaceHolderText": "Voer alstublieft in ..."
+  },
+  "BootstrapBlazor.Components.Empty": {
+    "Text": "Geen gegevens"
+  },
+  "BootstrapBlazor.Components.EqualToValidator": {
+    "ErrorMessage": "Voer alstublieft dezelfde waarde opnieuw in"
+  },
+  "BootstrapBlazor.Components.ErrorLogger": {
+    "ToastTitle": "Applicatiefout"
+  },
+  "BootstrapBlazor.Components.GoTop": {
+    "TooltipText": "Ga naar boven"
+  },
+  "BootstrapBlazor.Components.Layout": {
+    "TooltipText": "Klik om de zijbalk uit te vouwen/inklapppen"
+  },
+  "BootstrapBlazor.Components.Logout": {
+    "PrefixDisplayNameText": "Welkom",
+    "PrefixUserNameText": "Account:"
+  },
+  "BootstrapBlazor.Components.LogoutLink": {
+    "Text": "Uitloggen"
+  },
+  "BootstrapBlazor.Components.Menu": {
+    "InvalidOperationExceptionMessage": "SideMenu component kan niet onafhankelijk worden gebruikt. Gebruik alstublieft de Menu component en stel IsVertical = true in"
+  },
+  "BootstrapBlazor.Components.ModalDialog": {
+    "CloseButtonText": "Sluiten",
+    "SaveButtonText": "Opslaan",
+    "PrintButtonText": "Afdrukken",
+    "ExportPdfButtonText": "Exporteer Pdf"
+  },
+  "BootstrapBlazor.Components.MultiSelect": {
+    "PlaceHolder": "Selecteer items ...",
+    "SelectAllText": "Alles",
+    "ReverseSelectText": "Omkeren",
+    "ClearText": "Wissen",
+    "MinErrorMessage": "Selecteer ten minste {0} items",
+    "MaxErrorMessage": "Maximaal {0} items kunnen geselecteerd worden",
+    "NoSearchDataText": "Geen resultaat"
+  },
+  "BootstrapBlazor.Components.Pagination": {
+    "GotoNavigatorLabelText": "Ga naar"
+  },
+  "BootstrapBlazor.Components.PopConfirmButton": {
+    "CloseButtonText": "Annuleren",
+    "ConfirmButtonText": "Ok",
+    "Content": "Weet u zeker dat u deze bewerking wilt uitvoeren?"
+  },
+  "BootstrapBlazor.Components.PrintButton": {
+    "Text": "Afdrukken"
+  },
+  "BootstrapBlazor.Components.Repeater": {
+    "EmptyText": "Geen gegevens"
+  },
+  "BootstrapBlazor.Components.Search": {
+    "SearchButtonText": "Zoeken",
+    "NoDataTip": "Geen resultaten gevonden"
+  },
+  "BootstrapBlazor.Components.SearchInput": {
+    "OnEnterPlaceholder": "Druk op Enter na het invoeren van een zoekwoord om te zoeken",
+    "PlaceHolder": "Voer een zoekwoord in"
+  },
+  "BootstrapBlazor.Components.Select": {
+    "PlaceHolder": "Maak alstublieft een keuze ...",
+    "NoSearchDataText": "Geen resultaat"
+  },
+  "BootstrapBlazor.Components.SelectTree": {
+    "PlaceHolder": "Maak alstublieft een keuze ..."
+  },
+  "BootstrapBlazor.Components.StringLengthValidator": {
+    "ErrorMessage": "Voer een waarde in die kleiner dan of gelijk aan {{0}} is"
+  },
+  "BootstrapBlazor.Components.SweetAlert": {
+    "CloseButtonText": "Sluiten",
+    "CancelButtonText": "Annuleren",
+    "ConfirmButtonText": "Bevestigen"
+  },
+  "BootstrapBlazor.Components.Switch": {
+    "OnInnerText": "Aan",
+    "OffInnerText": "Uit"
+  },
+  "BootstrapBlazor.Components.Tab": {
+    "CloseCurrentTabText": "Sluiten",
+    "CloseOtherTabsText": "Andere sluiten",
+    "CloseAllTabsText": "Alles sluiten",
+    "NotFoundTabText": "Niet gevonden",
+    "RefreshToolbarTooltipText": "Vernieuwen",
+    "FullscreenToolbarTooltipText": "Volledig scherm",
+    "PrevTabNavLinkTooltipText": "Vorige tab",
+    "NextTabNavLinkTooltipText": "Volgende tab",
+    "CloseTabNavLinkTooltipText": "Sluiten",
+    "ContextRefresh": "Vernieuwen",
+    "ContextClose": "Sluiten",
+    "ContextCloseOther": "Andere tabs sluiten",
+    "ContextCloseAll": "Alle tabs sluiten",
+    "ContextFullScreen": "Volledig scherm"
+  },
+  "BootstrapBlazor.Components.Table": {
+    "AddButtonText": "Toevoegen",
+    "EditButtonText": "Bewerken",
+    "UpdateButtonText": "Bijwerken",
+    "DeleteButtonText": "Verwijderen",
+    "CancelButtonText": "Annuleren",
+    "SaveButtonText": "Opslaan",
+    "CloseButtonText": "Sluiten",
+    "CancelDeleteButtonText": "Annuleren",
+    "ConfirmDeleteButtonText": "Verwijderen",
+    "ConfirmDeleteContentText": "Weet u zeker dat u ALLE geselecteerde rijen wilt VERWIJDEREN?",
+    "RefreshButtonText": "Vernieuwen",
+    "CardViewButtonText": "Weergave",
+    "ColumnButtonTitleText": "Kolommen tonen/verbergen",
+    "ColumnButtonText": "Kolommen",
+    "ExportButtonText": "Exporteren",
+    "SearchPlaceholderText": "Zoeken",
+    "SearchButtonText": "Zoeken",
+    "ResetSearchButtonText": "Resetten",
+    "AdvanceButtonText": "Geavanceerd zoeken",
+    "AdvancedSortModalTitle": "Sorteren",
+    "AdvancedSortButtonText": "Geavanceerd sorteren",
+    "CheckboxDisplayText": "Alles",
+    "EditModalTitle": "Bewerken",
+    "AddModalTitle": "Nieuw",
+    "LineNoText": "Nr.",
+    "ColumnButtonTemplateHeaderText": "Acties",
+    "SearchTooltip": "<div class='search-input-tooltip'>Voer in ...</br><kbd>Enter</kbd> Zoeken <kbd>ESC</kbd> Wissen</div>",
+    "SearchModalTitle": "Zoeken",
+    "AddButtonToastTitle": "Data toevoegen",
+    "AddButtonToastContent": "Toevoegen van data mislukt. Gelieve de OnAddAsync methode te voorzien",
+    "EditButtonToastTitle": "Data toevoegen",
+    "EditButtonToastNotSelectContent": "Opslaan van data mislukt. Gelieve de OnSaveAsync methode te voorzien",
+    "EditButtonToastReadonlyContent": "De geselecteerde data kan niet worden bewerkt",
+    "EditButtonToastMoreSelectContent": "Er kan slechts één rij worden BEWERKT",
+    "EditButtonToastNoSaveMethodContent": "Kan data niet BEWERKEN. Gelieve de OnSaveAsync methode te voorzien",
+    "SaveButtonToastTitle": "Data opslaan",
+    "SaveButtonToastContent": "Opslaan van data mislukt. Gelieve de OnSaveAsync methode te voorzien",
+    "SaveButtonToastResultContent": "Data opgeslagen {0}, sluit automatisch na {1} seconden",
+    "SuccessText": "Geslaagd",
+    "FailText": "Mislukt",
+    "DeleteButtonToastTitle": "Data verwijderen",
+    "DeleteButtonToastContent": "Selecteer rijen om te VERWIJDEREN, sluit automatisch na {0} seconden",
+    "DeleteButtonToastResultContent": "Data verwijderd {0}, sluit automatisch na {1} seconden",
+    "DeleteButtonToastCanNotDeleteContent": "Er zijn niet-verwijderbare gegevens geselecteerd, sluit automatisch na {0} seconden",
+    "DataServiceInvalidOperationText": "Kan geen waarde voor eigenschap 'DataService' van type 'BootstrapBlazor.Components.Table`1[[{0}]]' leveren. Er is geen geregistreerde service van type 'BootstrapBlazor.Components.IDataService`1[{0}]'.",
+    "NotSetOnTreeExpandErrorMessage": "OnTreeExpand-parameter niet ingesteld",
+    "UnsetText": "Oplopend",
+    "SortAscText": "Aflopend",
+    "SortDescText": "Niet ingesteld",
+    "EmptyText": "Geen gegevens",
+    "ExportToastTitle": "Exporteren",
+    "ExportToastContent": "Gegevens geëxporteerd {0}, sluit automatisch na {1} seconden",
+    "ExportToastInProgressContent": "Gegevens worden geëxporteerd, even geduld aub, sluit automatisch na {0} seconden",
+    "ExportCsvDropdownItemText": "MS-Csv",
+    "ExportExcelDropdownItemText": "MS-Excel",
+    "ExportPdfDropdownItemText": "Pdf",
+    "PageInfoText": "{0} - {1} Totaal {2}",
+    "PageItemsText": "{0}/pagina",
+    "CopyColumnTooltipText": "Kopieer hele kolomgegevens naar klembord",
+    "CopyColumnCopiedTooltipText": "Gekopieerd!",
+    "ColumnWidthTooltipPrefix": "breedte: ",
+    "ColumnToolboxTitle": "Gereedschap",
+    "AlignLeftText": "Links",
+    "AlignLeftTooltipText": "Klik om tekst in deze kolom links uit te lijnen",
+    "AlignCenterText": "Midden",
+    "AlignCenterTooltipText": "Klik om tekst in deze kolom in het midden uit te lijnen",
+    "AlignRightText": "Rechts",
+    "AlignRightTooltipText": "Klik om tekst in deze kolom rechts uit te lijnen"
+  },
+  "BootstrapBlazor.Components.EditDialog": {
+    "CloseButtonText": "Sluiten",
+    "SaveButtonText": "Opslaan"
+  },
+  "BootstrapBlazor.Components.TableColumnFilter": {
+    "ClearButtonText": "Wissen",
+    "FilterButtonText": "Filteren",
+    "BoolFilter.AllText": "Alles",
+    "BoolFilter.TrueText": "Waar",
+    "BoolFilter.FalseText": "Onwaar",
+    "GreaterThanOrEqual": "Groter dan of gelijk aan",
+    "LessThanOrEqual": "Kleiner dan of gelijk aan",
+    "GreaterThan": "Groter dan",
+    "LessThan": "Kleiner dan",
+    "Equal": "Gelijk aan",
+    "NotEqual": "Niet gelijk aan",
+    "Contains": "Bevat",
+    "NotContains": "Bevat niet",
+    "EnumFilter.AllText": "Alles",
+    "NotSupportedMessage": "Filtertype niet ondersteund, pas de filter aan met FilterTemplate",
+    "MultiFilterSearchPlaceHolderText": "Voer in ...",
+    "MultiFilterSelectAllText": "Alles selecteren"
+  },
+  "BootstrapBlazor.Components.FilterLogicItem": {
+    "And": "En",
+    "Or": "Of"
+  },
+  "BootstrapBlazor.Components.SearchDialog": {
+    "ResetButtonText": "Resetten",
+    "QueryButtonText": "Zoeken"
+  },
+  "BootstrapBlazor.Components.SwitchButton": {
+    "OnText": "Aan",
+    "OffText": "Uit"
+  },
+  "BootstrapBlazor.Components.Timer": {
+    "PauseText": "Pauze",
+    "ResumeText": "Doorgaan",
+    "CancelText": "Annuleren",
+    "StarText": "Start"
+  },
+  "BootstrapBlazor.Components.Toggle": {
+    "OnText": "Uitklappen",
+    "OffText": "Inklappen"
+  },
+  "BootstrapBlazor.Components.Transfer": {
+    "LeftPanelText": "Alles",
+    "RightPanelText": "Geselecteerd",
+    "MinErrorMessage": "Selecteer ten minste {0} items",
+    "MaxErrorMessage": "Er kunnen maximaal {0} items worden geselecteerd"
+  },
+  "BootstrapBlazor.Components.TransferPanel": {
+    "SearchPlaceHolderString": "Voer in ...",
+    "Text": "Lijst"
+  },
+  "BootstrapBlazor.Components.Tree": {
+    "NotSetOnTreeExpandErrorMessage": "OnExpandNodeAsync-parameter niet ingesteld"
+  },
+  "BootstrapBlazor.Components.TreeView": {
+    "NotSetOnTreeExpandErrorMessage": "OnExpandNodeAsync-parameter niet ingesteld",
+    "ToolbarEditTitle": "Bewerk boomknooppunt",
+    "ToolbarEditLabelText": "Naam wijzigen"
+  },
+  "BootstrapBlazor.Components.UploadBase": {
+    "DeleteButtonText": "Verwijderen",
+    "BrowserButtonText": "Bladeren",
+    "FileExtensions": "Bestand moet een van de volgende extensies hebben: {0}",
+    "FileSizeValidation": "Bestandsgrootte moet kleiner zijn dan {0}",
+    "DropUploadText": "Bestanden hier neerzetten of <em>klik om te uploaden</em>",
+    "DropFooterText": ""
+  },
+  "BootstrapBlazor.Components.Handwritten": {
+    "SaveButtonText": "Opslaan",
+    "ClearButtonText": "Wissen"
+  },
+  "BootstrapBlazor.Components.SignaturePad": {
+    "SignAboveLabel": "Onderteken in het vak",
+    "ClearBtnTitle": "Wissen",
+    "SignatureAlertText": "Gelieve eerst een handtekening te zetten",
+    "ChangeColorBtnTitle": "Kleur wijzigen",
+    "UndoBtnTitle": "Ongedaan maken",
+    "CloseBtnTitle": "Sluiten",
+    "SaveBase64BtnTitle": "OK",
+    "SavePNGBtnTitle": "PNG",
+    "SaveJPGBtnTitle": "JPG",
+    "SaveSVGBtnTitle": "SVG"
+  },
+  "BootstrapBlazor.Components.NullableBoolItemsAttribute": {
+    "NullValueDisplayText": "Gelieve te selecteren ...",
+    "TrueValueDisplayText": "Waar",
+    "FalseValueDisplayText": "Onwaar"
+  },
+  "BootstrapBlazor.Components.InsertRowMode": {
+    "Last": "Laatste",
+    "First": "Eerste"
+  },
+  "BootstrapBlazor.Components.IconDialog": {
+    "LabelText": "Icoon",
+    "LabelFullText": "Html",
+    "ButtonText": "Kopiëren",
+    "DialogHeaderText": "Geselecteerd pictogram",
+    "CopiedTooltipText": "Gekopieerd"
+  },
+  "BootstrapBlazor.Components.Splitting": {
+    "Text": "Bezig met laden ..."
+  },
+  "BootstrapBlazor.Components.QueryBuilder": {
+    "And": "en",
+    "Or": "of",
+    "GreaterThanOrEqual": "Groter dan of gelijk aan",
+    "LessThanOrEqual": "Kleiner dan of gelijk aan",
+    "GreaterThan": "Groter dan",
+    "LessThan": "Kleiner dan",
+    "Equal": "Gelijk aan",
+    "NotEqual": "Niet gelijk aan",
+    "Contains": "Bevat",
+    "NotContains": "Bevat niet",
+    "GroupText": "Groep",
+    "ItemText": "Item"
+  },
+  "BootstrapBlazor.Components.TableAdvancedSortDialog": {
+    "AscText": "Oplopend",
+    "DescText": "Aflopend"
+  },
+  "BootstrapBlazor.Components.ClockPicker": {
+    "AMText": "AM",
+    "PMText": "PM"
+  },
+  "BootstrapBlazor.Components.ThemeProvider": {
+    "AutoModeText": "Automatisch",
+    "DarkModeText": "Donker",
+    "LightModeText": "Licht"
+  },
+  "BootstrapBlazor.Components.ValidateBase": {
+    "DefaultRequiredErrorMessage": "{0} is verplicht."
+  }
+}
