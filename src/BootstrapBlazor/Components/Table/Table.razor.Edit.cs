@@ -421,7 +421,7 @@ public partial class Table<TItem>
 
         if (shouldRender)
         {
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -635,11 +635,15 @@ public partial class Table<TItem>
             var selectedRows = items.Where(i => SelectedRows.Any(row => Equals(i, row))).ToList();
             if (!selectedRows.SequenceEqual(SelectedRows))
             {
-                SelectedRows = selectedRows;
-                if (SelectedRowsChanged.HasDelegate)
+                // 使用组件的 InvokeAsync 让所有更新发生在 UI 线程
+                InvokeAsync(async () =>
                 {
-                    _ = SelectedRowsChanged.InvokeAsync(selectedRows);
-                }
+                    SelectedRows = selectedRows;
+                    if (SelectedRowsChanged.HasDelegate)
+                    {
+                        await SelectedRowsChanged.InvokeAsync(selectedRows);
+                    }
+                });
             }
         }
     }
