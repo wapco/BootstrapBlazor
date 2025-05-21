@@ -175,7 +175,7 @@
                     </Button>
                 }
             </div>
-            @if (!IsDisabled(DateTime.Today))
+            @if (false && !IsDisabled(DateTime.Today))
             {
                 <Button class="picker-panel-link-btn is-now" Color="Color.None" OnClickWithoutRender="@ClickNowButton">
                     <span>@NowButtonText</span>
