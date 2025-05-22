@@ -441,7 +441,7 @@ public partial class MultiSelect<TValue>
     {
         if (ValueType == typeof(string))
         {
-            CurrentValueAsString = string.Join(",", SelectedItems.Select(i => i.Value));
+            CurrentValueAsString = _lastSelectedValueString = string.Join(",", SelectedItems.Select(i => i.Value));
         }
         else if (ValueType.IsGenericType || ValueType.IsArray)
         {
