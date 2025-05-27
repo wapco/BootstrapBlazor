@@ -984,7 +984,7 @@
         if (ShowSearchButton)
         {
             builder.OpenComponent<Button>(sequence++);
-            builder.AddAttribute(sequence++, "Color", Color.Secondary);
+            builder.AddAttribute(sequence++, "Color", Color.Primary);
             builder.AddAttribute(sequence++, "Icon", SearchButtonIcon);
             builder.AddAttribute(sequence++, "Text", SearchButtonText);
             builder.AddAttribute(sequence++, "OnClickWithoutRender", (Func<Task>?)SearchClick);

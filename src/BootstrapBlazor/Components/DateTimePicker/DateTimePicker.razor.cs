@@ -387,6 +387,8 @@ public partial class DateTimePicker<TValue>
 
     private bool _render = true;
 
+    private int Timezone { get; set; }
+
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
@@ -423,7 +425,7 @@ public partial class DateTimePicker<TValue>
     /// <inheritdoc/>
     /// </summary>
     /// <returns></returns>
-    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
+    protected override async Task InvokeInitAsync() => Timezone = await InvokeAsync<int>("init", Id, Interop, new
     {
         TriggerHideCallback = nameof(TriggerHideCallback)
     });

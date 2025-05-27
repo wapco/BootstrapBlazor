@@ -394,6 +394,12 @@ public partial class DatePickerBody
     [Parameter]
     public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
 
+    /// <summary>
+    /// 时区偏移量
+    /// </summary>
+    [Parameter]
+    public int Timezone { get; set; }
+
     [Inject]
     [NotNull]
     private ICalendarFestivals? CalendarFestivals { get; set; }
@@ -825,7 +831,7 @@ public partial class DatePickerBody
     {
         var val = ViewMode switch
         {
-            DatePickerViewMode.DateTime => DateTime.Now,
+            DatePickerViewMode.DateTime => DateTime.UtcNow.AddMinutes(Timezone).AddSeconds(-DateTime.UtcNow.Second),
             _ => DateTime.Today
         };
         CurrentDate = val.Date;

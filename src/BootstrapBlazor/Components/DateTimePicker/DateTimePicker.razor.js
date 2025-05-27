@@ -23,6 +23,8 @@ export function init(id, invoke, options) {
         popover
     }
     Data.set(id, dateTimePicker)
+
+    return -new Date().getTimezoneOffset();
 }
 
 export function hide(id) {
