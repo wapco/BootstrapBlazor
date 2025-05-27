@@ -246,6 +246,8 @@ public partial class DateTimePicker<TValue>
 
     private string? LastValue { get; set; }
 
+    private bool IsMinValue { get; set; }
+
     private string DisplayValue => Value == null ? null : SelectedValue.ToString(Localizer[ViewMode.ToString()]);
 
     /// <summary>
@@ -333,11 +335,13 @@ public partial class DateTimePicker<TValue>
 
         if (MinValueToToday(SelectedValue))
         {
+            IsMinValue = true;
             InitSelectedValue();
             CurrentValue = GetValue();
         }
         else if (MinValueToEmpty(SelectedValue))
         {
+            IsMinValue = true;
             InitSelectedValue();
             CurrentValue = default;
         }
@@ -349,7 +353,7 @@ public partial class DateTimePicker<TValue>
     {
         if (ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute)
         {
-            SelectedValue = DateTime.Now.AddSeconds(-DateTime.Now.Second);
+            SelectedValue = DateTime.UtcNow.AddMinutes(Timezone).AddSeconds(-DateTime.UtcNow.Second);
         }
         else
         {
@@ -425,10 +429,18 @@ public partial class DateTimePicker<TValue>
     /// <inheritdoc/>
     /// </summary>
     /// <returns></returns>
-    protected override async Task InvokeInitAsync() => Timezone = await InvokeAsync<int>("init", Id, Interop, new
+    protected override async Task InvokeInitAsync()
     {
-        TriggerHideCallback = nameof(TriggerHideCallback)
-    });
+        Timezone = await InvokeAsync<int>("init", Id, Interop, new
+        {
+            TriggerHideCallback = nameof(TriggerHideCallback)
+        });
+
+        if (IsMinValue && Timezone > 0)
+        {
+            InitSelectedValue();
+        }
+    }
 
     private bool MinValueToEmpty(DateTime val) => val == DateTime.MinValue && AllowNull && DisplayMinValueAsEmpty;
 
