@@ -83,6 +83,12 @@ public partial class BootstrapInputNumber<TValue>
     [Parameter]
     public string? PlusIcon { get; set; }
 
+    /// <summary>
+    /// 获得/设置 小数位数
+    /// </summary>
+    [Parameter]
+    public int DecimalPlaces { get; set; }
+
     [Inject]
     [NotNull]
     private IStringLocalizer<BootstrapInputNumber<TValue>>? Localizer { get; set; }
@@ -218,6 +224,7 @@ public partial class BootstrapInputNumber<TValue>
                 val = (TValue)(object)(@decimal - decimal.Parse(step));
                 break;
         }
+
         CurrentValue = SetMax(SetMin(val));
         if (OnDecrement != null)
         {
@@ -254,6 +261,7 @@ public partial class BootstrapInputNumber<TValue>
                 val = (TValue)(object)(@decimal + decimal.Parse(step));
                 break;
         }
+
         CurrentValue = SetMax(SetMin(val));
         if (OnIncrement != null)
         {
@@ -274,6 +282,11 @@ public partial class BootstrapInputNumber<TValue>
         else
         {
             CurrentValue = default!;
+        }
+
+        if (CurrentValue != null && CurrentValue is decimal decimalVal)
+        {
+            CurrentValue = (TValue)(object)Math.Round(decimalVal, DecimalPlaces);
         }
 
         if (NullableUnderlyingType != null && string.IsNullOrEmpty(CurrentValueAsString))
@@ -314,6 +327,7 @@ public partial class BootstrapInputNumber<TValue>
                     break;
             }
         }
+
         return val;
     }
 
@@ -343,6 +357,7 @@ public partial class BootstrapInputNumber<TValue>
                     break;
             }
         }
+
         return val;
     }
 
@@ -378,6 +393,7 @@ public partial class BootstrapInputNumber<TValue>
         {
             _manualInput = true;
         }
+
         return ret;
     }
 }
