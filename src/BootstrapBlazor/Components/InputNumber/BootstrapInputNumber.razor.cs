@@ -135,6 +135,10 @@ public partial class BootstrapInputNumber<TValue>
         {
             _lastInputValueString = "";
         }
+        else if (Value is decimal decimalVal)
+        {
+            Value = (TValue)(object)Math.Round(decimalVal, DecimalPlaces);
+        }
 
         if (UseInputEvent && !_manualInput)
         {
@@ -282,11 +286,6 @@ public partial class BootstrapInputNumber<TValue>
         else
         {
             CurrentValue = default!;
-        }
-
-        if (CurrentValue != null && CurrentValue is decimal decimalVal)
-        {
-            CurrentValue = (TValue)(object)Math.Round(decimalVal, DecimalPlaces);
         }
 
         if (NullableUnderlyingType != null && string.IsNullOrEmpty(CurrentValueAsString))

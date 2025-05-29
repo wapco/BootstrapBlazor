@@ -15,3 +15,9 @@
         @ChildContent
     </div>
 </div>
+@if (!string.IsNullOrEmpty(Description))
+{
+    <div class="divider-desc">
+        @((MarkupString)Description)
+    </div>
+}

@@ -28,7 +28,7 @@ public partial class Divider
         .Build();
 
     /// <summary>
-    /// 获得/设置 是否为垂直显示 默认为 false 
+    /// 获得/设置 是否为垂直显示 默认为 false
     /// </summary>
     [Parameter]
     public bool IsVertical { get; set; }
@@ -56,4 +56,10 @@ public partial class Divider
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// 描述信息
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
 }
