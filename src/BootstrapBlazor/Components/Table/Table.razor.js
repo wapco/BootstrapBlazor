@@ -174,12 +174,12 @@ export function sort(id) {
 
 export function load(id, method) {
     const table = Data.get(id)
-    if (table) {
-        const loader = [...table.el.children].find(el => el.classList.contains('table-loader'));
+    const loader = table ?
+        [...table.el.children].find(el => el.classList.contains('table-loader')) : document.getElementById(id).querySelector('.table-loader');
+    if (loader) {
         if (method === 'show') {
             loader.classList.add('show')
-        }
-        else {
+        } else {
             loader.classList.remove('show')
         }
     }

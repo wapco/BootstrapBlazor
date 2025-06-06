@@ -1198,6 +1198,11 @@ public partial class Table<TItem> : ITable, IModelEqualityComparer<TItem> where 
 
         // 获取是否自动查询参数值
         _autoQuery = IsAutoQueryFirstRender;
+        if (_autoQuery)
+        {
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
 
         _firstQuery = true;
         await QueryAsync();
