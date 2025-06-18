@@ -137,7 +137,7 @@ public partial class BootstrapInputNumber<TValue>
         }
         else if (Value is decimal decimalVal)
         {
-            Value = (TValue)(object)Math.Round(decimalVal, DecimalPlaces);
+            CurrentValue = (TValue)(object)Math.Round(decimalVal, DecimalPlaces);
         }
 
         if (UseInputEvent && !_manualInput)
