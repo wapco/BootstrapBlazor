@@ -107,9 +107,38 @@ public partial class ClockPicker
     /// <inheritdoc/>
     /// </summary>
     /// <returns></returns>
-    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, new { Invoke = Interop, Hour = Value.Hours, Minute = Value.Minutes, Second = Value.Seconds, Version = _version });
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, new
+    {
+        Invoke = Interop,
+        Hour = Value.Hours,
+        Minute = Value.Minutes,
+        Second = Value.Seconds,
+        Version = _version
+    });
 
     private void SetMode(TimeMode mode) => Mode = mode;
+
+    private void SetTimeValue(object? val, TimeMode mode)
+    {
+        int intVal = 0;
+        if (val != null)
+        {
+            int.TryParse(val.ToString(), out intVal);
+        }
+
+        switch (mode)
+        {
+            case TimeMode.Hour:
+                CurrentValue = new TimeSpan(Math.Min(intVal, 23), Value.Minutes, Value.Seconds);
+                break;
+            case TimeMode.Minute:
+                CurrentValue = new TimeSpan(Value.Hours, Math.Min(intVal, 59), Value.Seconds);
+                break;
+            case TimeMode.Second:
+                CurrentValue = new TimeSpan(Value.Hours, Value.Minutes, Math.Min(intVal, 59));
+                break;
+        }
+    }
 
     /// <summary>
     /// 复位方法
@@ -161,10 +190,12 @@ public partial class ClockPicker
         {
             val += 12;
         }
+
         if (val > 23)
         {
             val -= 12;
         }
+
         return val;
     }
 

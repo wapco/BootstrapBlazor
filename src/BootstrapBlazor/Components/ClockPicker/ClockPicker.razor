@@ -8,25 +8,36 @@
         {
             <span class="bb-time-text me-5" @onclick="SwitchView">@CurrentDateString</span>
         }
-        <span class="bb-time-text hour" @onclick="() => SetMode(TimeMode.Hour)">@HourValue</span>
-        <span class="bb-time-colon">:</span>
-        @if (ShowMinute)
-        {
-            <span class="bb-time-text minute" @onclick="() => SetMode(TimeMode.Minute)">@Value.Minutes.ToString("D2")</span>
-        }
-        else
-        {
-            <span class="bb-time-text minute">@Value.Minutes.ToString("D2")</span>
-        }
-        <span class="bb-time-colon">:</span>
-        @if (ShowMinute && ShowSecond)
-        {
-            <span class="bb-time-text second" @onclick="() => SetMode(TimeMode.Second)">@Value.Seconds.ToString("D2")</span>
-        }
-        else
-        {
-            <span class="bb-time-text second">@Value.Seconds.ToString("D2")</span>
-        }
+        <div class="bb-time-control form-control">
+            <span class="bb-time-text hour" @onclick="() => SetMode(TimeMode.Hour)">
+                <input type="number" onfocus="this.select()" @onchange="@(args => SetTimeValue(args.Value, TimeMode.Hour))"
+                       max="23" value="@HourValue"/>
+            </span>
+            <span class="bb-time-colon">:</span>
+            @if (ShowMinute)
+            {
+                <span class="bb-time-text minute" @onclick="() => SetMode(TimeMode.Minute)">
+                    <input type="number" onfocus="this.select()" @onchange="@(args => SetTimeValue(args.Value, TimeMode.Minute))"
+                           max="59" value="@Value.Minutes.ToString("D2")"/>
+                </span>
+            }
+            else
+            {
+                <span class="bb-time-text minute">@Value.Minutes.ToString("D2")</span>
+            }
+            <span class="bb-time-colon">:</span>
+            @if (ShowMinute && ShowSecond)
+            {
+                <span class="bb-time-text second" @onclick="() => SetMode(TimeMode.Second)">
+                    <input type="number" onfocus="this.select()" @onchange="@(args => SetTimeValue(args.Value, TimeMode.Second))"
+                           max="59" value="@Value.Seconds.ToString("D2")"/>
+                </span>
+            }
+            else
+            {
+                <span class="bb-time-text second">@Value.Seconds.ToString("D2")</span>
+            }
+        </div>
     </div>
     <div class="bb-time-body">
         @if (ShowClockScale)
@@ -85,9 +96,11 @@
 </div>
 
 @code {
+
     RenderFragment RenderClockPoint =>
-    @<span class="bb-clock-point">
+        @<span class="bb-clock-point">
         <span class="bb-clock-point-bar"></span>
         <span class="bb-clock-point-star"></span>
     </span>;
+
 }
