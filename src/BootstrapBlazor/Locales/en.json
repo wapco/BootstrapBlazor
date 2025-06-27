@@ -296,7 +296,7 @@
     "Contains": "Contains",
     "NotContains": "NotContains",
     "EnumFilter.AllText": "All",
-    "NotSupportedMessage": "Unsupported filter type, Please customize the filter use FilterTemplate",
+    "NotSupportedColumnFilterMessage": "<p>Unsupported filter type, Please customize the filter use <code>FilterTemplate</code></p><div>Please refer <a href=\"https://www.blazor.zone/table/filter#CustomFilter\" target=\"_blank\">CustomFilter</a></div>",
     "MultiFilterSearchPlaceHolderText": "Please enter ...",
     "MultiFilterSelectAllText": "Select All"
   },
@@ -345,8 +345,7 @@
     "BrowserButtonText": "Browser",
     "FileExtensions": "File must have one of the following extensions: {0}",
     "FileSizeValidation": "File size must less than {0}",
-    "DropUploadText": "Drop files here or <em>click to upload</em>",
-    "DropFooterText": ""
+    "DropUploadText": "Drop files here or <em>click to upload</em>"
   },
   "BootstrapBlazor.Components.Handwritten": {
     "SaveButtonText": "Save",

@@ -301,6 +301,7 @@ public partial class MultiSelect<TValue>
         await base.OnClearValue();
 
         SelectedItems.Clear();
+        await SetValue();
     }
 
     /// <summary>
@@ -474,7 +475,7 @@ public partial class MultiSelect<TValue>
 
         if (OnSelectedItemsChanged != null)
         {
-            await OnSelectedItemsChanged.Invoke(SelectedItems);
+            await OnSelectedItemsChanged(SelectedItems);
         }
 
         _lastSelectedValueString = CurrentValueAsString;

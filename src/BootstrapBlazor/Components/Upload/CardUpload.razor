@@ -1,22 +1,22 @@
 ﻿@namespace BootstrapBlazor.Components
 @typeparam TValue
-@inherits ButtonUploadBase<TValue>
+@inherits FileListUploadBase<TValue>
 
 @if (IsShowLabel)
 {
-    <BootstrapLabel required="@Required" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
+    <BootstrapLabel required="@Required" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText"></BootstrapLabel>
 }
 <div @attributes="@AdditionalAttributes" class="@ClassString" id="@Id" data-bb-previewer-id="@PreviewerId">
     <div class="@BodyClassString">
-        @if (IsUploadButtonAtFirst && CheckCanUpload())
+        @if (IsUploadButtonAtFirst && ShowAddButton())
         {
             @RenderAdd
         }
-        @foreach (var item in GetUploadFiles())
+        @foreach (var item in Files)
         {
             <div @key="@item" class="@GetItemClassString(item)">
                 <div class="upload-item-body">
-                    @if (IsImage(item))
+                    @if (item.IsImage(AllowExtensions, CanPreviewCallback))
                     {
                         <img class="upload-item-body-image" alt="prevUrl" src="@item.PrevUrl" @onclick="() => OnClickZoom(item)" />
                     }
@@ -26,7 +26,7 @@
                     }
                     else
                     {
-                        <FileIcon Extension="@item.GetExtension()" />
+                        <FileIcon Extension="@item.GetExtension()"></FileIcon>
                     }
                 </div>
                 <div class="upload-item-size"><span>@item.GetFileName()</span> (@item.Size.ToFileSizeString())</div>
@@ -51,7 +51,7 @@
                             </button>
                         }
                     </div>
-                    @if (ShowDeletedButton)
+                    @if (ShowDeleteButton)
                     {
                         <DynamicElement TagName="button" type="button" class="btn btn-sm btn-outline-danger"
                                         disabled="@GetDeleteButtonDisabledString(item)" aria-label="delete"
@@ -62,7 +62,7 @@
                 </div>
                 @if (GetShowProgress(item))
                 {
-                    <Progress Color="Color.Success" Height="4" Value="@item.ProgressPercent" />
+                    <Progress Color="Color.Success" Height="4" Value="@item.ProgressPercent"></Progress>
                 }
                 <span class="upload-item-label">
                     <i class="@StatusIconString"></i>
@@ -70,29 +70,21 @@
                 </span>
             </div>
         }
-        @if (!IsUploadButtonAtFirst && CheckCanUpload())
+        @if (!IsUploadButtonAtFirst && ShowAddButton())
         {
             @RenderAdd
         }
     </div>
-    <InputFile AdditionalAttributes="@GetUploadAdditionalAttributes()" OnChange="OnFileChange" />
-
     @if (ShowPreviewList)
     {
-        <ImagePreviewer Id="@PreviewerId" PreviewList="PreviewList" />
+        <ImagePreviewer Id="@PreviewerId" PreviewList="PreviewList"></ImagePreviewer>
     }
+    <InputFile AdditionalAttributes="@GetUploadAdditionalAttributes()" OnChange="OnFileChange"></InputFile>
 </div>
 
 @code {
     RenderFragment RenderAdd =>
     @<div class="@CardItemClass">
-        <div class="upload-item-actions btn-browser">
-            @if (!IsDisabled)
-        {
-            <span class="upload-item-plus">
-                <i class="@AddIcon"></i>
-            </span>
-        }
-        </div>
+        <i class="@AddIcon"></i>
     </div>;
 }

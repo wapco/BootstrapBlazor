@@ -27,6 +27,12 @@ public partial class Select<TValue> : ISelect, ILookup
     private ILookupService? InjectLookupService { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the "active" state should be used when the associated value is null.
+    /// </summary>
+    [Parameter]
+    public bool IsUseActiveWhenValueIsNull { get; set; }
+
+    /// <summary>
     /// Gets or sets the display template. Default is null.
     /// </summary>
     [Parameter]
@@ -52,17 +58,18 @@ public partial class Select<TValue> : ISelect, ILookup
     public bool DisableItemChangedWhenFirstRender { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback method before the selected item changes. Returns true to change the selected item value; otherwise, the selected item value does not change.
+    /// 获取/设置 选中项改变前的回调方法。返回 true 则改变选中项的值；否则选中项的值不变。
+    /// <para>Gets or sets the callback method before the selected item changes. Returns true to change the selected item value; otherwise, the selected item value does not change.</para>
     /// </summary>
     [Parameter]
     public Func<SelectedItem, Task<bool>>? OnBeforeSelectedItemChange { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to show the Swal confirmation popup when <see cref="OnBeforeSelectedItemChange"/> returns true. Default is true.
-    /// 获得/设置 是否显示 Swal 确认弹窗
+    /// Gets or sets whether to show the Swal confirmation popup. Default is false.
+    /// 获得/设置 是否显示 Swal 确认弹窗 默认值 为 false
     /// </summary>
     [Parameter]
-    public bool ShowSwal { get; set; } = true;
+    public bool ShowSwal { get; set; }
 
     /// <summary>
     /// Gets or sets the callback method when the selected item changes.
@@ -300,8 +307,12 @@ public partial class Select<TValue> : ISelect, ILookup
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop,
-        new { ConfirmMethodCallback = nameof(ConfirmSelectedItem), SearchMethodCallback = nameof(TriggerOnSearch) });
+    protected override Task InvokeInitAsync() => InvokeVoidAsync("init", Id, Interop, new
+    {
+        ConfirmMethodCallback = nameof(ConfirmSelectedItem),
+        SearchMethodCallback = nameof(TriggerOnSearch),
+        TriggerCollapsed = (OnCollapsed != null || IsAutoClearSearchTextWhenCollapsed) ? nameof(TriggerCollapsed) : null
+    });
 
     /// <summary>
     /// Trigger <see cref="OnCollapsed"/> event callback method. called by JavaScript.
@@ -367,21 +378,24 @@ public partial class Select<TValue> : ISelect, ILookup
     private async Task OnClickItem(SelectedItem item)
     {
         var ret = true;
+
+        // 自定义回调方法 OnBeforeSelectedItemChange 返回 false 时不修改选中项
         if (OnBeforeSelectedItemChange != null)
         {
             ret = await OnBeforeSelectedItemChange(item);
-            if (ret && ShowSwal)
-            {
-                // Return true to show modal
-                var option = new SwalOption() { Category = SwalCategory, Title = SwalTitle, Content = SwalContent };
-                if (!string.IsNullOrEmpty(SwalFooter))
-                {
-                    option.ShowFooter = true;
-                    option.FooterTemplate = builder => builder.AddContent(0, SwalFooter);
-                }
+        }
 
-                ret = await SwalService.ShowModal(option);
+        // 如果 ShowSwal 为 true 且 则显示 Swal 确认弹窗，通过确认弹窗返回值决定是否修改选中项
+        if (ret && ShowSwal)
+        {
+                var option = new SwalOption() { Category = SwalCategory, Title = SwalTitle, Content = SwalContent };
+            if (!string.IsNullOrEmpty(SwalFooter))
+            {
+                option.ShowFooter = true;
+                option.FooterTemplate = builder => builder.AddContent(0, SwalFooter);
             }
+
+            ret = await SwalService.ShowModal(option);
         }
 
         if (ret)
@@ -422,7 +436,10 @@ public partial class Select<TValue> : ISelect, ILookup
         await base.OnClearValue();
 
         SelectedItem = null;
-        _lastSelectedValueString = "";
+        if (OnSelectedItemChanged != null)
+        {
+            await OnSelectedItemChanged(new SelectedItem("", ""));
+        }
     }
 
     private string? ReadonlyString => IsEditable ? null : "readonly";
@@ -464,10 +481,18 @@ public partial class Select<TValue> : ISelect, ILookup
         if (OnQueryItemsAsync != null && Items == null)
         {
             _init = false;
-            return null;
+
+            return IsUseActiveWhenValueIsNull && !IsVirtualize
+                ? SetSelectedItemState(GetItemByRows())
+                : null;
         }
 
         var item = IsVirtualize ? GetItemByVirtualized() : GetItemByRows();
+        return SetSelectedItemState(item);
+    }
+
+    private SelectedItem? SetSelectedItemState(SelectedItem? item)
+    {
         if (item != null)
         {
             if (_init && DisableItemChangedWhenFirstRender)

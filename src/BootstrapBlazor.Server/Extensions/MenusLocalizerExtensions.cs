@@ -489,13 +489,39 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    Text = Localizer["Upload"],
-                    Url = "upload"
+                    Text = Localizer["InputUpload"],
+                    Url = "upload-input"
+                },
+                new()
+                {
+                    Text = Localizer["ButtonUpload"],
+                    Url = "upload-button"
+                },
+                new()
+                {
+                    Text = Localizer["AvatarUpload"],
+                    Url = "upload-avatar"
+                },
+                new()
+                {
+                    Text = Localizer["CardUpload"],
+                    Url = "upload-card"
+                },
+                new()
+                {
+                    Text = Localizer["DropUpload"],
+                    Url = "upload-drop"
                 },
                 new()
                 {
                     Text = Localizer["ValidateForm"],
                     Url = "validate-form"
+                },
+                new()
+                {
+                    IsNew = true,
+                    Text = Localizer["Vditor"],
+                    Url = "vditor"
                 }
             };
             AddBadge(item);
@@ -682,8 +708,20 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
+                    IsNew = true,
+                    Text = Localizer["OfficeViewer"],
+                    Url = "office-viewer"
+                },
+                new()
+                {
                     Text = Localizer["PdfReader"],
                     Url = "pdf-reader"
+                },
+                new()
+                {
+                    IsNew = true,
+                    Text = Localizer["PdfViewer"],
+                    Url = "pdf-viewer"
                 },
                 new()
                 {
@@ -1546,6 +1584,12 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
+                    IsNew = true,
+                    Text = Localizer["TcpSocketFactory"],
+                    Url = "socket-factory"
+                },
+                new()
+                {
                     Text = Localizer["ThemeProvider"],
                     Url = "theme-provider"
                 },
@@ -1607,13 +1651,13 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    Text = Localizer["AntDesignIcon"],
-                    Url = "ant-design-icon"
+                    Text = Localizer["OctIcon"],
+                    Url = "oct-icon"
                 },
                 new()
                 {
-                    Text = Localizer["ElementIcon"],
-                    Url = "element-icon"
+                    Text = Localizer["UniverIcon"],
+                    Url = "univer-icon"
                 },
                 new()
                 {
@@ -1622,14 +1666,13 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    Text = Localizer["OctIcon"],
-                    Url = "oct-icon"
+                    Text = Localizer["ElementIcon"],
+                    Url = "element-icon"
                 },
                 new()
                 {
-                    IsNew = true,
-                    Text = Localizer["UniverIcon"],
-                    Url = "univer-icon"
+                    Text = Localizer["AntDesignIcon"],
+                    Url = "ant-design-icon"
                 }
             };
             AddBadge(item);

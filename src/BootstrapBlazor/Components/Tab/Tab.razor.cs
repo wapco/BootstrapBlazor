@@ -13,7 +13,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// Tab component
 /// </summary>
-public partial class Tab : IHandlerException
+public partial class Tab
 {
     private bool FirstRender { get; set; } = true;
 
@@ -431,6 +431,18 @@ public partial class Tab : IHandlerException
     [Parameter]
     public ITabHeader? TabHeader { get; set; }
 
+    /// <summary>
+    /// 获得/设置 是否开启全局异常捕获 默认 null 读取配置文件 EnableErrorLogger 值
+    /// </summary>
+    [Parameter]
+    public bool? EnableErrorLogger { get; set; }
+
+    /// <summary>
+    /// 获得/设置 错误日志 <see cref="Toast"/> 弹窗标题 默认 null
+    /// </summary>
+    [Parameter]
+    public string? ErrorLoggerToastTitle { get; set; }
+
     [CascadingParameter]
     private Layout? Layout { get; set; }
 
@@ -454,9 +466,6 @@ public partial class Tab : IHandlerException
     [NotNull]
     private IIconTheme? IconTheme { get; set; }
 
-    [Inject, NotNull]
-    private DialogService? DialogService { get; set; }
-
     [Inject]
     [NotNull]
     private FullScreenService? FullScreenService { get; set; }
@@ -477,15 +486,9 @@ public partial class Tab : IHandlerException
 
     private bool IsPreventDefault => _contextMenuZone != null;
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-
-        ErrorLogger?.Register(this);
-    }
+    private static string? GetTabItemClassString(TabItem item) => CssBuilder.Default("tabs-body-content")
+        .AddClass("d-none", !item.IsActive)
+        .Build();
 
     /// <summary>
     /// <inheritdoc/>
@@ -609,7 +612,7 @@ public partial class Tab : IHandlerException
         if (!Excluded)
         {
             // 地址相同参数不同需要重新渲染 TabItem
-            var tab = Items.FirstOrDefault(tab => tab.Url.TrimStart('/').Equals(requestUrl, StringComparison.OrdinalIgnoreCase));
+            var tab = TabItems.Find(tab => tab.Url.TrimStart('/').Equals(requestUrl, StringComparison.OrdinalIgnoreCase));
             if (tab != null)
             {
                 ActiveTabItem(tab);
@@ -647,7 +650,7 @@ public partial class Tab : IHandlerException
     /// </summary>
     public void ClickPrevTab()
     {
-        var item = Items.FirstOrDefault(i => i.IsActive);
+        var item = TabItems.FirstOrDefault(i => i.IsActive);
         if (item != null)
         {
             var index = TabItems.IndexOf(item);
@@ -1014,13 +1017,6 @@ public partial class Tab : IHandlerException
         }
     };
 
-    /// <summary>
-    /// HandlerException 错误处理方法
-    /// </summary>
-    /// <param name="ex"></param>
-    /// <param name="errorContent"></param>
-    public Task HandlerException(Exception ex, RenderFragment<Exception> errorContent) => DialogService.ShowErrorHandlerDialog(errorContent(ex));
-
     private IEnumerable<MenuItem>? _menuItems;
     private MenuItem? GetMenuItem(string url)
     {
@@ -1038,8 +1034,8 @@ public partial class Tab : IHandlerException
     [JSInvokable]
     public async Task DragItemCallback(int originIndex, int currentIndex)
     {
-        var firstColumn = Items.ElementAtOrDefault(originIndex);
-        var targetColumn = Items.ElementAtOrDefault(currentIndex);
+        var firstColumn = TabItems.ElementAtOrDefault(originIndex);
+        var targetColumn = TabItems.ElementAtOrDefault(currentIndex);
         if (firstColumn != null && targetColumn != null)
         {
             if (_draggedItems.Count == 0)
@@ -1062,7 +1058,7 @@ public partial class Tab : IHandlerException
     private async Task OnRefreshAsync()
     {
         // refresh the active tab item
-        var item = TabItems.FirstOrDefault(i => i.IsActive);
+        var item = TabItems.Find(i => i.IsActive);
 
         if (item is not null)
         {
@@ -1140,11 +1136,12 @@ public partial class Tab : IHandlerException
 
     private RenderFragment RenderTabList() => builder =>
     {
-        if (!Items.Any() && !string.IsNullOrEmpty(DefaultUrl))
+        if (TabItems.Count == 0 && !string.IsNullOrEmpty(DefaultUrl))
         {
             if (ClickTabToNavigation)
             {
                 Navigator.NavigateTo(DefaultUrl);
+                return;
             }
             else
             {
@@ -1154,9 +1151,13 @@ public partial class Tab : IHandlerException
 
         if (FirstRender)
         {
-            if (!Items.Any(t => t.IsActive))
+            if (TabItems.Find(t => t.IsActive) == null)
             {
-                Items.FirstOrDefault(i => i.IsDisabled == false)?.SetActive(true);
+                var item = TabItems.Find(i => i.IsDisabled == false);
+                if (item != null)
+                {
+                    item.SetActive(true);
+                }
             }
         }
 
@@ -1188,7 +1189,7 @@ public partial class Tab : IHandlerException
 
     private RenderFragment RenderTabItems() => builder =>
     {
-        foreach (var item in Items)
+        foreach (var item in TabItems)
         {
             if (item.HeaderTemplate != null)
             {
@@ -1228,7 +1229,6 @@ public partial class Tab : IHandlerException
         if (disposing)
         {
             RemoveLocationChanged();
-            ErrorLogger?.UnRegister(this);
         }
     }
 }

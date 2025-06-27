@@ -1,11 +1,8 @@
-﻿import Data from "../../modules/data.js"
-
-export function init(id, options) {
+﻿export function init(id, options) {
     options = {
         ...{
             viewMode: 'DateTime',
             startValue: 0,
-            requestId: null,
             onCompleted: null
         },
         ...options
@@ -15,71 +12,77 @@ export function init(id, options) {
         return;
     }
 
-    const listHour = el.querySelector('.bb-flip-clock-list.hour');
-    const listMinute = el.querySelector('.bb-flip-clock-list.minute');
-    const listSecond = el.querySelector('.bb-flip-clock-list.second');
-    const countDown = options.viewMode === "CountDown";
-
-    let startTimestamp = Date.now(); // 起始时间（毫秒）
+    const lastValues = {};
+    let counter = 0;
+    let totalMilliseconds = 0;
+    let countDown = false;
     const getDate = () => {
-        const now = Date.now();
-        const elapsed = now - startTimestamp;
-
-        if (options.viewMode === "Count") {
-            const totalMs = options.startValue + elapsed;
-            const totalSeconds = Math.floor(totalMs / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            return { hours, minutes, seconds };
+        const view = options.viewMode;
+        countDown = false;
+        if (view === "DateTime") {
+            const now = new Date();
+            return {
+                years: now.getFullYear(),
+                months: now.getMonth() + 1,
+                days: now.getDate(),
+                hours: now.getHours(),
+                minutes: now.getMinutes(),
+                seconds: now.getSeconds()
+            };
+        }
+        else if (view === "Count") {
+            counter += 1000;
+            totalMilliseconds = counter - options.startValue;
+        }
+        else if (view === "CountDown") {
+            countDown = true;
+            counter += 1000;
+            totalMilliseconds = options.startValue - counter;
+            if (totalMilliseconds < 0) totalMilliseconds = 0;
         }
 
-        if (countDown) {
-            if (options.startValue === 0) {
-                return { hours: 0, minutes: 0, seconds: 0 };
-            }
-
-            const remaining = options.startValue - elapsed;
-            if (remaining <= 0) {
-                return { hours: 0, minutes: 0, seconds: 0 };
-            }
-
-            const totalSeconds = Math.floor(remaining / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            return { hours, minutes, seconds };
-        }
-
-        // viewMode: 'DateTime'
-        const date = new Date();
-        return {
-            hours: date.getHours(),
-            minutes: date.getMinutes(),
-            seconds: date.getSeconds()
-        };
+        const seconds = Math.floor(totalMilliseconds / 1000) % 60;
+        const minutes = Math.floor(totalMilliseconds / (1000 * 60)) % 60;
+        const hours = Math.floor(totalMilliseconds / (1000 * 60 * 60)) % 24;
+        const days = Math.floor(totalMilliseconds / (1000 * 60 * 60 * 24));
+        const months = 0;
+        const years = 0;
+        return { years, months, days, hours, minutes, seconds };
     };
 
-    let lastHour;
-    let lastMinute;
-    let lastSecond;
-    const go = () => {
-        const { hours, minutes, seconds } = getDate();
+    const getConfig = () => [
+        { key: 'years', list: el.querySelector('.bb-flip-clock-list.year'), digits: 4 },
+        { key: 'months', list: el.querySelector('.bb-flip-clock-list.month'), digits: 2 },
+        { key: 'days', list: el.querySelector('.bb-flip-clock-list.day'), digits: 2 },
+        { key: 'hours', list: el.querySelector('.bb-flip-clock-list.hour'), digits: 2 },
+        { key: 'minutes', list: el.querySelector('.bb-flip-clock-list.minute'), digits: 2 },
+        { key: 'seconds', list: el.querySelector('.bb-flip-clock-list.second'), digits: 2 },
+    ];
 
-        if (lastSecond !== seconds) {
-            lastSecond = seconds;
-            setTime(listSecond, seconds, countDown);
+    const setDigits = (list, value, digits, countDown) => {
+        list.classList.remove('flip');
+        for (let i = 0; i < digits; i++) {
+            const place = digits - 1 - i;
+            const digit = Math.floor(value / 10 ** place) % 10;
+            setFlip(list.children[i], digit, countDown);
         }
-        if (lastMinute !== minutes) {
-            lastMinute = minutes;
-            setTime(listMinute, minutes, countDown);
-        }
-        if (lastHour !== hours) {
-            lastHour = hours;
-            setTime(listHour, hours, countDown);
-        }
-        return { hours, minutes, seconds }
-    }
+        list.classList.add('flip');
+    };
+
+    const go = () => {
+        const d = getDate();
+        const unitConfig = getConfig();
+        unitConfig.forEach(({ key, list, digits }) => {
+            if (list === null) return;
+
+            const v = d[key];
+            if (lastValues[key] !== v) {
+                lastValues[key] = v;
+                setDigits(list, v, digits, countDown);
+            }
+        });
+        return d;
+    };
 
     let start = void 0
     let current;
@@ -98,36 +101,10 @@ export function init(id, options) {
             options.invoke.invokeMethodAsync(options.onCompleted);
             return;
         }
-        options.requestId = requestAnimationFrame(flip);
+        requestAnimationFrame(flip);
     }
 
-    options.requestId = requestAnimationFrame(flip);
-
-    Data.set(id, { el, options });
-}
-
-export function dispose(id) {
-    const clock = Data.get(id)
-    if (clock) {
-        if (clock.options.requestId) {
-            cancelAnimationFrame(clock.options.requestId);
-            clock.options.requestId = null;
-        }
-    }
-}
-
-const setTime = (list, time, countDown) => {
-    if (list) {
-        const leftIndex = Math.floor(time / 10);
-        const rightIndex = time % 10;
-        const leftFlip = list.children[0];
-        const rightFlip = list.children[1];
-
-        list.classList.remove('flip');
-        setFlip(leftFlip, leftIndex, countDown);
-        setFlip(rightFlip, rightIndex, countDown);
-        list.classList.add('flip');
-    }
+    requestAnimationFrame(flip);
 }
 
 const setFlip = (flip, index, countDown) => {

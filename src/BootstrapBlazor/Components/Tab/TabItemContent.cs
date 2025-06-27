@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace BootstrapBlazor.Components;
 
-internal class TabItemContent : IComponent
+class TabItemContent : IComponent, IHandlerException, IDisposable
 {
     /// <summary>
     /// Gets or sets the component content. Default is null
@@ -15,12 +15,17 @@ internal class TabItemContent : IComponent
     [Parameter, NotNull]
     public TabItem? Item { get; set; }
 
-    /// <summary>
-    /// Gets <see cref="IComponentIdGenerator"/> instrance
-    /// </summary>
+    [CascadingParameter, NotNull]
+    private Tab? TabSet { get; set; }
+
+    [Inject, NotNull]
+    private DialogService? DialogService { get; set; }
+
     [Inject]
     [NotNull]
-    private IComponentIdGenerator? ComponentIdGenerator { get; set; }
+    private IOptionsMonitor<BootstrapBlazorOptions>? Options { get; set; }
+
+    private ErrorLogger? _logger;
 
     private RenderHandle _renderHandle;
 
@@ -42,28 +47,51 @@ internal class TabItemContent : IComponent
         _renderHandle.Render(BuildRenderTree);
     }
 
-    private object _key = new();
+    private Guid _key = Guid.NewGuid();
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, "div");
+        builder.OpenComponent<ErrorLogger>(0);
         builder.SetKey(_key);
-        builder.AddAttribute(5, "class", ClassString);
-        builder.AddAttribute(6, "id", ComponentIdGenerator.Generate(Item));
-        builder.AddContent(10, Item.ChildContent);
-        builder.CloseElement();
-    }
+        builder.AddAttribute(1, nameof(ErrorLogger.ChildContent), Item.ChildContent);
 
-    private string? ClassString => CssBuilder.Default("tabs-body-content")
-        .AddClass("d-none", !Item.IsActive)
-        .Build();
+        var enableErrorLogger = TabSet.EnableErrorLogger ?? Options.CurrentValue.EnableErrorLogger;
+        builder.AddAttribute(2, nameof(ErrorLogger.EnableErrorLogger), enableErrorLogger);
+
+        // TabItem 不需要 Toast 提示错误信息
+        builder.AddAttribute(3, nameof(ErrorLogger.ShowToast), false);
+        builder.AddAttribute(4, nameof(ErrorLogger.ToastTitle), TabSet.ErrorLoggerToastTitle);
+        builder.AddAttribute(5, nameof(ErrorLogger.OnInitializedCallback), new Func<ErrorLogger, Task>(logger =>
+        {
+            _logger = logger;
+            _logger.Register(this);
+            return Task.CompletedTask;
+        }));
+        builder.CloseComponent();
+    }
 
     /// <summary>
     /// Render method
     /// </summary>
     public void Render()
     {
-        _key = new object();
+        _key = Guid.NewGuid();
         RenderContent();
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <param name="ex"></param>
+    /// <param name="errorContent"></param>
+    public Task HandlerException(Exception ex, RenderFragment<Exception> errorContent) => DialogService.ShowErrorHandlerDialog(errorContent(ex));
+
+    /// <summary>
+    /// IDispose 方法用于释放资源
+    /// </summary>
+    public void Dispose()
+    {
+        _logger?.UnRegister(this);
+        GC.SuppressFinalize(this);
     }
 }

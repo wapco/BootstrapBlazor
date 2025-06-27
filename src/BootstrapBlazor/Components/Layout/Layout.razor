@@ -126,7 +126,10 @@
         }
         else
         {
-            @HandlerMain()
+            <ErrorLogger EnableErrorLogger="@_enableErrorLogger" ShowToast="@_showToast" ToastTitle="@ErrorLoggerToastTitle" 
+                         EnableILogger="@_enableILogger" OnErrorHandleAsync="OnErrorHandleAsync" OnInitializedCallback="OnErrorLoggerInitialized">
+                @HandlerMain()
+            </ErrorLogger>
         }
     </main>;
 
@@ -144,7 +147,8 @@
           RefreshToolbarButtonIcon="@RefreshToolbarButtonIcon" FullscreenToolbarButtonIcon="@FullscreenToolbarButtonIcon"
           RefreshToolbarTooltipText="@RefreshToolbarTooltipText" FullscreenToolbarTooltipText="@FullscreenToolbarTooltipText"
           OnToolbarRefreshCallback="OnToolbarRefreshCallback" TabHeader="TabHeader"
-          Body="@Main" NotAuthorized="NotAuthorized!" NotFound="NotFound!" NotFoundTabText="@NotFoundTabText">
+          Body="@Main" NotAuthorized="NotAuthorized!" NotFound="NotFound!" NotFoundTabText="@NotFoundTabText"
+          EnableErrorLogger="@_enableErrorLogger" ErrorLoggerToastTitle="@ErrorLoggerToastTitle">
     </Tab>;
 
     RenderFragment RenderFooter =>

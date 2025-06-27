@@ -132,9 +132,15 @@ public class SelectGenericTest : BootstrapBlazorTestBase
     public void IsClearable_Ok()
     {
         var val = "Test2";
+        string? selectedValue = "Test2";
         var cut = Context.RenderComponent<SelectGeneric<string>>(pb =>
         {
             pb.Add(a => a.IsClearable, true);
+            pb.Add(a => a.OnSelectedItemChanged, item =>
+            {
+                selectedValue = item.Value;
+                return Task.CompletedTask;
+            });
             pb.Add(a => a.Items, new List<SelectedItem<string>>()
             {
                 new("", "请选择"),
@@ -151,6 +157,7 @@ public class SelectGenericTest : BootstrapBlazorTestBase
         var clearButton = cut.Find(".clear-icon");
         cut.InvokeAsync(() => clearButton.Click());
         Assert.Null(val);
+        Assert.Null(selectedValue);
 
         // 提高代码覆盖率
         var select = cut;
@@ -856,7 +863,7 @@ public class SelectGenericTest : BootstrapBlazorTestBase
             });
             pb.Add(a => a.TextConvertToValueCallback, v =>
             {
-                return Task.FromResult(v);
+                return Task.FromResult(v)!;
             });
         });
         Assert.False(input.IsReadOnly());
@@ -864,6 +871,23 @@ public class SelectGenericTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => { input.Change("Test3"); });
         Assert.Equal("Test3", cut.Instance.Value);
         Assert.True(updated);
+
+        // 覆盖返回 null 逻辑
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.TextConvertToValueCallback, async v =>
+            {
+                await Task.Yield();
+                return null;
+            });
+        });
+        await cut.InvokeAsync(() => { input.Change("Test4"); });
+
+        cut.SetParametersAndRender(pb =>
+        {
+           pb.Add(a => a.Value, null);
+        });
+        await cut.InvokeAsync(() => { input.Change("Test5"); });
     }
 
     [Fact]
@@ -881,7 +905,7 @@ public class SelectGenericTest : BootstrapBlazorTestBase
             pb.Add(a => a.IsEditable, true);
             pb.Add(a => a.TextConvertToValueCallback, v =>
             {
-                return Task.FromResult(new Foo() { Id = 3, Address = "Foo3" });
+                return Task.FromResult(new Foo() { Id = 3, Address = "Foo3" })!;
             });
         });
 

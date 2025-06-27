@@ -20,7 +20,7 @@
         transition: border 0.15s ease-in-out;
 
         &.is-fixed {
-            --bb-multi-select-max-height: var(--bb-multi-select-min-height);
+            //--bb-multi-select-max-height: var(--bb-multi-select-min-height);
         }
 
         &.is-single-line {
