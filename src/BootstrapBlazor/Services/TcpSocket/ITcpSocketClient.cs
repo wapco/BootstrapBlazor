@@ -13,39 +13,14 @@ namespace BootstrapBlazor.Components;
 public interface ITcpSocketClient : IAsyncDisposable
 {
     /// <summary>
-    /// Gets or sets the size, in bytes, of the receive buffer used for network operations.
-    /// </summary>
-    int ReceiveBufferSize { get; set; }
-
-    /// <summary>
     /// Gets a value indicating whether the system is currently connected. Default is false.
     /// </summary>
     bool IsConnected { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether automatic receiving data is enabled. Default is true.
+    /// Gets or sets the configuration options for the socket client.
     /// </summary>
-    bool IsAutoReceive { get; set; }
-
-    /// <summary>
-    /// Gets or sets the timeout duration, in milliseconds, for establishing a connection.
-    /// </summary>
-    int ConnectTimeout { get; set; }
-
-    /// <summary>
-    /// Gets or sets the duration, in milliseconds, to wait for a send operation to complete before timing out.
-    /// </summary>
-    /// <remarks>If the send operation does not complete within the specified timeout period, an exception may
-    /// be thrown.</remarks>
-    int SendTimeout { get; set; }
-
-    /// <summary>
-    /// Gets or sets the amount of time, in milliseconds, that the receiver will wait for a response before timing out.
-    /// </summary>
-    /// <remarks>Use this property to configure the maximum wait time for receiving a response. Setting an
-    /// appropriate timeout can help prevent indefinite blocking in scenarios where responses may be delayed or
-    /// unavailable.</remarks>
-    int ReceiveTimeout { get; set; }
+    SocketClientOptions Options { get; }
 
     /// <summary>
     /// Gets the local network endpoint that the socket is bound to.
@@ -53,7 +28,7 @@ public interface ITcpSocketClient : IAsyncDisposable
     /// <remarks>This property provides information about the local endpoint of the socket, which is typically
     /// used to identify the local address and port being used for communication. If the socket is not  bound to a
     /// specific local endpoint, this property may return <see langword="null"/>.</remarks>
-    IPEndPoint? LocalEndPoint { get; }
+    IPEndPoint LocalEndPoint { get; }
 
     /// <summary>
     /// Gets or sets the callback function to handle received data.
@@ -62,12 +37,6 @@ public interface ITcpSocketClient : IAsyncDisposable
     /// asynchronously.  Ensure that the implementation does not block or perform long-running operations, as this may
     /// impact performance.</remarks>
     Func<ReadOnlyMemory<byte>, ValueTask>? ReceivedCallBack { get; set; }
-
-    /// <summary>
-    /// Configures the data handler to process incoming data packages.
-    /// </summary>
-    /// <param name="handler">The handler responsible for processing data packages. Cannot be null.</param>
-    void SetDataHandler(IDataPackageHandler handler);
 
     /// <summary>
     /// Establishes an asynchronous connection to the specified endpoint.

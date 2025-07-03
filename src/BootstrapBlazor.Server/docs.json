@@ -242,7 +242,9 @@
     "meet": "Meets",
     "vditor": "Vditors",
     "socket-factory": "SocketFactories",
-    "office-viewer": "OfficeViewers"
+    "office-viewer": "OfficeViewers",
+    "socket/receive": "Sockets\\Receives",
+    "socket/adapter": "Sockets\\Adapters"
   },
   "video": {
     "table": "BV1ap4y1x7Qn?p=1",

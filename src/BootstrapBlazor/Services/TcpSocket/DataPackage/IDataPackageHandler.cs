@@ -19,25 +19,15 @@ public interface IDataPackageHandler
     Func<ReadOnlyMemory<byte>, ValueTask>? ReceivedCallBack { get; set; }
 
     /// <summary>
-    /// Sends the specified data asynchronously to the target destination.
+    /// Asynchronously receives data and processes it.
     /// </summary>
-    /// <remarks>The method performs an asynchronous operation to send the provided data. The caller must
-    /// ensure  that the data is valid and non-empty. The returned memory block may contain a response or acknowledgment
-    /// depending on the implementation of the target destination.</remarks>
-    /// <param name="data">The data to be sent, represented as a block of memory.</param>
-    /// <param name="token">An optional <see cref="CancellationToken"/> to observe while waiting for the operation to complete.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a  <see cref="Memory{T}"/> of <see
-    /// cref="byte"/> representing the response or acknowledgment  received from the target destination.</returns>
-    ValueTask<ReadOnlyMemory<byte>> SendAsync(ReadOnlyMemory<byte> data, CancellationToken token = default);
-
-    /// <summary>
-    /// Asynchronously receives data from a source and writes it into the provided memory buffer.
-    /// </summary>
-    /// <remarks>This method does not guarantee that the entire buffer will be filled. The number of bytes
-    /// written depends on the availability of data.</remarks>
-    /// <param name="data">The memory buffer to store the received data. The buffer must be writable and have sufficient capacity.</param>
-    /// <param name="token">A cancellation token that can be used to cancel the operation. The default value is <see langword="default"/>.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the number of bytes written to the
-    /// buffer. Returns 0 if the end of the data stream is reached.</returns>
+    /// <remarks>The method is designed for asynchronous operations and may be used in scenarios where
+    /// efficient handling of data streams is required. Ensure that the <paramref name="data"/> parameter contains valid
+    /// data for processing, and handle potential cancellation using the <paramref name="token"/>.</remarks>
+    /// <param name="data">The data to be received, represented as a read-only memory block of bytes.</param>
+    /// <param name="token">A cancellation token that can be used to cancel the operation. Defaults to <see langword="default"/> if not
+    /// provided.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> containing <see langword="true"/> if the data was successfully received and
+    /// processed; otherwise, <see langword="false"/>.</returns>
     ValueTask ReceiveAsync(ReadOnlyMemory<byte> data, CancellationToken token = default);
 }

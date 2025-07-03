@@ -3,10 +3,7 @@
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Net;
 using System.Runtime.Versioning;
 
 namespace BootstrapBlazor.Components;
@@ -16,14 +13,15 @@ sealed class DefaultTcpSocketFactory(IServiceProvider provider) : ITcpSocketFact
 {
     private readonly ConcurrentDictionary<string, ITcpSocketClient> _pool = new();
 
-    public ITcpSocketClient GetOrCreate(string name, Func<string, IPEndPoint> valueFactory)
+    public ITcpSocketClient GetOrCreate(string name, Action<SocketClientOptions> valueFactory)
     {
         return _pool.GetOrAdd(name, key =>
         {
-            var endPoint = valueFactory(key);
-            var client = new DefaultTcpSocketClient(endPoint)
+            var options = new SocketClientOptions();
+            valueFactory(options);
+            var client = new DefaultTcpSocketClient(options)
             {
-                Logger = provider.GetService<ILogger<DefaultTcpSocketClient>>()
+                ServiceProvider = provider,
             };
             return client;
         });
