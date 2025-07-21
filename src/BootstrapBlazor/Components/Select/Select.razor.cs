@@ -176,7 +176,7 @@ public partial class Select<TValue> : ISelect, ILookup
 
     private string _defaultVirtualizedItemText = "";
 
-    private SelectedItem? SelectedItem { get; set; }
+    protected SelectedItem? SelectedItem { get; set; }
 
     private SelectedItem NullItem => new("", "");
 
