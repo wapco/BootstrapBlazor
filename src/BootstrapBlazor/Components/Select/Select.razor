@@ -6,7 +6,7 @@
 
 @if (IsShowLabel)
 {
-    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
+    <BootstrapLabel required="@Required" for="@InputId" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText"/>
 }
 <div @attributes="AdditionalAttributes" id="@Id" class="@ClassString" data-bb-scroll-behavior="@ScrollIntoViewBehaviorString">
     <CascadingValue Value="this" IsFixed="true">
@@ -23,7 +23,8 @@
             }
             else
             {
-                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedRow?.Text" @onchange="OnChange" readonly="@ReadonlyString"/>
+                <input type="text" id="@InputId" disabled="@Disabled" placeholder="@PlaceHolder" class="@InputClassString" value="@SelectedRow?.Text" @onchange="OnChange"
+                       readonly="@ReadonlyString"/>
             }
             <span class="@AppendClassString"><i class="@DropdownIcon"></i></span>
         </div>
@@ -62,7 +63,7 @@
                         }
                     </div>
                 }
-                else if (Rows.Count == 0)
+                else if (Rows.Count == 0 || (Rows.Count == 1 && string.IsNullOrEmpty(Rows[0].Value)))
                 {
                     <div class="dropdown-item">@NoSearchDataText</div>
                 }
@@ -100,24 +101,26 @@
 </div>
 
 @code {
+
     RenderFragment<SelectedItem> RenderRow => item =>
-    @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
-        @if (ItemTemplate != null)
-        {
-            @ItemTemplate(item)
-        }
-        else if (IsMarkupString)
-        {
-            @((MarkupString)item.Text)
-        }
-        else
-        {
-            @item.Text
-        }
-    </div>;
+        @<div class="@ActiveItem(item)" @onclick="() => OnClickItem(item)">
+            @if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+            else if (IsMarkupString)
+            {
+                @((MarkupString)item.Text)
+            }
+            else
+            {
+                @item.Text
+            }
+        </div>;
 
     RenderFragment<PlaceholderContext> RenderPlaceHolderRow => context =>
-    @<div class="dropdown-item">
-        <div class="is-ph"></div>
-    </div>;
+        @<div class="dropdown-item">
+            <div class="is-ph"></div>
+        </div>;
+
 }
