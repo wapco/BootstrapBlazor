@@ -202,7 +202,7 @@ export function scroll(id, align, options = { behavior: 'smooth' }) {
 export function scrollTo(id) {
     const element = document.getElementById(id);
     if (element) {
-        const scroll = element.querySelector('.scroll');
+        const scroll = element.querySelector('.table-scroll .scroll') || element.querySelector('.scroll');
         if (scroll) {
             scroll.scrollTo({
                 top: 0,
