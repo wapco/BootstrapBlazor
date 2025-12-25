@@ -250,6 +250,13 @@ public partial class ValidateForm
     private static bool IsPublic(PropertyInfo p) => p.GetMethod != null && p.SetMethod != null && p.GetMethod.IsPublic && p.SetMethod.IsPublic;
 
     /// <summary>
+    /// 获取字段DisplayName
+    /// </summary>
+    /// <param name="fieldIdentifier"></param>
+    /// <returns></returns>
+    protected virtual string GetDisplayName(FieldIdentifier fieldIdentifier) => fieldIdentifier.GetDisplayName();
+
+    /// <summary>
     /// EditModel 数据模型验证方法
     /// </summary>
     /// <param name="context"></param>
@@ -283,7 +290,7 @@ public partial class ValidateForm
                     var propertyValidateContext = new ValidationContext(fieldIdentifier.Model, context, null)
                     {
                         MemberName = fieldIdentifier.FieldName,
-                        DisplayName = fieldIdentifier.GetDisplayName()
+                        DisplayName = GetDisplayName(fieldIdentifier)
                     };
 
                     // 设置其关联属性字段
