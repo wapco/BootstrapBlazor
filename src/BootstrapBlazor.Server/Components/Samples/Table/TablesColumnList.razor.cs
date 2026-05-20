@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -27,6 +27,9 @@ public partial class TablesColumnList
     [NotNull]
     private Table<Foo>? TableColumnVisible { get; set; }
 
+    private bool _isPopoverToolbarDropdownButton = true;
+    private bool _showColumnListControls = true;
+
     /// <summary>
     /// OnInitialized 方法
     /// </summary>
@@ -39,19 +42,22 @@ public partial class TablesColumnList
     private Task ResetVisibleColumns()
     {
         // 支持设置部分列不可见
-        TableColumnVisible.ResetVisibleColumns(new ColumnVisibleItem[] {
-            new(nameof(Foo.Name), false),
-            new(nameof(Foo.Complete), true)
+        TableColumnVisible.ResetVisibleColumns(new TableColumnState[]
+        {
+            new() { Name = nameof(Foo.Name), Visible = false },
+            new() { Name = nameof(Foo.Complete), Visible = true }
         });
         return Task.CompletedTask;
     }
 
-    private Task<QueryData<Foo>> OnQueryAsync(QueryPageOptions options)
+    private async Task<QueryData<Foo>> OnQueryAsync(QueryPageOptions options)
     {
+        await Task.Delay(10);
+
         IEnumerable<Foo> items = Items;
         // 过滤
         var isFiltered = false;
-        if (options.Filters.Any())
+        if (options.Filters.Count > 0)
         {
             items = items.Where(options.Filters.GetFilterFunc<Foo>());
             isFiltered = true;
@@ -68,8 +74,16 @@ public partial class TablesColumnList
 
         // 设置记录总数
         var total = items.Count();
+
         // 内存分页
         items = items.Skip((options.PageIndex - 1) * options.PageItems).Take(options.PageItems).ToList();
-        return Task.FromResult(new QueryData<Foo>() { Items = items, TotalCount = total, IsSorted = isSorted, IsFiltered = isFiltered, IsSearch = true });
+        return new QueryData<Foo>()
+        {
+            Items = items,
+            TotalCount = total,
+            IsSorted = isSorted,
+            IsFiltered = isFiltered,
+            IsSearch = true
+        };
     }
 }

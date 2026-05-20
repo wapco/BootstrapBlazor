@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --bb-font-weight: bold;
     --bb-title-font-size: 1rem;
     --bb-sub-font-size: .875rem;
@@ -52,7 +52,7 @@ html .search-dialog-mask {
     --bb-global-search-main-max-height: calc(100vh - 310px);
 }
 
-.navbar {
+.navbar-header {
     --bs-navbar-color: rgba(255,255,255,.85);
     --bs-navbar-hover-color: rgb(255,255,255);
 }
@@ -342,6 +342,10 @@ code {
     .coms-demo .card {
         cursor: pointer;
     }
+
+    .bb-vote-toast {
+        --bs-toast-max-width: 380px;
+    }
 }
 
 :root, [data-bs-theme="light"] {
@@ -393,4 +397,22 @@ code {
 
     .icon-list .bb-iconpark-icon {
         --bb-svg-icon-width: 16px;
+    }
+
+.bb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.bb-grid-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+    .bb-grid-item > .form-label {
+        min-width: 80px;
+        text-align: right;
+        margin-right: .5rem;
+        margin-bottom: 0;
     }

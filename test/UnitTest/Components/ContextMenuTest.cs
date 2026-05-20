@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -7,6 +7,7 @@ using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 
 namespace UnitTest.Components;
 
@@ -19,12 +20,13 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         var foo = Foo.Generate(localizer);
         var clicked = false;
 
-        var cut = Context.RenderComponent<ContextMenuZone>(pb =>
+        var cut = Context.Render<ContextMenuZone>(pb =>
         {
             pb.AddChildContent<ContextMenuTrigger>(pb =>
             {
                 pb.Add(a => a.WrapperTag, "div");
                 pb.Add(a => a.ContextItem, foo);
+                pb.Add(a => a.IsInvisibleWhenTouchMove, true);
                 pb.AddChildContent(pb =>
                 {
                     pb.OpenElement(0, "div");
@@ -51,7 +53,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         });
 
         var row = cut.Find(".context-trigger");
-        row.ContextMenu(0, 10, 10, 10, 10, 2, 2);
+        row.ContextMenu(new MouseEventArgs() { Detail = 0, ScreenX = 10, ScreenY = 10, ClientX = 10, ClientY = 10, Button = 2, Buttons = 2 });
 
         var menu = cut.FindComponent<ContextMenu>();
         menu.Contains("shadow");
@@ -65,7 +67,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         Assert.DoesNotContain("blazor:onclick", item.InnerHtml);
 
         var contextItem = cut.FindComponent<ContextMenuItem>();
-        contextItem.SetParametersAndRender(pb =>
+        contextItem.Render(pb =>
         {
             pb.Add(a => a.Disabled, false);
             pb.Add(a => a.OnDisabledCallback, (item, v) =>
@@ -78,7 +80,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
 
         // trigger OnBeforeShowCallback
         bool menuCallback = false;
-        contextItem.SetParametersAndRender(pb =>
+        contextItem.Render(pb =>
         {
             pb.Add(a => a.Disabled, false);
             pb.Add(a => a.OnDisabledCallback, (item, v) =>
@@ -87,7 +89,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
                 return false;
             });
         });
-        menu.SetParametersAndRender(pb =>
+        menu.Render(pb =>
         {
             pb.Add(a => a.OnBeforeShowCallback, v =>
             {
@@ -104,6 +106,91 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         await Task.Delay(500);
         row.TouchEnd();
         Assert.True(clicked);
+
+        // 触发 TouchMove 事件
+        row.TouchMove();
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void IsShow_Ok(bool show, bool expected)
+    {
+        var cut = Context.Render<ContextMenuZone>(pb =>
+        {
+            pb.AddChildContent<ContextMenu>(pb =>
+            {
+                pb.AddChildContent<ContextMenuItem>(pb =>
+                {
+                    pb.Add(a => a.Icon, "fa fa-test");
+                    pb.Add(a => a.Text, "Test1");
+                    pb.Add(a => a.IsShow, show);
+                });
+                pb.AddChildContent<ContextMenuDivider>(pb =>
+                {
+                    pb.Add(a => a.IsShow, show);
+                });
+                pb.AddChildContent<ContextMenuItem>(pb =>
+                {
+                    pb.Add(a => a.Icon, "fa fa-test");
+                    pb.Add(a => a.Text, "Test2");
+                });
+            });
+        });
+        var actual = cut.Markup.Contains("Test1");
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public async Task ContextMenu_TouchWithTimeout_Ok()
+    {
+        const int Delay = 300; // ms
+
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var foo = Foo.Generate(localizer);
+
+        var cut = Context.Render<ContextMenuZone>(x =>
+        {
+            x.AddChildContent<ContextMenuTrigger>(y =>
+            {
+                y.Add(z => z.ContextItem, foo);
+                y.Add(z => z.OnTouchDelay, Delay);
+                y.AddChildContent(z =>
+                {
+                    z.OpenElement(0, "div");
+                    z.AddAttribute(1, "class", "context-trigger");
+                    z.AddContent(2, foo.Name);
+                    z.CloseElement();
+                });
+            });
+            x.AddChildContent<ContextMenu>(y =>
+            {
+                y.AddChildContent<ContextMenuItem>(z =>
+                {
+                    z.Add(a => a.Icon, "fa fa-test");
+                    z.Add(a => a.Text, "Test");
+                    z.Add(a => a.OnClick, (_, _) => Task.CompletedTask);
+                });
+            });
+        });
+
+        var element = cut.Find(".context-trigger");
+        var sw = Stopwatch.StartNew();
+        await element.TouchStartAsync(new TouchEventArgs
+        {
+            Detail = 0,
+            Touches = [new TouchPoint { ClientX = 10, ClientY = 10, ScreenX = 10, ScreenY = 10 }]
+        });
+
+        var trigger = cut.FindComponent<ContextMenuTrigger>().Instance;
+        Assert.NotNull(trigger);
+
+        Assert.True(trigger.IsTouchStarted);
+        await cut.InvokeAsync(() => element.TouchEndAsync());
+        sw.Stop();
+
+        Assert.True(sw.ElapsedMilliseconds >= Delay * 2);
+        Assert.False(trigger.IsTouchStarted);
     }
 
     [Theory]
@@ -115,7 +202,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         var items = Foo.GenerateFoo(localizer, 2);
         var clicked = false;
 
-        var cut = Context.RenderComponent<ContextMenuZone>(pb =>
+        var cut = Context.Render<ContextMenuZone>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -146,7 +233,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         });
 
         var row = renderMode == TableRenderMode.CardView ? cut.Find(".table-row") : cut.Find("tbody tr");
-        row.ContextMenu(0, 10, 10, 10, 10, 2, 2);
+        row.ContextMenu(new MouseEventArgs() { Detail = 0, ScreenX = 10, ScreenY = 10, ClientX = 10, ClientY = 10, Button = 2, Buttons = 2 });
 
         var menu = cut.FindComponent<ContextMenu>();
         var pi = typeof(ContextMenu).GetField("_contextItem", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -186,7 +273,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         var nodes = TreeFoo.CascadingTree(items).ToList();
         var clicked = false;
 
-        var cut = Context.RenderComponent<ContextMenuZone>(pb =>
+        var cut = Context.Render<ContextMenuZone>(pb =>
         {
             pb.AddChildContent<TreeView<TreeFoo>>(pb =>
             {
@@ -209,7 +296,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
         });
 
         var row = cut.Find(".tree-content");
-        row.ContextMenu(0, 10, 10, 10, 10, 2, 2);
+        row.ContextMenu(new MouseEventArgs() { Detail = 0, ScreenX = 10, ScreenY = 10, ClientX = 10, ClientY = 10, Button = 2, Buttons = 2 });
 
         var menu = cut.FindComponent<ContextMenu>();
         var pi = typeof(ContextMenu).GetField("_contextItem", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -251,7 +338,7 @@ public class ContextMenuTest : BootstrapBlazorTestBase
     [Fact]
     public void ContextMenuDivider_Ok()
     {
-        var cut = Context.RenderComponent<ContextMenuZone>(pb =>
+        var cut = Context.Render<ContextMenuZone>(pb =>
         {
             pb.AddChildContent<ContextMenu>(pb =>
             {

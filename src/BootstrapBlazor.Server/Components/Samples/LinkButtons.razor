@@ -1,5 +1,5 @@
-﻿@page "/link-button"
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@page "/link-button"
+@inject IOptions<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<LinkButtons> Localizer
 
 <h3>@Localizer["LinkButtonsComTitle"]</h3>
@@ -15,7 +15,7 @@
 <DemoBlock Title="@Localizer["LinkButtonUrlTitle"]"
            Introduction="@Localizer["LinkButtonUrlIntro"]"
            Name="Url">
-    <LinkButton Text="@Localizer["LinkButtonText"]" Url="@WebsiteOption.CurrentValue.ServerUrl" />
+    <LinkButton Text="@Localizer["LinkButtonText"]" Url="@WebsiteOption.Value.ServerUrl" />
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["LinkButtonTitleTitle"]"
@@ -28,7 +28,7 @@
 <DemoBlock Title="@Localizer["LinkButtonImageTitle"]"
            Introduction="@Localizer["LinkButtonImageIntro"]"
            Name="Image">
-    <LinkButton ImageUrl="@WebsiteOption.CurrentValue.GetAssetUrl("images/Argo-C.png")" />
+    <LinkButton ImageUrl="@WebsiteOption.Value.GetAssetUrl("images/Argo-C.png")" />
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["LinkButtonIconTitle"]"
@@ -86,4 +86,4 @@
     </div>
 </DemoBlock>
 
-<AttributeTable Items="GetAttributes()"></AttributeTable>
+<AttributeTable Type="typeof(LinkButton)"></AttributeTable>

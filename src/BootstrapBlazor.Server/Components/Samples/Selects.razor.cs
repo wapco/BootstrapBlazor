@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -28,18 +28,20 @@ public sealed partial class Selects
         new SelectedItem ("Shanghai", "上海")
     };
 
-    private IEnumerable<SelectedItem> VirtualItems => Foos.Select(i => new SelectedItem(i.Name!, i.Name!)).ToList();
+    private IEnumerable<SelectedItem> VirtualItems => Foos.Select(i => new SelectedItem(i.Id.ToString(), i.Name!)).ToList();
 
-    private SelectedItem? VirtualItem1 { get; set; }
+    private int? _virtualItem1 = 2;
+    private string? VirtualItemText1 => Foos.FirstOrDefault(i => i.Id == 2)?.Name;
 
-    private SelectedItem? VirtualItem2 { get; set; }
+    private int? _virtualItem2 = 3;
+    private string? VirtualItemText2 => Foos.FirstOrDefault(i => i.Id == 3)?.Name;
 
     [NotNull]
     private List<Foo>? Foos { get; set; }
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     private bool _showSearch = true;
     private bool _showPopoverSearch = true;
@@ -63,7 +65,7 @@ public sealed partial class Selects
         TimeZoneItems = TimeZoneInfo.GetSystemTimeZones().Select(i => new SelectedItem(i.Id, i.DisplayName));
         TimeZoneId = TimeZoneInfo.Local.Id;
         TimeZoneValue = TimeZoneInfo.Local.BaseUtcOffset;
-        Foos = Foo.GenerateFoo(LocalizerFoo);
+        Foos = Foo.GenerateFoo(FooLocalizer);
     }
 
     private async Task<QueryData<SelectedItem>> OnQueryAsync(VirtualizeQueryOption option)
@@ -76,7 +78,7 @@ public sealed partial class Selects
         }
         return new QueryData<SelectedItem>
         {
-            Items = items.Skip(option.StartIndex).Take(option.Count).Select(i => new SelectedItem(i.Name!, i.Name!)),
+            Items = items.Skip(option.StartIndex).Take(option.Count).Select(i => new SelectedItem(i.Id.ToString(), i.Name!)),
             TotalCount = items.Count
         };
     }
@@ -265,188 +267,4 @@ public sealed partial class Selects
         StateHasChanged();
         return Task.CompletedTask;
     }
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = "OnSelectedItemChanged",
-            Description = Localizer["SelectsOnSelectedItemChanged"],
-            Type = "Func<SelectedItem, Task>"
-        },
-        new()
-        {
-            Name = "OnBeforeSelectedItemChange",
-            Description = Localizer["SelectsOnBeforeSelectedItemChange"],
-            Type = "Func<SelectedItem, Task<bool>>"
-        },
-        new()
-        {
-            Name = "OnInputChangedCallback",
-            Description = Localizer["SelectsOnInputChangedCallback"],
-            Type = "Func<string, Task>"
-        },
-        new()
-        {
-            Name = "TextConvertToValueCallback",
-            Description = Localizer["SelectsTextConvertToValueCallback"],
-            Type = "Func<string, Task<TValue>>"
-        }
-    ];
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["SelectsShowLabel"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowSearch",
-            Description = Localizer["SelectsShowSearch"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "IsAutoClearSearchTextWhenCollapsed",
-            Description = Localizer["SelectsIsAutoClearSearchTextWhenCollapsed"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["SelectsDisplayText"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Class",
-            Description = Localizer["SelectsClass"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = Localizer["SelectsColor"],
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "IsEditable",
-            Description = Localizer["SelectsIsEditable"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["SelectsIsDisabled"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["SelectsItems"],
-            Type = "IEnumerable<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "SelectItems",
-            Description = Localizer["SelectItems"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Description = Localizer["SelectsItemTemplate"],
-            Type = "RenderFragment<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Description = Localizer["SelectsChildContent"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Category",
-            Description = Localizer["SelectsCategory"],
-            Type = "SwalCategory",
-            ValueList = " — ",
-            DefaultValue = " SwalCategory.Information "
-        },
-        new()
-        {
-            Name = "Content",
-            Description = Localizer["SelectsContent"],
-            Type = "string?",
-            ValueList = " — ",
-            DefaultValue = Localizer["SelectsContentDefaultValue"]!
-        },
-        new()
-        {
-            Name = "DisableItemChangedWhenFirstRender",
-            Description = Localizer["SelectsDisableItemChangedWhenFirstRender"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(Select<string>.IsVirtualize),
-            Description = Localizer["SelectsIsVirtualize"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(Select<string>.DefaultVirtualizeItemText),
-            Description = Localizer["SelectsDefaultVirtualizeItemText"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(Select<string>.ShowSwal),
-            Description = Localizer["SelectsShowSwal"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        }
-    ];
 }

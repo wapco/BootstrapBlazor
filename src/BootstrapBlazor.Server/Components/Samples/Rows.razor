@@ -1,6 +1,6 @@
-﻿@page "/row"
+@page "/row"
 @inject IStringLocalizer<Rows> Localizer
-@inject IStringLocalizer<Foo> LocalizerFoo
+@inject IStringLocalizer<Foo> FooLocalizer
 
 <h3>@Localizer["RowsTitle"]</h3>
 
@@ -175,4 +175,4 @@
     </ValidateForm>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<AttributeTable Type="typeof(Row)" />

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -61,7 +61,7 @@ internal static class BootstrapIcons
         { ComponentIcons.StepErrorIcon, "bi bi-x" },
 
         { ComponentIcons.FilterButtonFilterIcon, "bi bi-funnel-fill" },
-        { ComponentIcons.FilterButtonClearIcon, "bi bi-funnel" },
+        { ComponentIcons.FilterButtonClearIcon, "bi bi-ban" },
 
         { ComponentIcons.TableFilterPlusIcon, "bi bi-plus" },
         { ComponentIcons.TableFilterMinusIcon, "bi bi-dash" },
@@ -152,6 +152,7 @@ internal static class BootstrapIcons
 
         { ComponentIcons.TableAddButtonIcon, "bi bi-plus" },
         { ComponentIcons.TableEditButtonIcon, "bi bi-check2-square" },
+        { ComponentIcons.TableMoreButtonIcon, "bi bi-three-dots" },
         { ComponentIcons.TableDeleteButtonIcon, "bi bi-x" },
         { ComponentIcons.TableRefreshButtonIcon, "bi bi-arrow-clockwise" },
         { ComponentIcons.TableCardViewButtonIcon, "bi bi-list" },

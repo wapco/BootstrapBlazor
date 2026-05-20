@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -25,6 +25,22 @@ public sealed partial class EditorForms
     [NotNull]
     private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
+    private List<string> _ignoreItems = [];
+    private EditorFormGroupType _groupType = EditorFormGroupType.GroupBox;
+
+    private Task OnSwitchIgnoreItems()
+    {
+        if (_ignoreItems.Count != 0)
+        {
+            _ignoreItems.Clear();
+        }
+        else
+        {
+            _ignoreItems = [nameof(Foo.Hobby)];
+        }
+        return Task.CompletedTask;
+    }
+
     private List<SelectedItem> DummyItems { get; } =
     [
         new SelectedItem("1", "1"),
@@ -49,102 +65,11 @@ public sealed partial class EditorForms
             DateTime = new DateTime(1997, 12, 05),
             Education = EnumEducation.Middle
         };
+        Model.Hobby = Foo.GenerateHobbies(FooLocalizer).Take(3).Select(i => i.Text);
     }
 
     [NotNull]
     private Foo? ValidateModel { get; set; }
-
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Model",
-            Description = Localizer["Att1"],
-            Type = "TModel",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "FieldItems",
-            Description = Localizer["Att2"],
-            Type = "RenderFragment<TModel>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Buttons",
-            Description = Localizer["Att3"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(EditorForm<Foo>.IsDisplay),
-            Description = Localizer["IsDisplay"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["Att4"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowLabelTooltip",
-            Description = Localizer["ShowLabelTooltip"],
-            Type = "bool?",
-            ValueList = "true/false/null",
-            DefaultValue = "null"
-        },
-        new()
-        {
-            Name = "AutoGenerateAllItem",
-            Description = Localizer["Att5"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ItemsPerRow",
-            Description = Localizer["Att6"],
-            Type = "int?",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "RowType",
-            Description = Localizer["Att7"],
-            Type = "RowType",
-            ValueList = "Row|Inline",
-            DefaultValue = "Row"
-        },
-        new()
-        {
-            Name = "LabelAlign",
-            Description = Localizer["Att8"],
-            Type = "Alignment",
-            ValueList = "None|Left|Center|Right",
-            DefaultValue = "None"
-        },
-        new()
-        {
-            Name = "LabelWidth",
-            Description = Localizer["LabelWidthAttr"],
-            Type = "int?",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 
     private List<AttributeItem> GetEditorItemAttributes() =>
     [

@@ -1,12 +1,15 @@
 ﻿import Data from "../../modules/data.js"
 
-export function init(id, options) {
+export function init(id, invoke, options) {
     options = {
         ...{
             viewMode: 'DateTime',
             startValue: 0,
-            requestId: null,
-            onCompleted: null
+            onCompleted: null,
+            counter: 0,
+            totalMilliseconds: 0,
+            countDown: false,
+            requestId: null
         },
         ...options
     }
@@ -15,87 +18,28 @@ export function init(id, options) {
         return;
     }
 
-    const listHour = el.querySelector('.bb-flip-clock-list.hour');
-    const listMinute = el.querySelector('.bb-flip-clock-list.minute');
-    const listSecond = el.querySelector('.bb-flip-clock-list.second');
-    const countDown = options.viewMode === "CountDown";
-
-    let startTimestamp = Date.now(); // 起始时间（毫秒）
-    const getDate = () => {
-        const now = Date.now();
-        const elapsed = now - startTimestamp;
-
-        if (options.viewMode === "Count") {
-            const totalMs = options.startValue + elapsed;
-            const totalSeconds = Math.floor(totalMs / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            return { hours, minutes, seconds };
-        }
-
-        if (countDown) {
-            if (options.startValue === 0) {
-                return { hours: 0, minutes: 0, seconds: 0 };
-            }
-
-            const remaining = options.startValue - elapsed;
-            if (remaining <= 0) {
-                return { hours: 0, minutes: 0, seconds: 0 };
-            }
-
-            const totalSeconds = Math.floor(remaining / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            return { hours, minutes, seconds };
-        }
-
-        // viewMode: 'DateTime'
-        const date = new Date();
-        return {
-            hours: date.getHours(),
-            minutes: date.getMinutes(),
-            seconds: date.getSeconds()
-        };
-    };
-
-    let lastHour;
-    let lastMinute;
-    let lastSecond;
-    const go = () => {
-        const { hours, minutes, seconds } = getDate();
-
-        if (lastSecond !== seconds) {
-            lastSecond = seconds;
-            setTime(listSecond, seconds, countDown);
-        }
-        if (lastMinute !== minutes) {
-            lastMinute = minutes;
-            setTime(listMinute, minutes, countDown);
-        }
-        if (lastHour !== hours) {
-            lastHour = hours;
-            setTime(listHour, hours, countDown);
-        }
-        return { hours, minutes, seconds }
+    const prev = Data.get(id);
+    if (prev?.options?.requestId) {
+        cancelAnimationFrame(prev.options.requestId);
     }
 
     let start = void 0
     let current;
+
     const flip = ts => {
         if (start === void 0) {
             start = ts;
-            current = go();
+            current = go(el, options);
         }
         const elapsed = ts - start;
         if (elapsed >= 1000) {
             start = ts;
-            current = go();
+            current = go(el, options);
         }
 
-        if (countDown && current.hours === 0 && current.minutes === 0 && current.seconds === 0) {
-            options.invoke.invokeMethodAsync(options.onCompleted);
+        if (options.countDown && current.hours === 0 && current.minutes === 0 && current.seconds === 0) {
+            invoke.invokeMethodAsync(options.onCompleted);
+            options.requestId = null;
             return;
         }
         options.requestId = requestAnimationFrame(flip);
@@ -108,6 +52,7 @@ export function init(id, options) {
 
 export function dispose(id) {
     const clock = Data.get(id)
+    Data.remove(id)
     if (clock) {
         if (clock.options.requestId) {
             cancelAnimationFrame(clock.options.requestId);
@@ -129,6 +74,72 @@ const setTime = (list, time, countDown) => {
         list.classList.add('flip');
     }
 }
+
+const go = (el, options) => {
+    const d = getDate(options);
+    const unitConfig = getConfig(el);
+    unitConfig.forEach(({ key, list, digits }) => {
+        if (list === null) {
+            return;
+        }
+
+        setDigits(list, d[key], digits, options.countDown);
+    });
+    return d;
+};
+
+const getDate = (options) => {
+    const view = options.viewMode;
+    options.countDown = false;
+    if (view === "DateTime") {
+        const now = new Date();
+        return {
+            years: now.getFullYear(),
+            months: now.getMonth() + 1,
+            days: now.getDate(),
+            hours: now.getHours(),
+            minutes: now.getMinutes(),
+            seconds: now.getSeconds()
+        };
+    }
+    else if (view === "Count") {
+        options.counter += 1000;
+        options.totalMilliseconds = options.counter - options.startValue;
+    }
+    else if (view === "CountDown") {
+        options.countDown = true;
+        options.counter += 1000;
+        options.totalMilliseconds = options.startValue - options.counter;
+        if (options.totalMilliseconds < 0) options.totalMilliseconds = 0;
+    }
+
+    const seconds = Math.floor(options.totalMilliseconds / 1000) % 60;
+    const minutes = Math.floor(options.totalMilliseconds / (1000 * 60)) % 60;
+    const hours = Math.floor(options.totalMilliseconds / (1000 * 60 * 60)) % 24;
+    const days = Math.floor(options.totalMilliseconds / (1000 * 60 * 60 * 24));
+    const months = 0;
+    const years = 0;
+    return { years, months, days, hours, minutes, seconds };
+};
+
+const getConfig = el => [
+    { key: 'years', list: el.querySelector('.bb-flip-clock-list.year'), digits: 4 },
+    { key: 'months', list: el.querySelector('.bb-flip-clock-list.month'), digits: 2 },
+    { key: 'days', list: el.querySelector('.bb-flip-clock-list.day'), digits: 2 },
+    { key: 'hours', list: el.querySelector('.bb-flip-clock-list.hour'), digits: 2 },
+    { key: 'minutes', list: el.querySelector('.bb-flip-clock-list.minute'), digits: 2 },
+    { key: 'seconds', list: el.querySelector('.bb-flip-clock-list.second'), digits: 2 },
+];
+
+const setDigits = (list, value, digits, countDown) => {
+    list.classList.remove('flip');
+    for (let i = 0; i < digits; i++) {
+        const place = digits - 1 - i;
+        const digit = Math.floor(value / 10 ** place) % 10;
+        setFlip(list.children[i], digit, countDown);
+    }
+    list.classList.add('flip');
+};
 
 const setFlip = (flip, index, countDown) => {
     const before = flip.querySelector('.before');

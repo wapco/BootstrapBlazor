@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -29,7 +29,7 @@ public class DrawerServiceTest : BootstrapBlazorTestBase
             ZIndex = 1066
         };
         var service = Context.Services.GetRequiredService<DrawerService>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>();
+        var cut = Context.Render<BootstrapBlazorRoot>();
         await service.Show(option);
         cut.Contains("data-bb-keyboard=\"true\"");
         cut.Contains("--bb-drawer-zindex: 1066;");
@@ -53,6 +53,18 @@ public class DrawerServiceTest : BootstrapBlazorTestBase
         await service.Show(type);
         button = cut.Find("button");
         await cut.InvokeAsync(() => button.Click());
+
+        // 测试 Option 关闭方法
+        Context.JSInterop.Setup<bool>("execute", matcher => true).SetResult(true);
+        var closed = false;
+        option.OnCloseAsync = () =>
+        {
+            closed = true;
+            return Task.CompletedTask;
+        };
+        await service.Show(option);
+        await cut.InvokeAsync(option.CloseAsync);
+        Assert.True(closed);
     }
 
     private static RenderFragment RenderContent() => builder =>

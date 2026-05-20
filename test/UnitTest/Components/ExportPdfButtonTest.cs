@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -19,7 +19,7 @@ public class ExportPdfButtonTest : BootstrapBlazorTestBase
     public async Task Normal_Ok()
     {
         Context.JSInterop.Setup<string?>("getHtml", v => true).SetResult("test-html-result");
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<ExportPdfButton>(pb =>
             {
@@ -39,7 +39,7 @@ public class ExportPdfButtonTest : BootstrapBlazorTestBase
         bool download = false;
         bool downloaded = false;
         Context.JSInterop.Setup<string?>("getHtml", v => true).SetResult("test-html-result");
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<ExportPdfButton>(pb =>
             {
@@ -126,7 +126,7 @@ public class ExportPdfButtonTest : BootstrapBlazorTestBase
             OnAfterDownload = _ => Task.CompletedTask,
             IsAsync = true
         };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<ExportPdfButton>(pb =>
             {
@@ -157,21 +157,21 @@ public class ExportPdfButtonTest : BootstrapBlazorTestBase
 
     class MockHtml2PdfService : IHtml2Pdf
     {
-        public Task<byte[]> PdfDataAsync(string url)
+        public Task<byte[]> PdfDataAsync(string url, PdfOptions? options = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<byte[]> PdfDataFromHtmlAsync(string html, IEnumerable<string>? links = null, IEnumerable<string>? scripts = null)
+        public Task<byte[]> PdfDataFromHtmlAsync(string html, IEnumerable<string>? links = null, IEnumerable<string>? scripts = null, PdfOptions? options = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Stream> PdfStreamAsync(string url)
+        public Task<Stream> PdfStreamAsync(string url, PdfOptions? options = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Stream> PdfStreamFromHtmlAsync(string html, IEnumerable<string>? links = null, IEnumerable<string>? scripts = null) => Task.FromResult<Stream>(new MemoryStream(Encoding.UTF8.GetBytes("Hello World")));
+        public Task<Stream> PdfStreamFromHtmlAsync(string html, IEnumerable<string>? links = null, IEnumerable<string>? scripts = null, PdfOptions? options = null) => Task.FromResult<Stream>(new MemoryStream(Encoding.UTF8.GetBytes("Hello World")));
     }
 }

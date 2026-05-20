@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -102,90 +102,4 @@ public partial class Alerts
         Logger.Log("Alert Dismissed");
         return Task.CompletedTask;
     }
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private static EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = "OnDismiss",
-            Description = "Close the alert box callback method",
-            Type = "EventCallback<MouseEventArgs>"
-        }
-    ];
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private static AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ChildContent",
-            Description = "Content",
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Class",
-            Description = "Style",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = "Color",
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "Icon",
-            Description = "Icon",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ShowDismiss",
-            Description = "Close Button",
-            Type = "bool",
-            ValueList = " — ",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowBar",
-            Description = "Show the left Bar",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowBorder",
-            Description = "Show border",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowShadow",
-            Description = "Show Shadow",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        }
-    ];
 }

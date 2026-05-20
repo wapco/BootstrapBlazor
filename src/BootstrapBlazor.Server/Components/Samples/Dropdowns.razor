@@ -1,4 +1,4 @@
-﻿@page "/dropdown"
+@page "/dropdown"
 @inject IStringLocalizer<Dropdowns> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -31,7 +31,25 @@
     </div>
 </DemoBlock>
 
-<DemoBlock Title="@Localizer["DropdownItemTemplateTitle"]" Introduction="@Localizer["DropdownItemTemplateIntro"]" Name="ItemTemplate">
+<DemoBlock Title="@Localizer["IsOutlineTitle"]" Introduction='@Localizer["IsOutlineIntro"]' Name="IsOutline">
+    <div class="row g-3">
+        <div class="col-6 col-sm-4 col-md-3">
+            <Dropdown TValue="string" Items="Items" IsOutline="true" Color="Color.Primary"></Dropdown>
+        </div>
+        <div class="col-6 col-sm-4 col-md-3">
+            <Dropdown TValue="string" Items="Items" IsOutline="true" Color="Color.Info"></Dropdown>
+        </div>
+        <div class="col-6 col-sm-4 col-md-3">
+            <Dropdown TValue="string" Items="Items" IsOutline="true" Color="Color.Warning"></Dropdown>
+        </div>
+        <div class="col-6 col-sm-4 col-md-3">
+            <Dropdown TValue="string" Items="Items" IsOutline="true" ShowSplit="true" Color="Color.Danger"></Dropdown>
+        </div>
+    </div>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["DropdownItemTemplateTitle"]" Introduction="@Localizer["DropdownItemTemplateIntro"]"
+           Name="ItemTemplate">
     <Dropdown TValue="string" Items="ItemTemplateList">
         <ItemTemplate>
             <Tooltip Title="just a tooltip text demo" Trigger="hover">
@@ -39,6 +57,24 @@
                 <div class="ms-2 flex-fill">@context.Text</div>
             </Tooltip>
         </ItemTemplate>
+    </Dropdown>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["DropdownItemsTemplateTitle"]" Introduction="@Localizer["DropdownItemsTemplateIntro"]"
+           Name="ItemsTemplate">
+    <Dropdown TValue="string" IsFixedButtonText="true" FixedButtonText="More" Icon="fa solid fa-ellipsis">
+        <ItemsTemplate>
+            <DropdownItem Text="Copy" Icon="fa-solid fa-copy" OnClick="@(() => OnClickAction("Copy"))"></DropdownItem>
+            <DropdownItem Text="Paste" Icon="fa-solid fa-paste" OnClick="@(() => OnClickAction("Paste"))"></DropdownItem>
+            <Divider></Divider>
+            <DropdownItem Text="Action1" Icon="fa-solid fa-flag" OnClick="@(() => OnClickAction("Action1"))"></DropdownItem>
+            <DropdownItem>
+                <Tooltip Title="just a tooltip text demo" Trigger="hover">
+                    <span class="fa-solid fa-flag"></span>
+                    <div class="ms-2 flex-fill" @onclick="@(() => OnClickAction("Action2"))">Action2</div>
+                </Tooltip>
+            </DropdownItem>
+        </ItemsTemplate>
     </Dropdown>
 </DemoBlock>
 
@@ -194,6 +230,4 @@
     </Dropdown>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
-
-<EventTable Items="@GetEvents()" />
+<AttributeTable Type="typeof(Dropdown<>)" />

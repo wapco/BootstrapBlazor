@@ -1,7 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
+
+using System.Globalization;
 
 namespace UnitTest.Components;
 
@@ -10,7 +12,7 @@ public class TimePickerTest : BootstrapBlazorTestBase
     [Fact]
     public void TimePicker_Ok()
     {
-        var cut = Context.RenderComponent<TimePicker>();
+        var cut = Context.Render<TimePicker>();
         cut.MarkupMatches("""
             <div class="bb-time-picker" diff:ignore>
                 <div class="bb-time-panel">
@@ -25,10 +27,10 @@ public class TimePickerTest : BootstrapBlazorTestBase
     [Fact]
     public void HeightCallback_Ok()
     {
-        var cut = Context.RenderComponent<TimePicker>();
+        var cut = Context.Render<TimePicker>();
         var cell = cut.FindComponent<TimePickerCell>();
         cut.InvokeAsync(() => cell.Instance.OnHeightCallback(16));
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Value, TimeSpan.FromSeconds(1));
         });
@@ -38,7 +40,7 @@ public class TimePickerTest : BootstrapBlazorTestBase
     public async Task ValueChanged_Ok()
     {
         var val = new TimeSpan(10, 10, 10);
-        var cut = Context.RenderComponent<TimePicker>(pb =>
+        var cut = Context.Render<TimePicker>(pb =>
         {
             pb.Add(a => a.Value, new TimeSpan(10, 10, 10));
             pb.Add(a => a.ValueChanged, EventCallback.Factory.Create<TimeSpan>(this, ts =>
@@ -56,7 +58,7 @@ public class TimePickerTest : BootstrapBlazorTestBase
     [Fact]
     public void HasSeconds_Ok()
     {
-        var cut = Context.RenderComponent<TimePicker>(pb =>
+        var cut = Context.Render<TimePicker>(pb =>
         {
             pb.Add(a => a.Value, new TimeSpan(10, 10, 10));
             pb.Add(a => a.HasSeconds, false);
@@ -69,7 +71,7 @@ public class TimePickerTest : BootstrapBlazorTestBase
     public async Task OnClickClose_Ok()
     {
         var close = false;
-        var cut = Context.RenderComponent<TimePicker>(pb =>
+        var cut = Context.Render<TimePicker>(pb =>
         {
             pb.Add(a => a.OnClose, () =>
             {
@@ -86,7 +88,7 @@ public class TimePickerTest : BootstrapBlazorTestBase
     public async Task OnClickConfirm_Ok()
     {
         var confirm = false;
-        var cut = Context.RenderComponent<TimePicker>(pb =>
+        var cut = Context.Render<TimePicker>(pb =>
         {
             pb.Add(a => a.OnConfirm, ts =>
             {
@@ -97,5 +99,38 @@ public class TimePickerTest : BootstrapBlazorTestBase
         var btn = cut.Find(".confirm");
         await cut.InvokeAsync(() => btn.Click());
         Assert.True(confirm);
+    }
+
+    [Fact]
+    public async Task TimePickerCell_StyleName_CultureInvariant()
+    {
+        // 保存老的 Culture 设置
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalUICulture = CultureInfo.CurrentUICulture;
+
+        // 设置为土耳其文化环境 小数点使用逗号
+        var trCulture = new CultureInfo("tr-TR");
+        CultureInfo.CurrentCulture = trCulture;
+        CultureInfo.CurrentUICulture = trCulture;
+
+        var cut = Context.Render<TimePickerCell>(pb =>
+        {
+            pb.Add(a => a.ViewMode, TimePickerCellViewMode.Hour);
+            pb.Add(a => a.Value, TimeSpan.FromHours(2.5));
+        });
+
+        // 调用 OnHeightCallback 方法设置高度
+        await cut.InvokeAsync(() => cut.Instance.OnHeightCallback(12.25));
+        cut.Render();
+
+        // 检查高度样式是否正确生成应该是用点而不是逗号
+        var styleElement = cut.Find("ul.time-spinner-list");
+        var style = styleElement.GetAttribute("style");
+
+        Assert.Contains("-24.5px", style);
+
+        // 恢复当前线程文化设置
+        CultureInfo.CurrentCulture = originalCulture;
+        CultureInfo.CurrentUICulture = originalUICulture;
     }
 }

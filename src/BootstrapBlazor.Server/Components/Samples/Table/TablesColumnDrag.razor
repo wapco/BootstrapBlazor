@@ -1,19 +1,25 @@
-﻿@page "/table/column/drag"
+@page "/table/column/drag"
 @inject IStringLocalizer<NavMenu> NavMenuLocalizer
 @inject IStringLocalizer<TablesColumnDrag> Localizer
 @inject IStringLocalizer<Foo> FooLocalizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["TablesColumnTitle"] - @NavMenuLocalizer["TableColumnDrag"]</h3>
 
 <h4>@Localizer["TablesColumnDescription"]</h4>
 
+
 <DemoBlock Title="@Localizer["AllowDragOrderTitle"]" Introduction="@Localizer["AllowDragOrderIntro"]" Name="AllowDragColumn">
-    <section ignore>@((MarkupString)Localizer["AllowDragOrderDesc"].Value)</section>
-    <Table TItem="Foo" ClientTableName="table-test"
-           IsPagination="true" PageItemsSource="@PageItemsSource" AllowDragColumn="true"
-           IsStriped="true" IsBordered="true" OnDragColumnEndAsync="OnDragColumnEndAsync"
-           ShowToolbar="false" IsMultipleSelect="true" ShowExtendButtons="false"
+    <section ignore>
+        <p>@((MarkupString)Localizer["AllowDragOrderDesc"].Value)</p>
+        <p>@((MarkupString)Localizer["ClearTableColumnClientStatusDesc"].Value)</p>
+    </section>
+    <Table TItem="Foo" ClientTableName="table-column-drag"
+           IsPagination="true" PageItemsSource="@PageItemsSource"
+           AllowDragColumn="true" AllowResizing="true"
+           ShowToolbar="true" ShowColumnList="true" @ref="_table"
+           IsStriped="true" IsBordered="true" OnTableColumnClientStatusChanged="OnTableColumnClientStatusChanged"
+           IsMultipleSelect="true" ShowExtendButtons="false"
            OnQueryAsync="@OnQueryAsync">
         <TableColumns>
             <TableColumn @bind-Field="@context.DateTime" Width="120" FormatString="yyyy-MM-dd" />
@@ -21,6 +27,9 @@
             <TableColumn @bind-Field="@context.Address" />
             <TableColumn @bind-Field="@context.Count" />
         </TableColumns>
+        <TableToolbarTemplate>
+            <TableToolbarButton Text="@Localizer["ResetButtonText"]" OnClickWithoutRender="Reset"></TableToolbarButton>
+        </TableToolbarTemplate>
     </Table>
     <ConsoleLogger @ref="Logger" />
 </DemoBlock>

@@ -1,7 +1,7 @@
-﻿@page "/table/column/list"
+@page "/table/column/list"
 @inject IStringLocalizer<NavMenu> NavMenuLocalizer
 @inject IStringLocalizer<TablesColumnList> Localizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<Foo> FooLocalizer
 
 <h3>@Localizer["TablesColumnTitle"] - @NavMenuLocalizer["TableColumnList"]</h3>
@@ -13,18 +13,38 @@
            Name="Visible">
     <section ignore>
         <p>@((MarkupString)Localizer["VisibleP1"].Value)</p>
+        <p>@((MarkupString)Localizer["ShowColumnListControlsDesc"].Value)</p>
         <p>@((MarkupString)Localizer["VisibleP2"].Value)</p>
         <p>@((MarkupString)Localizer["VisibleP3"].Value)</p>
         <p>@((MarkupString)Localizer["VisibleP4"].Value)</p>
         <p>@((MarkupString)Localizer["ResetVisibleColumnsDesc"].Value)</p>
+        <p>@((MarkupString)Localizer["IsPopoverToolbarDropdownButtonDesc"].Value)</p>
+        <div class="row form-inline g-3">
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="IsPopoverToolbarDropdownButton"></BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_isPopoverToolbarDropdownButton">
+                    </Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel DisplayText="ShowColumnListControls"></BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showColumnListControls">
+                    </Switch>
+                </BootstrapInputGroup>
+            </div>
+        </div>
     </section>
     <Button Text="@Localizer["ResetVisibleColumnsButtonText"]" OnClickWithoutRender="ResetVisibleColumns"></Button>
 
     <Table TItem="Foo" @ref="TableColumnVisible"
            IsPagination="true" PageItemsSource="@PageItemsSource"
+           ShowColumnList="true" ShowColumnListControls="_showColumnListControls"
+           IsPopoverToolbarDropdownButton="_isPopoverToolbarDropdownButton"
            IsStriped="true" IsBordered="true" IsMultipleSelect="true"
            ShowToolbar="true" ShowAddButton="false" ShowEditButton="false" ShowDeleteButton="false"
-           ShowExtendButtons="false" ShowColumnList="true"
+           ShowExtendButtons="false" ClientTableName="test_table"
            OnQueryAsync="@OnQueryAsync">
         <TableColumns>
             <TableColumn @bind-Field="@context.DateTime" Width="180" />
@@ -66,5 +86,3 @@
         </TableColumns>
     </Table>
 </DemoBlock>
-
-

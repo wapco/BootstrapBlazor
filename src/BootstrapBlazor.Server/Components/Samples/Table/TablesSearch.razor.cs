@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -34,11 +34,27 @@ public partial class TablesSearch
 
     private SearchMode SearchModeValue { get; set; }
 
+    private bool UseSearchForm { get; set; }
+
+    private List<ISearchItem> _searchItems = [];
+
     private bool SearchModeFlag
     {
         get => SearchModeValue == SearchMode.Popup;
         set => SearchModeValue = value ? SearchMode.Popup : SearchMode.Top;
     }
+
+    private ISearchFormItemMetadata _nameSearchFormItemMetadata = new StringSearchMetadata()
+    {
+        PlaceHolder = "请输入名称搜索（支持模糊匹配）",
+        FilterAction = FilterAction.Contains,
+    };
+
+    private ISearchFormItemMetadata _addressSearchFormItemMetadata = new StringSearchMetadata()
+    {
+        PlaceHolder = "请输入地址搜索（支持模糊匹配）",
+        FilterAction = FilterAction.Contains,
+    };
 
     /// <summary>
     /// OnInitialized 方法
@@ -46,6 +62,7 @@ public partial class TablesSearch
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
         Items = Foo.GenerateFoo(FooLocalizer);
         SearchItems = new List<SelectedItem>()
         {
@@ -65,6 +82,11 @@ public partial class TablesSearch
                 Value = Localizer["SelectedItemValue2"].Value
             },
         };
+
+        _searchItems = [
+            new SearchItem(nameof(Foo.Name), typeof(string), FooLocalizer[nameof(Foo.Name)]),
+            new SearchItem(nameof(Foo.DateTime), typeof(DateTime), FooLocalizer[nameof(Foo.DateTime)])
+        ];
     }
 
     private static Task<Foo> OnAddAsync() => Task.FromResult(new Foo() { DateTime = DateTime.Now });
@@ -138,20 +160,21 @@ public partial class TablesSearch
             Items = items,
             TotalCount = total,
             IsSorted = true,
-            IsFiltered = options.Filters.Any(),
-            IsSearch = options.Searches.Any(),
-            IsAdvanceSearch = options.AdvanceSearches.Any()
+            IsFiltered = options.Filters.Count != 0,
+            IsSearch = options.Searches.Count != 0,
+            IsAdvanceSearch = options.AdvanceSearches.Count != 0
         });
     }
 
     private Task<QueryData<Foo>> OnQueryAsync(QueryPageOptions options)
     {
         // 使用内置扩展方法 ToFilter 获得过滤条件
-        // 目前 ToFilterFunc 无法解决大小写敏感问题
+        // 解决大小写敏感问题使用参数 StringComparison.OrdinalIgnoreCase
+        // 注意 EFCore 不支持 StringComparison.OrdinalIgnoreCase 需要使用 EF.Functions.Like 进行模糊搜索
         var items = Items.Where(options.ToFilterFunc<Foo>());
         if (!string.IsNullOrEmpty(options.SearchText))
         {
-            // 使用 Linq 处理
+            // 使用 Linq 处理 处理模糊搜索 处理大小写敏感问题使用参数 StringComparison.OrdinalIgnoreCase
             items = Items.Where(i =>
                 (!string.IsNullOrEmpty(i.Name) && i.Name.Contains(options.SearchText, StringComparison.OrdinalIgnoreCase))
                 || (!string.IsNullOrEmpty(i.Address) && i.Address.Contains(options.SearchText, StringComparison.OrdinalIgnoreCase)));
@@ -179,8 +202,8 @@ public partial class TablesSearch
             TotalCount = total,
             IsSorted = isSorted,
             IsFiltered = options.Filters.Count > 0,
-            IsSearch = options.CustomerSearches.Count > 0 || !string.IsNullOrEmpty(options.SearchText),
-            IsAdvanceSearch = options.CustomerSearches.Count > 0 && string.IsNullOrEmpty(options.SearchText),
+            IsSearch = options.CustomerSearches.Count > 0 || !string.IsNullOrEmpty(options.SearchText) || options.Searches.Count > 0,
+            IsAdvanceSearch = options.CustomerSearches.Count > 0 && string.IsNullOrEmpty(options.SearchText) || options.Searches.Count > 0,
         });
     }
 }

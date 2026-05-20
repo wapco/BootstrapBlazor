@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -12,7 +12,7 @@ public partial class SelectTables
 {
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     [Inject]
     [NotNull]
@@ -34,6 +34,8 @@ public partial class SelectTables
 
     private readonly SelectTableMode Model = new();
 
+    private List<Foo> _selectedFoos = [];
+
     private static string? GetTextCallback(Foo foo) => foo.Name;
 
     private List<Foo> _items = default!;
@@ -47,8 +49,8 @@ public partial class SelectTables
     {
         base.OnInitialized();
 
-        _items = Foo.GenerateFoo(LocalizerFoo);
-        _filterItems = Foo.GenerateFoo(LocalizerFoo);
+        _items = Foo.GenerateFoo(FooLocalizer);
+        _filterItems = Foo.GenerateFoo(FooLocalizer);
     }
 
     private Task<QueryData<Foo>> OnQueryAsync(QueryPageOptions options)
@@ -71,7 +73,7 @@ public partial class SelectTables
         }
 
         var count = items.Count();
-        if(options.IsPage)
+        if (options.IsPage)
         {
             items = items.Skip((options.PageIndex - 1) * options.PageItems).Take(options.PageItems);
         }
@@ -92,92 +94,4 @@ public partial class SelectTables
         [Required]
         public Foo? Foo { get; set; }
     }
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["AttributeItems"],
-            Type = "IEnumerable<TItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "TableColumns",
-            Description = Localizer["AttributeTableColumns"],
-            Type = "RenderFragment<TItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = Localizer["AttributeColor"],
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "TableMinWidth",
-            Description = Localizer["AttributeTableMinWidth"],
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = "300"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["AttributeIsDisabled"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowAppendArrow",
-            Description = Localizer["AttributeShowAppendArrow"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "GetTextCallback",
-            Description = Localizer["AttributeGetTextCallback"],
-            Type = "Func<TItem, string>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "PlaceHolder",
-            Description = Localizer["AttributePlaceHolder"],
-            Type = "string?",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Height",
-            Description = Localizer["AttributeHeight"],
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = "486"
-        },
-        new()
-        {
-            Name = "Template",
-            Description = Localizer["AttributeTemplate"],
-            Type = "RenderFragment<TItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -39,7 +39,7 @@ public sealed partial class SelectGenerics
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     private bool _showSearch;
 
@@ -58,7 +58,7 @@ public sealed partial class SelectGenerics
         TimeZoneItems = TimeZoneInfo.GetSystemTimeZones().Select(i => new SelectedItem<string>(i.Id, i.DisplayName));
         TimeZoneId = TimeZoneInfo.Local.Id;
         TimeZoneValue = TimeZoneInfo.Local.BaseUtcOffset;
-        Foos = Foo.GenerateFoo(LocalizerFoo);
+        Foos = Foo.GenerateFoo(FooLocalizer);
     }
 
     private async Task<QueryData<SelectedItem<Foo>>> OnQueryAsync(VirtualizeQueryOption option)
@@ -261,7 +261,7 @@ public sealed partial class SelectGenerics
         if (item == null)
         {
             var id = _genericItems.Count + 1;
-            foo = new Foo() { Id = id,  Address = $"New Address - {id}" };
+            foo = new Foo() { Id = id, Address = $"New Address - {id}" };
             var fooItem = new SelectedItem<Foo> { Text = v, Value = foo };
             _genericItems.Add(fooItem);
         }
@@ -271,156 +271,4 @@ public sealed partial class SelectGenerics
         }
         return foo!;
     }
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = "OnSelectedItemChanged",
-            Description = Localizer["SelectsOnSelectedItemChanged"],
-            Type = "Func<SelectedItem, Task>"
-        },
-        new()
-        {
-            Name = "OnBeforeSelectedItemChange",
-            Description = Localizer["SelectsOnBeforeSelectedItemChange"],
-            Type = "Func<SelectedItem, Task<bool>>"
-        },
-        new()
-        {
-            Name = "OnInputChangedCallback",
-            Description = Localizer["SelectsOnInputChangedCallback"],
-            Type = "Func<string, Task>"
-        },
-        new()
-        {
-            Name = "TextConvertToValueCallback",
-            Description = Localizer["SelectsTextConvertToValueCallback"],
-            Type = "Func<string, Task<TValue>>"
-        }
-    ];
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["SelectsShowLabel"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowSearch",
-            Description = Localizer["SelectsShowSearch"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["SelectsDisplayText"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Class",
-            Description = Localizer["SelectsClass"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = Localizer["SelectsColor"],
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "IsEditable",
-            Description = Localizer["SelectsIsEditable"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["SelectsIsDisabled"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["SelectsItems"],
-            Type = "IEnumerable<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "SelectItems",
-            Description = Localizer["SelectItems"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Description = Localizer["SelectsItemTemplate"],
-            Type = "RenderFragment<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Description = Localizer["SelectsChildContent"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Category",
-            Description = Localizer["SelectsCategory"],
-            Type = "SwalCategory",
-            ValueList = " — ",
-            DefaultValue = " SwalCategory.Information "
-        },
-        new()
-        {
-            Name = "Content",
-            Description = Localizer["SelectsContent"],
-            Type = "string?",
-            ValueList = " — ",
-            DefaultValue = Localizer["SelectsContentDefaultValue"]!
-        },
-        new()
-        {
-            Name = "DisableItemChangedWhenFirstRender",
-            Description = Localizer["SelectsDisableItemChangedWhenFirstRender"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        }
-    ];
 }

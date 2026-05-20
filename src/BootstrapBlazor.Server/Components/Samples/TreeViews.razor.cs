@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -33,6 +33,10 @@ public sealed partial class TreeViews
 
     private bool AutoCheckParent { get; set; }
 
+    private List<TreeViewItem<TreeFoo>> DraggableItems { get; set; } = [];
+
+    private List<TreeFoo> DraggableSourceItems { get; } = GetDraggableItems();
+
     private List<TreeViewItem<TreeFoo>> DisabledItems { get; } = GetDisabledItems();
 
     private List<TreeViewItem<TreeFoo>>? AccordionItems { get; } = TreeFoo.GetAccordionItems();
@@ -41,7 +45,7 @@ public sealed partial class TreeViews
 
     private List<TreeViewItem<TreeFoo>> CheckedItems { get; set; } = GetCheckedItems();
 
-    private static List<TreeViewItem<TreeFoo>> IconItems { get; set; } = TreeFoo.GetTreeItems();
+    private List<TreeViewItem<TreeFoo>> IconItems { get; } = TreeFoo.GetTreeItems();
 
     private List<TreeViewItem<TreeFoo>> ClickExpandItems { get; } = TreeFoo.GetTreeItems();
 
@@ -71,15 +75,75 @@ public sealed partial class TreeViews
 
     private List<TreeViewItem<TreeFoo>> TemplateItems { get; } = TreeFoo.GetTemplateItems();
 
-    private Foo Model => Foo.Generate(LocalizerFoo);
+    private Foo Model => Foo.Generate(FooLocalizer);
 
     private bool _showSearch;
 
     private string? _selectedValue;
 
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        DraggableItems = TreeFoo.CascadingTree(DraggableSourceItems);
+        DraggableItems[0].IsExpand = true;
+        if (DraggableItems.Count > 1)
+        {
+            DraggableItems[1].IsExpand = true;
+        }
+        if (DraggableItems.Count > 2)
+        {
+            DraggableItems[2].IsExpand = true;
+        }
+    }
+
     private Task OnTreeItemClick(TreeViewItem<TreeFoo> item)
     {
         Logger1.Log($"TreeItem: {item.Text} clicked");
+        return Task.CompletedTask;
+    }
+
+    private Task OnDragItemEndAsync(TreeViewDragContext<TreeFoo> context)
+    {
+        // 本例是使用静态数据模拟数据库操作的，实战中应该是更新节点的父级 Id 可能还需要更改排序字段等信息，然后重构 TreeView 数据源即可
+        // 根据 context 处理原始数据
+        var source = DraggableSourceItems.Find(i => i.Id == context.Source.Value.Id);
+        if (source != null)
+        {
+            var target = DraggableSourceItems.Find(i => i.Id == context.Target.Value.Id);
+            if (target != null)
+            {
+                source.ParentId = context.IsChildren ? target.Id : target.ParentId;
+            }
+        }
+
+        Action<TreeViewItem<TreeFoo>>? cb = null;
+        if (context.IsChildren)
+        {
+            // 自动展开目标节点
+            cb = item =>
+            {
+                if (item.Value.Id == context.Target.Value.Id)
+                {
+                    item.IsExpand = true;
+                }
+            };
+        }
+        DraggableItems = TreeFoo.CascadingTree(DraggableSourceItems, cb);
+        DraggableItems[0].IsExpand = true;
+        if (DraggableItems.Count > 1)
+        {
+            DraggableItems[1].IsExpand = true;
+        }
+        if (DraggableItems.Count > 2)
+        {
+            DraggableItems[2].IsExpand = true;
+        }
+
+        StateHasChanged();
         return Task.CompletedTask;
     }
 
@@ -118,9 +182,24 @@ public sealed partial class TreeViews
 
     private Task OnTreeItemChecked(List<TreeViewItem<TreeFoo>> items)
     {
-        Logger2.Log($"当前共选中{items.Count}项");
+        Logger2.Log($"当前共选中 {items.Count} 项");
         return Task.CompletedTask;
     }
+
+    private static List<TreeFoo> GetDraggableItems() =>
+    [
+        new() { Text = "Item A", Id = "1", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item D", Id = "4", ParentId = "1", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item E", Id = "5", ParentId = "1", Icon = "fa-solid fa-font-awesome" },
+
+        new() { Text = "Item B", Id = "2", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item F", Id = "6", ParentId = "2", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item G", Id = "9", ParentId = "2", Icon = "fa-solid fa-font-awesome" },
+
+        new() { Text = "Item C", Id = "3", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item H", Id = "7", ParentId = "3", Icon = "fa-solid fa-font-awesome" },
+        new() { Text = "Item I", Id = "8", ParentId = "3", Icon = "fa-solid fa-font-awesome" }
+    ];
 
     private static List<TreeViewItem<TreeFoo>> GetDisabledItems()
     {
@@ -217,197 +296,9 @@ public sealed partial class TreeViews
         return items;
     }
 
-    private Task<bool> OnUpdateCallbackAsync(TreeFoo foo, string? text)
+    private static Task<bool> OnUpdateCallbackAsync(TreeFoo foo, string? text)
     {
         foo.Text = text;
         return Task.FromResult(true);
     }
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private static AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Items",
-            Description = "menu data set",
-            Type = "IEnumerable<TreeViewItem>",
-            ValueList = " — ",
-            DefaultValue = "new List<TreeViewItem>(20)"
-        },
-        new()
-        {
-            Name = "ClickToggleNode",
-            Description = "Whether to expand or contract children when a node is clicked",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowCheckbox",
-            Description = "Whether to display CheckBox",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowIcon",
-            Description = "Whether to display Icon",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowSkeleton",
-            Description = "Whether to display the loading skeleton screen",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.OnTreeItemClick),
-            Description = "Callback delegate when tree control node is clicked",
-            Type = "Func<TreeViewItem, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.OnTreeItemChecked),
-            Description = "Callback delegate when tree control node is selected",
-            Type = "Func<TreeViewItem, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.OnExpandNodeAsync),
-            Description = "Tree control node expand callback delegate",
-            Type = "Func<TreeViewItem, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.IsDisabled),
-            Description = "Disable tree view",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.IsVirtualize),
-            Description = "Virtualize",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.CanExpandWhenDisabled),
-            Description = "Whether to expand when the control node is disabled",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.MaxSelectedCount),
-            Description = "The maximum count of selected node",
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = "0"
-        },
-        new()
-        {
-            Name = nameof(TreeView<string>.OnMaxSelectedCountExceed),
-            Description = "Select the callback method when the maximum number of nodes is reached",
-            Type = "Func<Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
-
-    private static AttributeItem[] GetTreeItemAttributes() =>
-    [
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.Items),
-            Description = "Child node data source",
-            Type = "List<TreeViewItem<TItem>>",
-            ValueList = " — ",
-            DefaultValue = "new ()"
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.Text),
-            Description = "Display text",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.Icon),
-            Description = "Show icon",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.CssClass),
-            Description = "Node custom style",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.CheckedState),
-            Description = "Is selected",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.IsDisabled),
-            Description = "Is disabled",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.IsExpand),
-            Description = "Whether to expand",
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.HasChildren),
-            Description = "Whether there are child nodes",
-            Type = "bool",
-            ValueList = " true|false ",
-            DefaultValue = " false "
-        },
-        new()
-        {
-            Name = nameof(TreeViewItem<TreeFoo>.Template),
-            Description = "Child node template",
-            Type = nameof(RenderFragment),
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

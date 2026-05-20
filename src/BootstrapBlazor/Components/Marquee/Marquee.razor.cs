@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,45 +6,51 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Marquee 字幕滚动组件
+/// <para lang="zh">Marquee 字幕滚动组件</para>
+/// <para lang="en">Marquee scrolling component</para>
 /// </summary>
 public partial class Marquee
 {
     /// <summary>
-    /// 获得/设置 组件值 显示文本 默认 Empty
+    /// <para lang="zh">获得/设置 组件值 显示文本 默认 Empty</para>
+    /// <para lang="en">Gets or sets the component's display text. Default is Empty.</para>
     /// </summary>
     [Parameter]
     public string? Text { get; set; }
 
     /// <summary>
-    /// 获得/设置 组件值 文本颜色 默认 #000
-    /// <para>支持16进制和颜色名称</para>
+    /// <para lang="zh">获得/设置 组件值 文本颜色 默认 #000 支持16进制和颜色名称</para>
+    /// <para lang="en">Gets or sets the component's text color. Default is #000 Supports hexadecimal and color names</para>
     /// </summary>
     [Parameter]
     public string Color { get; set; } = "#000";
 
     /// <summary>
-    /// 获得/设置 组件值 背景颜色 默认 #fff
-    /// <para>支持16进制和颜色名称</para>
+    /// <para lang="zh">获得/设置 组件值 背景颜色 默认 #fff 支持16进制和颜色名称</para>
+    /// <para lang="en">Gets or sets the component's background color. Default is #fff Supports hexadecimal and color names</para>
     /// </summary>
     [Parameter]
     public string BackgroundColor { get; set; } = "#fff";
 
     /// <summary>
-    /// 获得/设置 组件值 文本大小 默认 72px
+    /// <para lang="zh">获得/设置 组件值 文本大小 默认 72px</para>
+    /// <para lang="en">Gets or sets the component's text size. Default is 72px</para>
     /// </summary>
     [Parameter]
     public int FontSize { get; set; } = 72;
 
     /// <summary>
-    /// 获得/设置 组件值 动画时间 默认 14s
-    /// <para>值越小滚动越快</para>
+    /// <para lang="zh">获得/设置 组件值 动画时间 默认 14s <para>值越小滚动越快</para>
+    ///</para>
+    /// <para lang="en">Gets or sets the component's animation duration. Default is 14s <para>The smaller the value, the faster the scroll</para>
+    ///</para>
     /// </summary>
     [Parameter]
     public int Duration { get; set; } = 14;
 
     /// <summary>
-    /// 获得/设置 组件值 滚动方向 默认 LeftToRight
+    /// <para lang="zh">获得/设置 组件值 滚动方向 默认 LeftToRight</para>
+    /// <para lang="en">Gets or sets the component's scroll direction. Default is LeftToRight</para>
     /// </summary>
     [Parameter]
     public MarqueeDirection Direction { get; set; }

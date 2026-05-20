@@ -1,6 +1,6 @@
-﻿@page "/layout"
+@page "/layout"
 @inject IStringLocalizer<Layouts> Localizer
-@inject IStringLocalizer<Menus> LocalizerMenu
+@inject IStringLocalizer<Menus> MenuLocalizer
 
 <h3>@Localizer["LayoutsTitle"]</h3>
 
@@ -189,4 +189,4 @@
     </ul>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<AttributeTable Type="typeof(Layout)"></AttributeTable>

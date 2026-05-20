@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -26,12 +26,12 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void Items_Ok()
     {
-        var cut = Context.RenderComponent<AutoFill<Foo>>();
+        var cut = Context.Render<AutoFill<Foo>>();
         Assert.Contains("<div class=\"auto-complete auto-fill\"", cut.Markup);
         var menus = cut.FindAll(".dropdown-item");
         Assert.Single(menus);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowNoDataTip, false);
         });
@@ -42,7 +42,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void ShowLabel_Ok()
     {
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.ShowLabel, true);
             pb.Add(a => a.Value, Model);
@@ -56,7 +56,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public void ItemTemplate_Ok()
     {
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Items, items);
             pb.Add(a => a.ItemTemplate, item => builder =>
@@ -74,7 +74,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     {
         Foo? val = null;
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Items, items);
             pb.Add(a => a.OnBlurAsync, v =>
@@ -94,7 +94,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public async Task OnCustomFilter_Ok()
     {
         var filtered = false;
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Value, Model);
             pb.Add(a => a.Items, Items);
@@ -108,7 +108,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => cut.Instance.TriggerFilter("t"));
         Assert.True(filtered);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(pb => pb.OnCustomFilter, null!);
         });
@@ -120,13 +120,13 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void SkipEnter_Ok()
     {
-        var cut = Context.RenderComponent<AutoComplete>(pb =>
+        var cut = Context.Render<AutoComplete>(pb =>
         {
             pb.Add(a => a.SkipEnter, false);
         });
         cut.DoesNotContain("data-bb-skip-enter");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.SkipEnter, true);
         });
@@ -136,13 +136,13 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void SkipEsc_Ok()
     {
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.SkipEsc, false);
         });
         cut.DoesNotContain("data-bb-skip-esc");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.SkipEsc, true);
         });
@@ -152,13 +152,13 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void ScrollIntoViewBehavior_Ok()
     {
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Smooth);
         });
         cut.DoesNotContain("data-bb-scroll-behavior");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Auto);
         });
@@ -169,7 +169,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public async Task OnSelectedItemChanged_Ok()
     {
         Foo? selectedItem = null;
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Value, Model);
             pb.Add(a => a.Items, Items);
@@ -187,21 +187,21 @@ public class AutoFillTest : BootstrapBlazorTestBase
     [Fact]
     public void OnGetDisplayText_Ok()
     {
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Value, Model);
             pb.Add(a => a.Items, new List<Foo> { null!, new() { Name = "Test" } });
             pb.Add(a => a.OnGetDisplayText, foo => foo?.Name);
         });
         var input = cut.Find("input");
-        Assert.Equal("张三 1000", input.Attributes["value"]?.Value);
+        Assert.Null(input.Attributes["value"]?.Value);
     }
 
     [Fact]
     public async Task IgnoreCase_Ok()
     {
         var items = new List<Foo>() { new() { Name = "task1" }, new() { Name = "task2" }, new() { Name = "Task3" }, new() { Name = "Task4" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(builder =>
+        var cut = Context.Render<AutoFill<Foo>>(builder =>
         {
             builder.Add(a => a.Items, items);
             builder.Add(a => a.IgnoreCase, true);
@@ -212,7 +212,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         var menus = cut.FindAll(".dropdown-item");
         Assert.Equal(4, menus.Count);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DisplayCount, 2);
         });
@@ -220,7 +220,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Equal(2, menus.Count);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IgnoreCase, false);
             pb.Add(a => a.DisplayCount, null);
@@ -234,7 +234,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public async Task IsLikeMatch_Ok()
     {
         var items = new List<Foo>() { new() { Name = "task1" }, new() { Name = "task2" }, new() { Name = "Task3" }, new() { Name = "Task4" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(builder =>
+        var cut = Context.Render<AutoFill<Foo>>(builder =>
         {
             builder.Add(a => a.Items, items);
             builder.Add(a => a.IsLikeMatch, false);
@@ -245,7 +245,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         var menus = cut.FindAll(".dropdown-item");
         Assert.Equal(4, menus.Count);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DisplayCount, 2);
         });
@@ -253,7 +253,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Equal(2, menus.Count);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsLikeMatch, true);
             pb.Add(a => a.DisplayCount, null);
@@ -262,7 +262,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Equal(4, menus.Count);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnGetDisplayText, null);
             pb.Add(a => a.IsLikeMatch, false);
@@ -271,7 +271,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Single(menus);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnGetDisplayText, null);
             pb.Add(a => a.IsLikeMatch, true);
@@ -280,7 +280,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Single(menus);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnGetDisplayText, foo => null);
             pb.Add(a => a.IsLikeMatch, false);
@@ -289,7 +289,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         menus = cut.FindAll(".dropdown-item");
         Assert.Single(menus);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnGetDisplayText, foo => null);
             pb.Add(a => a.IsLikeMatch, true);
@@ -303,13 +303,13 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public void ShowDropdownListOnFocus_Ok()
     {
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Items, items);
         });
         cut.Contains("data-bb-auto-dropdown-focus=\"true\"");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowDropdownListOnFocus, false);
         });
@@ -320,7 +320,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public async Task IsVirtualize_Items()
     {
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.IsLikeMatch, true);
             pb.Add(a => a.Items, items);
@@ -339,7 +339,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public async Task IsVirtualize_Items_Clearable_Ok()
     {
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.Items, items);
             pb.Add(a => a.Value, items[0]);
@@ -347,12 +347,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
             pb.Add(a => a.IsClearable, true);
             pb.Add(a => a.OnGetDisplayText, f => f?.Name);
         });
-        await cut.InvokeAsync(() => cut.Instance.TriggerFilter("2"));
-
-        // 点击 Clear 按钮
-        var button = cut.Find(".clear-icon");
-        await cut.InvokeAsync(() => button.Click());
-        cut.SetParametersAndRender();
+        await cut.InvokeAsync(() => cut.Instance.TriggerFilter(""));
 
         var input = cut.Find(".form-control");
         Assert.Null(input.NodeValue);
@@ -362,7 +357,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
     public void Placeholder_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.OnQueryAsync, option =>
             {
@@ -380,7 +375,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         });
         cut.Contains("<div class=\"dropdown-item\"><div class=\"is-ph\"></div></div>");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.RowHeight, 35f);
         });
@@ -396,7 +391,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
         var searchText = string.Empty;
         var cleared = false;
         var items = new List<Foo>() { new() { Name = "test1" }, new() { Name = "test2" } };
-        var cut = Context.RenderComponent<AutoFill<Foo>>(pb =>
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
         {
             pb.Add(a => a.OnQueryAsync, option =>
             {
@@ -425,16 +420,15 @@ public class AutoFillTest : BootstrapBlazorTestBase
         Assert.Equal("2", searchText);
         Assert.Contains("<div>test2</div>", cut.Markup);
 
+        // 测试 Clear 清空逻辑
         query = false;
-        // 点击 Clear 按钮
-        var button = cut.Find(".clear-icon");
-        await cut.InvokeAsync(() => button.Click());
+        await cut.InvokeAsync(() => cut.Instance.TriggerFilter(""));
 
         Assert.True(query);
         Assert.True(cleared);
 
         // OnQueryAsync 返回空集合
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnQueryAsync, option =>
             {
@@ -445,14 +439,14 @@ public class AutoFillTest : BootstrapBlazorTestBase
                 });
             });
         });
-        await cut.InvokeAsync(() => button.Click());
+        await cut.InvokeAsync(() => cut.Instance.TriggerFilter(""));
     }
 
     [Fact]
     public void Clearable_Ok()
     {
         var items = new List<int?>() { 1, 2 };
-        var cut = Context.RenderComponent<AutoFill<int?>>(pb =>
+        var cut = Context.Render<AutoFill<int?>>(pb =>
         {
             pb.Add(a => a.Items, items);
             pb.Add(a => a.Value, items[0]);
@@ -462,7 +456,6 @@ public class AutoFillTest : BootstrapBlazorTestBase
         });
         cut.Contains("clear-icon");
     }
-
 
     [Fact]
     public async Task Validate_Ok()
@@ -475,7 +468,7 @@ public class AutoFillTest : BootstrapBlazorTestBase
             new() { Name = "test1" },
             new() { Name = "test2" }
         };
-        var cut = Context.RenderComponent<ValidateForm>(builder =>
+        var cut = Context.Render<ValidateForm>(builder =>
         {
             builder.Add(a => a.OnValidSubmit, context =>
             {
@@ -512,12 +505,54 @@ public class AutoFillTest : BootstrapBlazorTestBase
         Assert.Equal("Test-Select1", model.Value.Name);
 
         // 点击 Clear 按钮
-        var button = cut.Find(".clear-icon");
-        await cut.InvokeAsync(() => button.Click());
+        var autoFill = cut.FindComponent<AutoFill<Foo>>();
+        await cut.InvokeAsync(() => autoFill.Instance.TriggerFilter(""));
 
         var form = cut.Find("form");
         form.Submit();
         Assert.True(invalid);
+    }
+
+    [Fact]
+    public async Task IsAutoClearWhenInvalid_Ok()
+    {
+        var model = new MockModel() { Value = new Foo() { Name = "Test-Select1" } };
+        var items = new List<Foo>()
+        {
+            new() { Name = "test1" },
+            new() { Name = "test2" }
+        };
+        var cut = Context.Render<AutoFill<Foo>>(pb =>
+        {
+            pb.Add(a => a.Items, items);
+            pb.Add(a => a.Value, model.Value);
+            pb.Add(a => a.IsAutoClearWhenInvalid, true);
+            pb.Add(a => a.OnGetDisplayText, f => f?.Name);
+        });
+        // 设置一个无效值
+        await cut.InvokeAsync(() => cut.Instance.TriggerChange("Invalid-Value"));
+
+        // 触发 OnBlur 回调
+        await cut.InvokeAsync(() => cut.Instance.TriggerBlur());
+
+        // 值应被清空
+        Assert.Null(cut.Instance.Value);
+
+        // 设定 IsAutoClearWhenInvalid false
+        cut.Render(pb =>
+        {
+            pb.Add(a => a.IsAutoClearWhenInvalid, false);
+            pb.Add(a => a.Value, model.Value);
+        });
+
+        // 设置一个无效值
+        await cut.InvokeAsync(() => cut.Instance.TriggerChange("Invalid-Value"));
+
+        // 触发 OnBlur 回调
+        await cut.InvokeAsync(() => cut.Instance.TriggerBlur());
+
+        // 值不应被清空
+        Assert.NotNull(cut.Instance.Value);
     }
 
     class MockModel

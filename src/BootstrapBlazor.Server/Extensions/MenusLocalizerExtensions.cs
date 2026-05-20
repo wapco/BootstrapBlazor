@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -86,9 +86,23 @@ internal static class MenusLocalizerExtensions
         item = new DemoMenuItem()
         {
             Text = Localizer["SocketComponents"],
-            Icon = "fa-fw fa-solid fa-square-binary text-danger"
+            Icon = "fa-fw fa-solid fa-satellite-dish text-danger"
         };
         AddSocket(item);
+
+        item = new DemoMenuItem()
+        {
+            Text = Localizer["ModbusComponents"],
+            Icon = "fa-fw fa-solid fa-satellite-dish text-danger"
+        };
+        AddModbus(item);
+
+        item = new DemoMenuItem()
+        {
+            Text = Localizer["SerialPortComponents"],
+            Icon = "fa-fw fa-solid fa-satellite-dish text-danger"
+        };
+        AddSerialPort(item);
 
         item = new DemoMenuItem()
         {
@@ -209,18 +223,65 @@ internal static class MenusLocalizerExtensions
             {
                 new()
                 {
-                    IsNew = true,
-                    Text = Localizer["SocketReceive"],
-                    Url = "socket/receive"
+                    Text = Localizer["TcpSocketFactory"],
+                    Url = "socket-factory"
                 },
                 new()
                 {
-                    IsNew = true,
-                    Text = Localizer["SocketDataAdapter"],
+                    Text = Localizer["SocketManualReceive"],
+                    Url = "socket/manual-receive"
+                },
+                new()
+                {
+                    Text = Localizer["SocketAutoReceive"],
+                    Url = "socket/auto-receive"
+                },
+                new()
+                {
+                    Text = Localizer["DataPackageAdapter"],
                     Url = "socket/adapter"
+                },
+                new()
+                {
+                    Text = Localizer["SocketAutoConnect"],
+                    Url = "socket/auto-connect"
+                },
+                new()
+                {
+                    Text = Localizer["SocketDataEntity"],
+                    Url = "socket/data-entity"
                 }
             };
-            AddBadge(item, count: 1);
+
+            AddBadge(item, count: 2);
+        }
+
+        void AddModbus(DemoMenuItem item)
+        {
+            item.Items = new List<DemoMenuItem>
+            {
+                new()
+                {
+                    Text = Localizer["ModbusFactory"],
+                    Url = "modbus-factory"
+                }
+            };
+
+            AddBadge(item, count: 2);
+        }
+
+        void AddSerialPort(DemoMenuItem item)
+        {
+            item.Items = new List<DemoMenuItem>
+            {
+                new()
+                {
+                    Text = Localizer["SerialPortFactory"],
+                    Url = "serial-port-factory"
+                }
+            };
+
+            AddBadge(item, count: 2);
         }
 
         void AddQuickStar(DemoMenuItem item)
@@ -237,6 +298,11 @@ internal static class MenusLocalizerExtensions
                     Text = Localizer["Install"],
                     Url = "install",
                     Match = NavLinkMatch.All
+                },
+                new()
+                {
+                    Text = Localizer["HostMode"],
+                    Url = "host-model"
                 },
                 new()
                 {
@@ -267,27 +333,6 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["GlobalOption"],
                     Url = "global-option"
-                },
-                new()
-                {
-                    Text = Localizer["WebAppBlazor"],
-                    Url = "install-webapp",
-                },
-                new()
-                {
-                    Text = Localizer["ServerBlazor"],
-                    Url = "install-server",
-                },
-                new()
-                {
-                    Text = Localizer["ClientBlazor"],
-                    Url = "install-wasm",
-                },
-                new()
-                {
-                    Text = Localizer["MauiBlazor"],
-                    Url = "install-maui",
-                    Match = NavLinkMatch.All
                 },
                 new()
                 {
@@ -455,6 +500,21 @@ internal static class MenusLocalizerExtensions
                     Match = NavLinkMatch.All,
                     Text = Localizer["Select"],
                     Url = "select"
+                },
+                new()
+                {
+                    Text = Localizer["SelectRegion"],
+                    Url = "select-region"
+                },
+                new()
+                {
+                    Text = Localizer["SelectProvince"],
+                    Url = "select-province"
+                },
+                new()
+                {
+                    Text = Localizer["SelectCity"],
+                    Url = "select-city"
                 },
                 new()
                 {
@@ -666,6 +726,11 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
+                    Text = Localizer["HikVision"],
+                    Url = "hik-vision"
+                },
+                new()
+                {
                     Text = Localizer["GroupBox"],
                     Url = "group-box"
                 },
@@ -721,9 +786,13 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    IsNew = true,
                     Text = Localizer["OfficeViewer"],
                     Url = "office-viewer"
+                },
+                new()
+                {
+                    Text = Localizer["EmbedPdf"],
+                    Url = "embed-pdf"
                 },
                 new()
                 {
@@ -732,7 +801,6 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    IsNew = true,
                     Text = Localizer["PdfViewer"],
                     Url = "pdf-viewer"
                 },
@@ -800,6 +868,11 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["Tag"],
                     Url = "tag"
+                },
+                new()
+                {
+                    Text = Localizer["TaskDashBoard"],
+                    Url = "task-board"
                 },
                 new()
                 {
@@ -1237,6 +1310,11 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
+                    Text = Localizer["NetworkMonitor"],
+                    Url = "network-monitor"
+                },
+                new()
+                {
                     Text = Localizer["Light"],
                     Url = "light"
                 },
@@ -1314,6 +1392,11 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["SweetAlert"],
                     Url = "sweet-alert"
+                },
+                new()
+                {
+                    Text = Localizer["Terms"],
+                    Url = "term"
                 },
                 new()
                 {
@@ -1439,6 +1522,11 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
+                    Text = Localizer["Navbar"],
+                    Url = "navbar"
+                },
+                new()
+                {
                     Text = Localizer["Row"],
                     Url = "row"
                 },
@@ -1466,6 +1554,11 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["Stack"],
                     Url = "stack"
+                },
+                new()
+                {
+                    Text = Localizer["Toolbar"],
+                    Url = "toolbar"
                 }
             };
             AddBadge(item);
@@ -1519,6 +1612,11 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["Dispatch"],
                     Url = "dispatch"
+                },
+                new()
+                {
+                    Text = Localizer["Dom2ImageService"],
+                    Url = "dom2image"
                 },
                 new()
                 {
@@ -1587,14 +1685,13 @@ internal static class MenusLocalizerExtensions
                 },
                 new()
                 {
-                    Text = Localizer["PrintService"],
-                    Url = "print-service"
+                    Text = Localizer["OpcDaService"],
+                    Url = "opc-da"
                 },
                 new()
                 {
-                    IsNew = true,
-                    Text = Localizer["TcpSocketFactory"],
-                    Url = "socket-factory"
+                    Text = Localizer["PrintService"],
+                    Url = "print-service"
                 },
                 new()
                 {
@@ -1653,6 +1750,11 @@ internal static class MenusLocalizerExtensions
                 {
                     Text = Localizer["MaterialIcon"],
                     Url = "md-icon"
+                },
+                new()
+                {
+                    Text = Localizer["FluentSystemIcon"],
+                    Url = "fluent-icon"
                 },
                 new()
                 {

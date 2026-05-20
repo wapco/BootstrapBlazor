@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -67,6 +67,9 @@ public static class ServiceCollectionSharedExtensions
         // 增加 Html2Image 导出服务
         services.AddBootstrapBlazorHtml2ImageService();
 
+        // 增加 Dom2Image 导出服务
+        services.AddBootstrapBlazorDom2ImageService();
+
         // 增加 WinBox 弹窗服务
         services.AddBootstrapBlazorWinBoxService();
 
@@ -86,13 +89,16 @@ public static class ServiceCollectionSharedExtensions
         services.AddBootstrapBlazorTableExportService();
 
         // 增加离线 IP 定位服务
-        services.AddBootstrapBlazorIP2RegionfService();
+        services.AddBootstrapBlazorIP2RegionService();
 
         // 增加 JuHe 定位服务
         services.AddBootstrapBlazorJuHeIpLocatorService();
 
-        // 增加 ITcpSocketFactory 服务
-        services.AddBootstrapBlazorTcpSocketFactory();
+        // 增加 IRegionService
+        services.AddBootstrapBlazorRegionService();
+
+        // 增加密钥存储配置
+        services.AddDataProtection();
 
         // 增加 PetaPoco ORM 数据服务操作类
         // 需要时打开下面代码

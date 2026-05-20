@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,7 +6,8 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// NumberFilter component
+/// <para lang="zh">NumberFilter 组件</para>
+/// <para lang="en">NumberFilter component</para>
 /// </summary>
 public partial class NumberFilter<TType>
 {
@@ -21,7 +22,8 @@ public partial class NumberFilter<TType>
         .Build();
 
     /// <summary>
-    /// Gets or sets the filter candidate items. It is recommended to use static data to avoid performance loss.
+    /// <para lang="zh">获得/设置 过滤候选项集合 建议使用静态数据以避免性能损耗</para>
+    /// <para lang="en">Gets or sets the filter candidate items. It is recommended to use static data to avoid performance loss</para>
     /// </summary>
     [Parameter]
     public IEnumerable<SelectedItem>? Items { get; set; }
@@ -46,7 +48,7 @@ public partial class NumberFilter<TType>
     }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IFilterAction.Reset"/>
     /// </summary>
     public override void Reset()
     {
@@ -60,9 +62,8 @@ public partial class NumberFilter<TType>
     }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IFilterAction.GetFilterConditions"/>
     /// </summary>
-    /// <returns></returns>
     public override FilterKeyValueAction GetFilterConditions()
     {
         var filter = new FilterKeyValueAction();
@@ -90,7 +91,7 @@ public partial class NumberFilter<TType>
     }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IFilterAction.SetFilterConditionsAsync(FilterKeyValueAction)"/>
     /// </summary>
     public override async Task SetFilterConditionsAsync(FilterKeyValueAction filter)
     {

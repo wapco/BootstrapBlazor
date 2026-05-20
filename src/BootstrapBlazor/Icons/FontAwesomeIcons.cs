@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -152,6 +152,7 @@ internal static class FontAwesomeIcons
 
         { ComponentIcons.TableAddButtonIcon, "fa-solid fa-plus" },
         { ComponentIcons.TableEditButtonIcon, "fa-regular fa-pen-to-square" },
+        { ComponentIcons.TableMoreButtonIcon, "fa-solid fa-ellipsis" },
         { ComponentIcons.TableDeleteButtonIcon, "fa-solid fa-xmark" },
         { ComponentIcons.TableRefreshButtonIcon, "fa-solid fa-arrows-rotate" },
         { ComponentIcons.TableCardViewButtonIcon, "fa-solid fa-bars" },

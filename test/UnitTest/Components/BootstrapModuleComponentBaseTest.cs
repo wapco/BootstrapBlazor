@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -12,16 +12,16 @@ public class BootstrapModuleComponentBaseTest : BootstrapBlazorTestBase
     [Fact]
     public void InvokeVoidAsync_Ok()
     {
-        var cut = Context.RenderComponent<MockComponent>();
+        var cut = Context.Render<MockComponent>();
         cut.InvokeAsync(() => cut.Instance.InvokeVoidAsyncTest());
         Assert.True(cut.Instance.InvokeVoidRunner);
     }
 
     [Fact]
-    public void InvokeAsync_Ok()
+    public async Task InvokeAsync_Ok()
     {
-        var cut = Context.RenderComponent<MockObjectReferenceComponent>();
-        cut.InvokeAsync(() => cut.Instance.InvokeAsyncTest());
+        var cut = Context.Render<MockObjectReferenceComponent>();
+        await cut.InvokeAsync(() => cut.Instance.InvokeAsyncTest());
         Assert.True(cut.Instance.InvokeRunner);
     }
 
@@ -32,11 +32,11 @@ public class BootstrapModuleComponentBaseTest : BootstrapBlazorTestBase
 
         public async Task InvokeVoidAsyncTest()
         {
-            await base.InvokeVoidAsync(Id);
-            await base.InvokeVoidAsync(Id, TimeSpan.FromMinutes(1));
+            await InvokeVoidAsync(Id);
+            await InvokeVoidAsync(Id, TimeSpan.FromMinutes(1));
 
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(1000);
-            await base.InvokeVoidAsync(Id, cancellationTokenSource.Token);
+            await InvokeVoidAsync(Id, cancellationTokenSource.Token);
 
             InvokeVoidRunner = true;
         }
@@ -49,11 +49,11 @@ public class BootstrapModuleComponentBaseTest : BootstrapBlazorTestBase
 
         public async Task InvokeAsyncTest()
         {
-            await base.InvokeAsync<string>(Id);
-            await base.InvokeAsync<string>(Id, TimeSpan.FromMinutes(1));
+            await InvokeAsync<string>(Id);
+            await InvokeAsync<string>(Id, TimeSpan.FromMinutes(1));
 
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(1000);
-            await base.InvokeAsync<string>(Id, cancellationTokenSource.Token);
+            await InvokeAsync<string>(Id, cancellationTokenSource.Token);
 
             InvokeRunner = true;
         }

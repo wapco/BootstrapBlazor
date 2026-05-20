@@ -186,6 +186,13 @@ public partial class SortableLists
         return Task.CompletedTask;
     }
 
+    private Task OnAddClone(SortableEvent @event)
+    {
+        var item = ItemsCloneLeft[@event.OldIndex];
+        ItemsCloneRight.Insert(@event.NewIndex, new Foo() { Name = item.Name });
+        return Task.CompletedTask;
+    }
+
     private Task OnUpdate2(SortableEvent @event)
     {
         var oldIndex = @event.OldIndex;
@@ -309,40 +316,4 @@ public partial class SortableLists
         AddItems3.RemoveAt(@event.OldIndex);
         return Task.CompletedTask;
     }
-
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = nameof(SortableList.Option),
-            Description = Localizer["AttributeSortableListOption"],
-            Type = "SortableOption",
-            ValueList = " — ",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(SortableList.OnAdd),
-            Description = Localizer["AttributeOnAdd"],
-            Type = "Func<SortableEvent, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(SortableList.OnUpdate),
-            Description = Localizer["AttributeOnUpdate"],
-            Type = "Func<SortableEvent, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(SortableList.OnRemove),
-            Description = Localizer["AttributeOnRemove"],
-            Type = "Func<SortableEvent, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

@@ -1,4 +1,4 @@
-﻿@page "/tab"
+@page "/tab"
 @inject IStringLocalizer<Tabs> Localizer
 @inject ToastService ToastService
 
@@ -36,6 +36,10 @@
     op.Binders.Add("/settings/roles", new TabItemOptionAttribute() { Text = "Roles", Icon = "fas fa-user-group" });
     op.Binders.Add("/settings/users", new TabItemOptionAttribute() { Text = "Users", Icon = "fas fa-users" });
 })</Pre>
+
+<p class="code-label">@((MarkupString)Localizer["TabsOnTabHeaderTextLocalizerTitle"].Value)</p>
+
+<p>@((MarkupString)Localizer["TabsOnTabHeaderTextLocalizerIntro"].Value)</p>
 
 <p class="code-label">@Localizer["TabsQATitle"]</p>
 
@@ -518,6 +522,4 @@ private void Navigation()
     </Tab>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" Title="@Localizer["AttTitle"]" />
-
-<MethodTable Items="@GetMethods()" Title="@Localizer["MethodTitle"]" />
+<AttributeTable Type="@typeof(Tab)" />

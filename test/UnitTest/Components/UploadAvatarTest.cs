@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -15,7 +15,7 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
     public async Task AvatarUpload_Ok()
     {
         UploadFile? uploadFile = null;
-        var cut = Context.RenderComponent<AvatarUpload<string>>(pb =>
+        var cut = Context.Render<AvatarUpload<string>>(pb =>
         {
             pb.Add(a => a.CanPreviewCallback, null);
             pb.Add(a => a.IsMultiple, true);
@@ -34,7 +34,7 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
         })));
 
         // Height/Width
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Height, 40);
             pb.Add(a => a.Width, 50);
@@ -42,26 +42,26 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
         cut.Contains("width: 50px;");
         cut.Contains("height: 40px;");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsCircle, true);
         });
         cut.Contains("height: 50px;");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Height, 0);
         });
         cut.Contains("height: 50px;");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.BorderRadius, "10px");
         });
         cut.Contains("--bb-upload-item-border-radius: 10px;");
 
         // DefaultFileList
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnChange, null);
             pb.Add(a => a.ShowProgress, true);
@@ -76,18 +76,21 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
             new()
         })));
 
+        // call preview
+        await cut.InvokeAsync(() => cut.Instance.Preview());
+
         // upload-item-delete
         var button = cut.Find(".upload-item-delete");
         await cut.InvokeAsync(() => button.Click());
 
         cut.Contains("btn-browser");
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsDisabled, true);
         });
 
         // IsUploadButtonAtFirst
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsUploadButtonAtFirst, true);
             pb.Add(a => a.IsDisabled, false);
@@ -96,11 +99,36 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task Preview_Ok()
+    {
+        var cut = Context.Render<AvatarUpload<string>>(pb =>
+        {
+            pb.Add(a => a.DefaultFileList, new List<UploadFile>()
+            {
+                new UploadFile() { PrevUrl = "./sample/preview.jpg" }
+            });
+        });
+
+        var action = cut.Find(".upload-item-actions");
+        await cut.InvokeAsync(() => action.Click());
+
+        cut.Render(pb =>
+        {
+            pb.Add(a => a.DefaultFileList, new List<UploadFile>()
+            {
+                new UploadFile() { PrevUrl = "" }
+            });
+        });
+        action = cut.Find(".upload-item-actions");
+        await cut.InvokeAsync(() => action.Click());
+    }
+
+    [Fact]
     public async Task AvatarUpload_ValidateForm_Ok()
     {
         var invalid = false;
         var foo = new Foo();
-        var cut = Context.RenderComponent<ValidateForm>(pb =>
+        var cut = Context.Render<ValidateForm>(pb =>
         {
             pb.Add(a => a.Model, foo);
             pb.AddChildContent<AvatarUpload<string>>(pb =>
@@ -140,14 +168,14 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
 
         // 设置 Disabled 取消校验
         var upload = cut.FindComponent<AvatarUpload<string>>();
-        upload.SetParametersAndRender(pb =>
+        upload.Render(pb =>
         {
             pb.Add(a => a.IsDisabled, true);
         });
 
         Assert.DoesNotContain("is-invalid", upload.Markup);
 
-        upload.SetParametersAndRender(pb =>
+        upload.Render(pb =>
         {
             pb.Add(a => a.IsDisabled, false);
         });
@@ -161,7 +189,7 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
     [Fact]
     public async Task DropUpload_ShowProgress_Ok()
     {
-        var cut = Context.RenderComponent<AvatarUpload<string>>(pb =>
+        var cut = Context.Render<AvatarUpload<string>>(pb =>
         {
             pb.Add(a => a.ShowProgress, true);
             pb.Add(a => a.OnChange, async file =>
@@ -198,7 +226,7 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
     {
         bool? invalid = null;
         var foo = new Person();
-        var cut = Context.RenderComponent<ValidateForm>(pb =>
+        var cut = Context.Render<ValidateForm>(pb =>
         {
             pb.Add(a => a.Model, foo);
             pb.AddChildContent<AvatarUpload<List<IBrowserFile>>>(pb =>
@@ -256,6 +284,26 @@ public class UploadAvatarTest : BootstrapBlazorTestBase
         var items = cut.FindAll(".upload-item-delete");
         Assert.Equal(2, items.Count);
         await cut.InvokeAsync(() => items[1].Click());
+    }
+
+    [Fact]
+    public void UploadValidateItem_Ok()
+    {
+        var type = Type.GetType("BootstrapBlazor.Components.UploadValidateItem, BootstrapBlazor");
+        Assert.NotNull(type);
+
+        var instance = Activator.CreateInstance(type, ["addId", "mock_ErrorMessage"]);
+        var propertyInfo = type.GetProperty("Id");
+        Assert.NotNull(propertyInfo);
+
+        var v = propertyInfo.GetValue(instance, null);
+        Assert.Equal("addId", v);
+
+        propertyInfo = type.GetProperty("ErrorMessage");
+        Assert.NotNull(propertyInfo);
+
+        v = propertyInfo.GetValue(instance, null);
+        Assert.Equal("mock_ErrorMessage", v);
     }
 
     private class Person

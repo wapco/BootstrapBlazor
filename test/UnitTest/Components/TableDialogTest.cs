@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -20,7 +20,7 @@ public class TableDialogTest : TableDialogTestBase
         options.CurrentValue.ToastDelay = 0;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -37,8 +37,11 @@ public class TableDialogTest : TableDialogTestBase
                 pb.Add(a => a.EditDialogItemsPerRow, 2);
                 pb.Add(a => a.EditDialogRowType, RowType.Inline);
                 pb.Add(a => a.EditDialogLabelAlign, Alignment.Center);
+                pb.Add(a => a.EditDialogLabelWidth, 200);
                 pb.Add(a => a.IsMultipleSelect, true);
                 pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.CloseConfirmTitle, "close-confirm-title");
+                pb.Add(a => a.CloseConfirmContent, "close-confirm-content");
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -75,6 +78,7 @@ public class TableDialogTest : TableDialogTestBase
         cut.Contains("modal-lg");
         cut.DoesNotContain("btn-maximize");
         cut.Contains("is-draggable");
+        cut.Contains("--bb-row-label-width: 200px;");
 
         // 编辑弹窗逻辑
         var form = cut.Find(".modal-body form");
@@ -87,7 +91,7 @@ public class TableDialogTest : TableDialogTestBase
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
         // 自定义数据服务取消回调测试
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DataService, new MockEFCoreDataService(localizer));
             pb.Add(a => a.BeforeShowEditDialogCallback, new Action<ITableEditDialogOption<Foo>>(o => o.DisableAutoSubmitFormByEnter = true));
@@ -100,7 +104,7 @@ public class TableDialogTest : TableDialogTestBase
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
         // 自定义数据服务取消回调测试
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.EditDialogFullScreenSize, FullScreenSize.Always);
         });
@@ -110,7 +114,7 @@ public class TableDialogTest : TableDialogTestBase
 
         var closed = false;
         // 测试 CloseCallback
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.EditDialogCloseAsync, (model, result) =>
             {
@@ -123,7 +127,7 @@ public class TableDialogTest : TableDialogTestBase
         Assert.True(closed);
 
         // IsTracking mode
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsTracking, true);
         });
@@ -140,7 +144,7 @@ public class TableDialogTest : TableDialogTestBase
 
         var itemsChanged = false;
         // 更新插入模式
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.InsertRowMode, InsertRowMode.First);
             pb.Add(a => a.ItemsChanged, foo =>
@@ -164,7 +168,7 @@ public class TableDialogTest : TableDialogTestBase
         Assert.True(itemsChanged);
 
         // 设置双向绑定 Items 后再测试 Add Save
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsTracking, false);
             pb.Add(a => a.OnSaveAsync, null);
@@ -180,7 +184,7 @@ public class TableDialogTest : TableDialogTestBase
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
         Assert.Equal(3, items.Count);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.InsertRowMode, InsertRowMode.Last);
         });
@@ -196,7 +200,7 @@ public class TableDialogTest : TableDialogTestBase
         Assert.Equal(3, items.Count);
 
         // 数据源是 OnQueryAsync 提供
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.Items, null);
             pb.Add(a => a.OnQueryAsync, options => Task.FromResult(new QueryData<Foo>()
@@ -223,7 +227,7 @@ public class TableDialogTest : TableDialogTestBase
         var rows = cut.FindAll("tbody tr");
         Assert.Equal(3, rows.Count);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsExcel, false);
             pb.Add(a => a.ShowToolbar, true);
@@ -252,11 +256,12 @@ public class TableDialogTest : TableDialogTestBase
         var searchButton = cut.Find(".fa-magnifying-glass-plus");
         await cut.InvokeAsync(() => searchButton.Click());
 
-        cut.WaitForAssertion(() => cut.Find(".fa-magnifying-glass"));
+        await cut.WaitForAssertionAsync(() => cut.Find(".fa-magnifying-glass"));
         var queryButton = cut.Find(".fa-magnifying-glass");
         await cut.InvokeAsync(() => queryButton.Click());
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.GetAdvancedSearchFilterCallback, new Func<PropertyInfo, Foo, List<SearchFilterAction>?>((p, model) =>
             {
@@ -267,12 +272,13 @@ public class TableDialogTest : TableDialogTestBase
         searchButton = cut.Find(".fa-magnifying-glass-plus");
         await cut.InvokeAsync(() => searchButton.Click());
 
-        cut.WaitForAssertion(() => cut.Find(".fa-magnifying-glass"));
+        await cut.WaitForAssertionAsync(() => cut.Find(".fa-magnifying-glass"));
         queryButton = cut.Find(".fa-magnifying-glass");
         await cut.InvokeAsync(() => queryButton.Click());
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
         table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.GetAdvancedSearchFilterCallback, new Func<PropertyInfo, Foo, List<SearchFilterAction>?>((p, model) =>
             {
@@ -287,9 +293,72 @@ public class TableDialogTest : TableDialogTestBase
         searchButton = cut.Find(".fa-magnifying-glass-plus");
         await cut.InvokeAsync(() => searchButton.Click());
 
-        cut.WaitForAssertion(() => cut.Find(".fa-magnifying-glass"));
+        await cut.WaitForAssertionAsync(() => cut.Find(".fa-magnifying-glass"));
         queryButton = cut.Find(".fa-magnifying-glass");
         await cut.InvokeAsync(() => queryButton.Click());
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
+
+        // 开启 UseSearchForm 优先级最高
+        FilterKeyValueAction? filter = null;
+        table.Render(pb =>
+        {
+            pb.Add(a => a.UseSearchForm, true);
+            pb.Add(a => a.SearchItems, new List<ISearchItem>()
+            {
+                new SearchItem("Name", typeof(string), "Name"),
+                new SearchItem("Address", typeof(string), "Address")
+                {
+                    Metadata = new StringSearchMetadata() { PlaceHolder = "Address-Placeholder" }
+                }
+            });
+            pb.Add(a => a.OnQueryAsync, options =>
+            {
+                filter = options.ToFilter();
+                return Task.FromResult(new QueryData<Foo>()
+                {
+                    Items = items,
+                    TotalCount = items.Count,
+                    IsAdvanceSearch = true,
+                    IsSearch = true,
+                    IsFiltered = true,
+                    IsSorted = true
+                });
+            });
+        });
+        // 弹出高级搜索弹窗内部使用 SearchForm 组件，测试 SearchForm 组件的功能
+        searchButton = cut.Find(".fa-magnifying-glass-plus");
+        await cut.InvokeAsync(() => searchButton.Click());
+        await cut.WaitForAssertionAsync(() => cut.Find(".fa-magnifying-glass"));
+
+        // 查找高级搜索弹窗组件
+        var searchDialog = cut.FindComponent<SearchDialog<Foo>>();
+        Assert.NotNull(searchDialog);
+        searchDialog.Contains("Address-Placeholder");
+
+        // 更新搜索条件值
+        var searchItem = searchDialog.FindComponent<BootstrapInput<string>>();
+        Assert.NotNull(searchItem.Instance.OnValueChanged);
+        await cut.InvokeAsync(() => searchItem.Instance.OnValueChanged("Test_Name"));
+
+        // 测试点击搜索按钮
+        searchButton = cut.Find(".fa-magnifying-glass");
+        await cut.InvokeAsync(() => searchButton.Click());
+        // 关闭弹窗
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
+        Assert.NotNull(filter);
+        Assert.Single(filter.Filters);
+
+        // 测试点击重置按钮
+        searchButton = cut.Find(".fa-magnifying-glass-plus");
+        await cut.InvokeAsync(() => searchButton.Click());
+        await cut.WaitForAssertionAsync(() => cut.Find(".fa-magnifying-glass"));
+
+        var resetButton = cut.Find(".fa-trash-can");
+        await cut.InvokeAsync(() => resetButton.Click());
+        // 关闭弹窗
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
+        Assert.NotNull(filter);
+        Assert.Empty(filter.Filters);
     }
 
     [Fact]
@@ -299,7 +368,7 @@ public class TableDialogTest : TableDialogTestBase
         var dialogService = Context.Services.GetRequiredService<DialogService>();
         var items = Foo.GenerateFoo(localizer, 2);
         Dialog dialog = default!;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent(builder =>
             {
@@ -319,12 +388,35 @@ public class TableDialogTest : TableDialogTestBase
 
         // 点击表格新建按钮
         var table = cut.FindComponent<Table<Foo>>();
+        table.Render(pb =>
+        {
+            pb.Add(a => a.ShowCloseConfirm, true);
+        });
         var add = cut.Find(".table-toolbar button");
         await cut.InvokeAsync(() => add.Click());
 
         // 检查 dialog 是否显示
         var editDialog = cut.FindComponents<Dialog>().FirstOrDefault(i => i.Instance == dialog);
         Assert.NotNull(editDialog);
+
+        // 更新变化值
+        IRenderedComponent<ValidateForm> renderedComponent = cut.FindComponent<ValidateForm>();
+        var editForm = renderedComponent;
+        editForm.Instance.OnFieldValueChanged("Name", "Test_Name");
+
+        var modal = cut.FindComponent<Modal>();
+        // 弹出确认窗
+        _ = Task.Run(async () => await cut.InvokeAsync(() => modal.Instance.BeforeCloseCallback()));
+
+        // 模拟点击确认按钮
+        cut.WaitForAssertion(() => cut.Find(".swal2-actions"));
+        var closeButton = cut.Find(".swal2-actions .btn-danger");
+        await cut.InvokeAsync(() => closeButton.Click());
+
+        // 关闭 Swal 确认弹窗
+        var count = cut.FindComponents<Modal>().Count;
+        var swalModal = cut.FindComponents<Modal>()[count - 1];
+        await cut.InvokeAsync(() => swalModal.Instance.CloseCallback());
     }
 
     [Fact]
@@ -332,7 +424,7 @@ public class TableDialogTest : TableDialogTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -377,20 +469,20 @@ public class TableDialogTest : TableDialogTestBase
     {
         Title = "test-dialog-table",
         Component = BootstrapDynamicComponent.CreateComponent<Table<Foo>>(new Dictionary<string, object?>()
-            {
-                {"RenderMode",  TableRenderMode.Table},
-                {"Items", items},
-                {"EditDialog", dialog},
-                {"IsMultipleSelect", true},
-                {"ShowToolbar", true },
-                {"TableColumns", new RenderFragment<Foo>(foo => builder =>
-                    {
-                        builder.OpenComponent<TableColumn<Foo, string>>(0);
-                        builder.AddAttribute(1, "Field", "Name");
-                        builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                        builder.CloseComponent();
-                    })
-                }
-            })
+        {
+            {"RenderMode",  TableRenderMode.Table},
+            {"Items", items},
+            {"EditDialog", dialog},
+            {"IsMultipleSelect", true},
+            {"ShowToolbar", true },
+            {"TableColumns", new RenderFragment<Foo>(foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+                })
+            }
+        })
     });
 }

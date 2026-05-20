@@ -1,4 +1,4 @@
-﻿@page "/select-tree"
+@page "/select-tree"
 @inject IStringLocalizer<SelectTrees> Localizer
 
 <h3>@Localizer["SelectTreesTitle"]</h3>
@@ -50,7 +50,10 @@
 
 <DemoBlock Title="@Localizer["SelectTreesEditTitle"]"
            Introduction="@Localizer["SelectTreesEditIntro"]"
-           Name="Edit">
+           Name="IsEditable">
+    <section ignore>
+        <div>@((MarkupString)Localizer["SelectTreesEditDesc"].Value)</div>
+    </section>
     <div class="row g-3">
         <div class="col-12 col-sm-6">
             <SelectTree Items="EditItems" @bind-Value="@Value" IsEditable="true"></SelectTree>
@@ -70,3 +73,5 @@
         </div>
     </div>
 </DemoBlock>
+
+<AttributeTable Type="typeof(SelectTree<>)" />

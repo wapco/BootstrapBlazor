@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -18,13 +18,20 @@ public sealed partial class Messages
 
     private readonly MessageOption _option = new();
 
+    private long _count = 0;
+
+    private string _placement = "Top";
+
+    private readonly List<SelectedItem> _items = [new SelectedItem("Top", "Top"), new SelectedItem("Bottom", "Bottom")];
+
+    private Placement Placement => _placement == "Top" ? Placement.Top : Placement.Bottom;
+
     private async Task ShowMessage()
     {
-        Message.SetPlacement(Placement.Top);
         await MessageService.Show(new MessageOption()
         {
-            Content = "This is a reminder message"
-        });
+            Content = $"This is a reminder message {_count++}"
+        }, Message);
     }
 
     private async Task ShowAsyncMessage()
@@ -33,16 +40,16 @@ public sealed partial class Messages
         _option.IsAutoHide = false;
         _option.Delay = 3000;
         _option.Content = Localizer["MessagesAsyncDemoStep1Text"];
-        _option.Color = Color.Info;
+        _option.Color = Color.Primary;
         await MessageService.Show(_option);
 
         await Task.Delay(3000);
         _option.Content = Localizer["MessagesAsyncDemoStep2Text"];
-        _option.IsAutoHide = true;
         _option.Color = Color.Info;
         await MessageService.Show(_option);
 
         await Task.Delay(2000);
+        _option.IsAutoHide = true;
         _option.Content = Localizer["MessagesAsyncDemoStep3Text"];
         _option.Color = Color.Success;
 
@@ -97,7 +104,7 @@ public sealed partial class Messages
     {
         await MessageService.Show(new MessageOption()
         {
-            Content = $"This is a reminder message - {DateTime.Now:mm:ss}",
+            Content = $"This is a reminder message - {_count++}",
             Icon = "fa-solid fa-circle-info",
         }, Message1);
     }
@@ -111,34 +118,12 @@ public sealed partial class Messages
         });
     }
 
-    private int lastCount = 0;
-
     private Task ShowLastOnlyMessage() => MessageService.Show(new MessageOption()
     {
         ShowShadow = true,
         ShowMode = MessageShowMode.Single,
-        Content = lastCount++.ToString()
+        Content = $"This is a reminder message - {_count++}"
     });
-
-    private static AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Placement",
-            Description = "message popup location",
-            Type = "Placement",
-            ValueList = "Top|Bottom",
-            DefaultValue = "Top"
-        },
-        new()
-        {
-            Name = "ShowMode",
-            Description = "Display mode",
-            Type = "MessageShowMode",
-            ValueList = "Single|Multiple",
-            DefaultValue = "Multiple"
-        }
-    ];
 
     /// <summary>
     /// get property method
@@ -207,6 +192,22 @@ public sealed partial class Messages
             Name = "OnDismiss",
             Description = "The callback when click close button",
             Type = "Func<Task>",
+            ValueList = " — ",
+            DefaultValue = " — "
+        },
+        new()
+        {
+            Name = "ClassString",
+            Description = "The string of addtional css class",
+            Type = "string",
+            ValueList = " — ",
+            DefaultValue = " — "
+        },
+        new()
+        {
+            Name = "StyleString",
+            Description = "The string of addtional css style",
+            Type = "string",
             ValueList = " — ",
             DefaultValue = " — "
         }

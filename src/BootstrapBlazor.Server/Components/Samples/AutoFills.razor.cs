@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -44,7 +44,7 @@ partial class AutoFills
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     private bool _isClearable = true;
 
@@ -53,19 +53,19 @@ partial class AutoFills
     {
         base.OnInitialized();
 
-        Items1 = Foo.GenerateFoo(LocalizerFoo);
+        Items1 = Foo.GenerateFoo(FooLocalizer);
         Model1 = Items1.First();
 
-        Items2 = Foo.GenerateFoo(LocalizerFoo);
+        Items2 = Foo.GenerateFoo(FooLocalizer);
         Model2 = Items2.First();
 
-        Items3 = Foo.GenerateFoo(LocalizerFoo);
+        Items3 = Foo.GenerateFoo(FooLocalizer);
         Model3 = Items3.First();
 
-        Items4 = Foo.GenerateFoo(LocalizerFoo);
+        Items4 = Foo.GenerateFoo(FooLocalizer);
         Model4 = Items3.First();
 
-        Items5 = Foo.GenerateFoo(LocalizerFoo);
+        Items5 = Foo.GenerateFoo(FooLocalizer);
         Model5 = Items3.First();
     }
 
@@ -84,7 +84,7 @@ partial class AutoFills
     private async Task<QueryData<Foo>> OnQueryAsync(VirtualizeQueryOption option)
     {
         await Task.Delay(200);
-        var items = Foo.GenerateFoo(LocalizerFoo);
+        var items = Foo.GenerateFoo(FooLocalizer);
         if (!string.IsNullOrEmpty(option.SearchText))
         {
             items = [.. items.Where(i => i.Name!.Contains(option.SearchText, StringComparison.OrdinalIgnoreCase))];
@@ -95,124 +95,4 @@ partial class AutoFills
             TotalCount = items.Count
         };
     }
-
-    /// <summary>
-    /// Get property method
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "DisplayCount",
-            Description = Localizer["Att1"],
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "NoDataTip",
-            Description = Localizer["Att2"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = Localizer["Def2"]
-        },
-        new()
-        {
-            Name = "IgnoreCase",
-            Description = Localizer["Att3"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "IsLikeMatch",
-            Description = Localizer["Att4"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["Att5"],
-            Type = "IEnumerable<TValue>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Debounce",
-            Description = Localizer["Att6"],
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = "0"
-        },
-        new()
-        {
-            Name = "OnCustomFilter",
-            Description = Localizer["Att7"],
-            Type = "Func<string, Task<IEnumerable<TValue>>>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "OnGetDisplayText",
-            Description = Localizer["Att8"],
-            Type = "Func<TValue, string>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "OnSelectedItemChanged",
-            Description = Localizer["Att9"],
-            Type = "Func<TValue, Task>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        //new()
-        //{
-        //    Name = nameof(AutoFill<Foo>.ShowDropdownListOnFocus),
-        //    Description = Localizer["Att10"],
-        //    Type = "bool",
-        //    ValueList = "true/false",
-        //    DefaultValue = "true"
-        //},
-        new()
-        {
-            Name = "Template",
-            Description = Localizer["Att11"],
-            Type = "RenderFragment<TValue>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(AutoFill<string>.SkipEnter),
-            Description = Localizer["Att12"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(AutoFill<string>.SkipEsc),
-            Description = Localizer["Att13"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(AutoFill<string>.IsVirtualize),
-            Description = Localizer["AttrIsVirtualize"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        }
-    ];
 }

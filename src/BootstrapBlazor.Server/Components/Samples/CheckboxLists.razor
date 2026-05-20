@@ -1,4 +1,4 @@
-﻿@page "/checkbox-list"
+@page "/checkbox-list"
 
 <h3>@Localizer["Title"]</h3>
 
@@ -128,7 +128,7 @@
                 <BootstrapInput @bind-Value="@Model.Name" />
             </div>
             <div class="col-12 col-sm-6">
-                <CheckboxList @bind-Value="@SelectedItems" IsButton="true" Items="FooItems" />
+                <CheckboxList @bind-Value="@SelectedItems" IsButton="true" Items="FooItems" ShowLabel="true" DisplayText="Hobby" />
             </div>
         </div>
     </ValidateForm>
@@ -147,6 +147,4 @@
     </section>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
-
-<EventTable Items="@GetEvents()" />
+<AttributeTable Type="typeof(CheckboxList<>)" />

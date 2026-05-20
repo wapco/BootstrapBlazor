@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -16,7 +16,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<SelectTable<Foo>>(pb =>
@@ -29,7 +29,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<SelectTable<Foo>>();
         Assert.Throws<InvalidOperationException>(() =>
         {
-            table.SetParametersAndRender(pb =>
+            table.Render(pb =>
             {
                 pb.Add(a => a.OnQueryAsync, null);
             });
@@ -42,7 +42,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         var query = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -66,7 +66,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -78,7 +78,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         Assert.DoesNotContain("clear-icon", table.Markup);
 
         var isClear = false;
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsClearable, true);
             pb.Add(a => a.Value, items[0]);
@@ -104,7 +104,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -121,7 +121,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -142,7 +142,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -159,7 +159,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -187,7 +187,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         Assert.Equal(4, rows.Count);
 
         var table = cut.FindComponent<SelectTable<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.Value, items[0]);
         });
@@ -199,7 +199,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<SelectTable<Foo>>(pb =>
@@ -224,12 +224,12 @@ public class SelectTableTest : BootstrapBlazorTestBase
         Assert.Contains($"value=\"{items[0].Name}\"", cut.Markup);
 
         var table = cut.FindComponent<SelectTable<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.GetTextCallback, foo => null);
         });
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.Value, null);
         });
@@ -237,7 +237,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
 
         Assert.Throws<InvalidOperationException>(() =>
         {
-            table.SetParametersAndRender(pb =>
+            table.Render(pb =>
             {
                 pb.Add(a => a.GetTextCallback, null);
             });
@@ -249,7 +249,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -280,7 +280,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
         Foo? v = null;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -323,7 +323,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         var valid = false;
         var invalid = false;
         var model = new SelectTableModel() { Foo = items[0] };
-        var cut = Context.RenderComponent<ValidateForm>(builder =>
+        var cut = Context.Render<ValidateForm>(builder =>
         {
             builder.Add(a => a.OnValidSubmit, context =>
             {
@@ -375,7 +375,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
 
         model.Foo = null;
         var table = cut.FindComponent<SelectTable<Foo>>();
-        table.SetParametersAndRender();
+        table.Render();
         await cut.InvokeAsync(() =>
         {
             var form = cut.Find("form");
@@ -392,7 +392,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -427,7 +427,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         // Table 组件 EditTemplate 内使用 SelectTable 组件单元测试
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddCascadingValue(true);
             pb.AddChildContent<EditForm>(pb =>
@@ -466,7 +466,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 4);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -500,7 +500,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
         var pageItemsSource = new int[] { 4, 10, 20 };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -532,7 +532,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<BootstrapInputGroup>(pb =>
             {
@@ -573,7 +573,7 @@ public class SelectTableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<SelectTable<Foo>>(pb =>
             {
@@ -603,7 +603,173 @@ public class SelectTableTest : BootstrapBlazorTestBase
             });
         });
 
-        cut.Contains("<div class=\"empty\"><div class=\"empty-telemplate\">empty-template</div></div>");
+        cut.Contains("<div class=\"empty\"><div class=\"empty-template\">empty-template</div></div>");
+    }
+
+    [Fact]
+    public async Task IsMultipleSelect_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var items = Foo.GenerateFoo(localizer);
+        var selectedItems = new List<Foo>()
+        {
+            items[0], items[1], items[2], items[3]
+        };
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<SelectTable<Foo>>(pb =>
+            {
+                pb.Add(a => a.OnQueryAsync, options =>
+                {
+                    return Task.FromResult(new QueryData<Foo>()
+                    {
+                        Items = items,
+                        IsAdvanceSearch = true,
+                        IsFiltered = true,
+                        IsSearch = true,
+                        IsSorted = true
+                    });
+                });
+                pb.Add(a => a.IsMultipleSelect, true);
+                pb.Add(a => a.SelectedItems, selectedItems);
+                pb.Add(a => a.MultiSelectedItemsMaxHeight, "30px");
+                pb.Add(a => a.MultiSelectedItemsMaxDisplayCount, 2);
+                pb.Add(a => a.MultiSelectedItemsMaxDisplayCountColor, Color.Warning);
+                pb.Add(a => a.SelectedItemsChanged, EventCallback.Factory.Create<List<Foo>>(this, items => selectedItems = items));
+                pb.Add(a => a.GetTextCallback, foo => foo.Name);
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        cut.Contains("multi-select-items");
+        cut.Contains("multi-select-item-group-count bg-warning");
+        cut.Contains("+ 2");
+        cut.Contains("--bb-select-max-height: 30px;");
+        cut.DoesNotContain("--bb-select-table-item-width: ");
+
+        var table = cut.FindComponent<SelectTable<Foo>>();
+        Assert.NotNull(table);
+
+        table.Render(pb =>
+        {
+            pb.Add(a => a.MultiSelectedItemMaxWidth, "120px");
+        });
+        cut.Contains("--bb-select-table-item-width: 120px;");
+
+        await cut.InvokeAsync(() => table.Instance.TriggerRemoveItem(0));
+        Assert.Equal(3, selectedItems.Count);
+
+        await cut.InvokeAsync(() => table.Instance.TriggerRemoveItem(0));
+        Assert.Equal(2, selectedItems.Count);
+
+        cut.Render();
+        cut.DoesNotContain("multi-select-item-group-count");
+        cut.DoesNotContain("bg-warning");
+
+        await cut.InvokeAsync(() => table.Instance.TriggerRemoveItem(-1));
+        Assert.Equal(2, selectedItems.Count);
+
+        await cut.InvokeAsync(() => table.Instance.TriggerRemoveItem(2));
+        Assert.Equal(2, selectedItems.Count);
+        cut.DoesNotContain("multi-select-item-ph");
+
+        table.Render(pb =>
+        {
+            pb.Add(a => a.SelectedItems, null);
+        });
+        cut.Contains("multi-select-item-ph");
+    }
+
+    [Fact]
+    public void Columns_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var items = Foo.GenerateFoo(localizer);
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<SelectTable<Foo>>(pb =>
+            {
+                pb.Add(a => a.OnQueryAsync, options => OnFilterQueryAsync(options, items));
+                pb.Add(a => a.GetTextCallback, foo => foo.Name);
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Address");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        var table = cut.FindComponent<SelectTable<Foo>>();
+        Assert.Equal(2, table.Instance.Columns.Count);
+        Assert.Collection(table.Instance.Columns,
+            col => Assert.Equal(nameof(Foo.Name), col.GetFieldName()),
+            col => Assert.Equal(nameof(Foo.Address), col.GetFieldName()));
+    }
+
+    [Fact]
+    public void ToolbarTemplate_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var items = Foo.GenerateFoo(localizer);
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<SelectTable<Foo>>(pb =>
+            {
+                pb.Add(a => a.OnQueryAsync, options =>
+                {
+                    return Task.FromResult(new QueryData<Foo>()
+                    {
+                        Items = items,
+                        IsAdvanceSearch = true,
+                        IsFiltered = true,
+                        IsSearch = true,
+                        IsSorted = true
+                    });
+                });
+                pb.Add(a => a.GetTextCallback, foo => foo.Name);
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, "Searchable", true);
+                    builder.CloseComponent();
+                });
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ToolbarTemplate, builder =>
+                {
+                    builder.AddContent(0, "toolbar-template");
+                });
+                pb.Add(a => a.TableExtensionToolbarTemplate, builder =>
+                {
+                    builder.AddContent(0, "toolbar-extension-template");
+                });
+            });
+        });
+
+        cut.Contains("toolbar-template");
+        cut.Contains("toolbar-extension-template");
+
+        var table = cut.FindComponent<SelectTable<Foo>>();
+        table.Render(pb =>
+        {
+            pb.Add(a => a.ShowToolbar, false);
+        });
+        cut.DoesNotContain("toolbar-template");
+        cut.DoesNotContain("toolbar-extension-template");
     }
 
     private static Task<QueryData<Foo>> OnFilterQueryAsync(QueryPageOptions options, IEnumerable<Foo> _filterItems)

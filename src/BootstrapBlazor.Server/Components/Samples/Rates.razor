@@ -1,4 +1,4 @@
-﻿@page "/rate"
+@page "/rate"
 @inject IStringLocalizer<Rates> Localizer
 
 <h3>@Localizer["RatesTitle"]</h3>
@@ -68,6 +68,4 @@
     <Rate Value="@BindValue3" ShowValue="true" IsWrap="true"></Rate>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
-
-<EventTable Items="@GetEvents()" />
+<AttributeTable Type="typeof(Rate)" />

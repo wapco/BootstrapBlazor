@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -13,7 +12,8 @@ using System.Resources;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// JsonStringLocalizer 实现类
+/// <para lang="zh">JsonStringLocalizer 实现类</para>
+/// <para lang="en">JsonStringLocalizer implementation class</para>
 /// </summary>
 /// <param name="assembly"></param>
 /// <param name="typeName"></param>
@@ -29,10 +29,10 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
     private ILogger Logger { get; } = logger;
 
     /// <summary>
-    /// 通过指定键值获取多语言值信息索引
+    /// <para lang="zh">通过指定键值获取多语言值信息索引</para>
+    /// <para lang="en">Get multi-language value info index by specified key</para>
     /// </summary>
     /// <param name="name"></param>
-    /// <returns></returns>
     public override LocalizedString this[string name]
     {
         get
@@ -43,11 +43,11 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
     }
 
     /// <summary>
-    /// 带格式化参数的通过指定键值获取多语言值信息索引
+    /// <para lang="zh">带格式化参数的通过指定键值获取多语言值信息索引</para>
+    /// <para lang="en">Get multi-language value info index by specified key with format arguments</para>
     /// </summary>
     /// <param name="name"></param>
     /// <param name="arguments"></param>
-    /// <returns></returns>
     public override LocalizedString this[string name, params object[] arguments]
     {
         get
@@ -76,7 +76,8 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
 
     private string? GetStringFromService(string name)
     {
-        // get string from inject service
+        // <para lang="zh">get string from inject service</para>
+        // <para lang="en">get string from inject service</para>
         string? ret = null;
         if (jsonLocalizationOptions.DisableGetLocalizerFromService == false)
         {
@@ -103,30 +104,28 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
         return ret;
     }
 
-    private readonly ConcurrentDictionary<string, object?> _missingManifestCache = [];
     private string? GetStringFromJson(string name)
     {
-        // get string from json localization file
-        var localizerStrings = MegerResolveLocalizers(CacheManager.GetAllStringsByTypeName(Assembly, typeName));
+        var localizerStrings = MergeResolveLocalizers(CacheManager.GetAllStringsByTypeName(Assembly, typeName));
         var cacheKey = $"name={name}&culture={CultureInfo.CurrentUICulture.Name}";
         string? ret = null;
-        if (!_missingManifestCache.ContainsKey(cacheKey))
-        {
-            var l = localizerStrings.Find(i => i.Name == name);
-            if (l is { ResourceNotFound: false })
-            {
-                ret = l.Value;
-            }
-            else
-            {
-                // 如果没有找到资源信息则尝试从父类中查找
-                ret ??= GetStringFromBaseType(name);
 
-                if (ret is null)
-                {
-                    // 加入缺失资源信息缓存中
-                    HandleMissingResourceItem(name);
-                }
+        var l = localizerStrings.Find(i => i.Name == name);
+        if (l is { ResourceNotFound: false })
+        {
+            ret = l.Value;
+        }
+        else
+        {
+            // <para lang="zh">如果没有找到资源信息则尝试从父类中查找</para>
+            // <para lang="en">If resource info not found, try to find from base class</para>
+            ret ??= GetStringFromBaseType(name);
+
+            if (ret is null)
+            {
+                // <para lang="zh">加入缺失资源信息缓存中</para>
+                // <para lang="en">Add to missing resource info cache</para>
+                HandleMissingResourceItem(name);
             }
         }
         return ret;
@@ -143,7 +142,7 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
             if (baseType != type)
             {
                 var baseAssembly = baseType.Assembly;
-                var localizerStrings = MegerResolveLocalizers(CacheManager.GetAllStringsByTypeName(baseAssembly, baseType.FullName!));
+                var localizerStrings = MergeResolveLocalizers(CacheManager.GetAllStringsByTypeName(baseAssembly, baseType.FullName!));
                 var l = localizerStrings.Find(i => i.Name == name);
                 if (l is { ResourceNotFound: false })
                 {
@@ -154,7 +153,7 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
         return ret;
     }
 
-    private List<LocalizedString> MegerResolveLocalizers(IEnumerable<LocalizedString>? localizerStrings)
+    private List<LocalizedString> MergeResolveLocalizers(IEnumerable<LocalizedString>? localizerStrings)
     {
         var localizers = new List<LocalizedString>(CacheManager.GetTypeStringsFromResolve(typeName));
         if (localizerStrings != null)
@@ -167,33 +166,38 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
     private void HandleMissingResourceItem(string name)
     {
         localizationMissingItemHandler.HandleMissingItem(name, typeName, CultureInfo.CurrentUICulture.Name);
-        if (jsonLocalizationOptions.IgnoreLocalizerMissing == false)
+        if (jsonLocalizationOptions.IgnoreLocalizerMissing)
+        {
+            return;
+        }
+
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("{JsonStringLocalizerName} searched for '{Name}' in '{TypeName}' with culture '{CultureName}' not found.", nameof(JsonStringLocalizer), name, typeName, CultureInfo.CurrentUICulture.Name);
         }
-        _missingManifestCache.TryAdd($"name={name}&culture={CultureInfo.CurrentUICulture.Name}", null);
     }
 
-    private List<LocalizedString>? _allLocalizerdStrings;
+    private List<LocalizedString>? _allLocalizedStrings;
 
     /// <summary>
-    /// 获取当前语言的所有资源信息
+    /// <para lang="zh">获取当前语言的所有资源信息</para>
+    /// <para lang="en">Get all resource info of current culture</para>
     /// </summary>
     /// <param name="includeParentCultures"></param>
-    /// <returns></returns>
     public override IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
     {
-        if (_allLocalizerdStrings == null)
+        if (_allLocalizedStrings == null)
         {
             var items = GetAllStringsFromService()
                 ?? GetAllStringsFromBase()
                 ?? GetAllStringsFromJson();
 
-            _allLocalizerdStrings = MegerResolveLocalizers(items);
+            _allLocalizedStrings = MergeResolveLocalizers(items);
         }
-        return _allLocalizerdStrings;
+        return _allLocalizedStrings;
 
-        // 1. 从注入服务中获取所有资源信息
+        // <para lang="zh">1. 从注入服务中获取所有资源信息</para>
+        // <para lang="en">1. Get all resource info from injected service</para>
         // get all strings from the other inject service
         IEnumerable<LocalizedString>? GetAllStringsFromService()
         {
@@ -209,7 +213,8 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
             return ret;
         }
 
-        // 2. 从父类 ResourceManagerStringLocalizer 中获取微软格式资源信息
+        // <para lang="zh">2. 从父类 ResourceManagerStringLocalizer 中获取微软格式资源信息</para>
+        // <para lang="en">2. Get Microsoft format resource info from base class ResourceManagerStringLocalizer</para>
         // get all strings from base json localization factory
         IEnumerable<LocalizedString>? GetAllStringsFromBase()
         {
@@ -232,7 +237,8 @@ internal class JsonStringLocalizer(Assembly assembly, string typeName, string ba
             void CheckMissing() => _ = ret.Any();
         }
 
-        // 3. 从 Json 文件中获取资源信息
+        // <para lang="zh">3. 从 Json 文件中获取资源信息</para>
+        // <para lang="en">3. Get resource info from Json file</para>
         // get all strings from json localization file
         IEnumerable<LocalizedString>? GetAllStringsFromJson() => CacheManager.GetAllStringsByTypeName(Assembly, typeName);
     }

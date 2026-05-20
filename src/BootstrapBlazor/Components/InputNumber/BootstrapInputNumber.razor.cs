@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -9,13 +9,14 @@ using System.Globalization;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// An input component for editing numeric values.
-/// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="short"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
+/// <para lang="zh">BootstrapInputNumber 组件</para>
+/// <para lang="en">BootstrapInputNumber component</para>
 /// </summary>
 public partial class BootstrapInputNumber<TValue>
 {
     /// <summary>
-    /// 获得 按钮样式
+    /// <para lang="zh">获得 按钮样式</para>
+    /// <para lang="en">Get Button Style</para>
     /// </summary>
     protected string? ButtonClassString => CssBuilder.Default("btn")
         .AddClass("btn-outline-secondary", Color == Color.None)
@@ -23,7 +24,8 @@ public partial class BootstrapInputNumber<TValue>
         .Build();
 
     /// <summary>
-    /// 获得 文本框样式
+    /// <para lang="zh">获得 文本框样式</para>
+    /// <para lang="en">Get Text Box Style</para>
     /// </summary>
     protected string? InputClassString => CssBuilder.Default("form-control")
         .AddClass(CssClass).AddClass(ValidCss)
@@ -36,49 +38,57 @@ public partial class BootstrapInputNumber<TValue>
     private string? StepString { get; set; }
 
     /// <summary>
-    /// 获得/设置 数值增加时回调委托
+    /// <para lang="zh">获得/设置 数值增加时回调委托</para>
+    /// <para lang="en">Gets or sets Callback delegate when value increases</para>
     /// </summary>
     [Parameter]
     public Func<TValue?, Task>? OnIncrement { get; set; }
 
     /// <summary>
-    /// 获得/设置 数值减少时回调委托
+    /// <para lang="zh">获得/设置 数值减少时回调委托</para>
+    /// <para lang="en">Gets or sets Callback delegate when value decreases</para>
     /// </summary>
     [Parameter]
     public Func<TValue?, Task>? OnDecrement { get; set; }
 
     /// <summary>
-    /// 获得/设置 最小值
+    /// <para lang="zh">获得/设置 最小值</para>
+    /// <para lang="en">Gets or sets Minimum Value</para>
     /// </summary>
     [Parameter]
     public string? Min { get; set; }
 
     /// <summary>
-    /// 获得/设置 最大值
+    /// <para lang="zh">获得/设置 最大值</para>
+    /// <para lang="en">Gets or sets Maximum Value</para>
     /// </summary>
     [Parameter]
     public string? Max { get; set; }
 
     /// <summary>
-    /// 获得/设置 步长 默认为 null
+    /// <para lang="zh">获得/设置 步长 默认为 null</para>
+    /// <para lang="en">Gets or sets Step. Default null</para>
     /// </summary>
     [Parameter]
     public string? Step { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示加减按钮
+    /// <para lang="zh">获得/设置 是否显示加减按钮</para>
+    /// <para lang="en">Gets or sets Whether to show increment/decrement buttons</para>
     /// </summary>
     [Parameter]
     public bool ShowButton { get; set; }
 
     /// <summary>
-    /// 获得/设置 减小数值图标
+    /// <para lang="zh">获得/设置 减小数值图标</para>
+    /// <para lang="en">Gets or sets Decrement Icon</para>
     /// </summary>
     [Parameter]
     public string? MinusIcon { get; set; }
 
     /// <summary>
-    /// 获得/设置 增加数值图标
+    /// <para lang="zh">获得/设置 增加数值图标</para>
+    /// <para lang="en">Gets or sets Increment Icon</para>
     /// </summary>
     [Parameter]
     public string? PlusIcon { get; set; }
@@ -99,7 +109,7 @@ public partial class BootstrapInputNumber<TValue>
 
     [Inject]
     [NotNull]
-    private IOptions<BootstrapBlazorOptions>? StepOption { get; set; }
+    private IOptionsMonitor<BootstrapBlazorOptions>? StepOption { get; set; }
 
     private string? _lastInputValueString;
 
@@ -129,7 +139,7 @@ public partial class BootstrapInputNumber<TValue>
         MinusIcon ??= IconTheme.GetIconByKey(ComponentIcons.InputNumberMinusIcon);
         PlusIcon ??= IconTheme.GetIconByKey(ComponentIcons.InputNumberPlusIcon);
 
-        StepString = Step ?? StepOption.Value.GetStep<TValue>() ?? "any";
+        StepString = Step ?? StepOption.CurrentValue.GetStep<TValue>() ?? "any";
 
         if (Value is null)
         {
@@ -163,14 +173,11 @@ public partial class BootstrapInputNumber<TValue>
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override string? FormatParsingErrorMessage() => string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayText);
 
     /// <summary>
-    /// Formats the value as a string. Derived classes can override this to determine the formatting used for <see cref="ValidateBase{TValue}.CurrentValueAsString"/>.
+    /// <inheritdoc/>
     /// </summary>
-    /// <param name="value">The value to format.</param>
-    /// <returns>A string representation of the value.</returns>
     protected override string? FormatValueAsString(TValue? value) => UseInputEvent ? _lastInputValueString : GetFormatString(value);
 
     private string? GetFormatString(TValue? value) => Formatter != null
@@ -180,55 +187,59 @@ public partial class BootstrapInputNumber<TValue>
             : InternalFormat(value));
 
     /// <summary>
-    /// InternalFormat 方法
+    /// <para lang="zh">InternalFormat 方法</para>
+    /// <para lang="en">InternalFormat Method</para>
     /// </summary>
     /// <param name="value"></param>
-    /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     protected virtual string? InternalFormat(TValue? value) => value switch
     {
         null => null,
-        int @int => BindConverter.FormatValue(@int, CultureInfo.InvariantCulture),
-        long @long => BindConverter.FormatValue(@long, CultureInfo.InvariantCulture),
-        short @short => BindConverter.FormatValue(@short, CultureInfo.InvariantCulture),
-        float @float => BindConverter.FormatValue(@float, CultureInfo.InvariantCulture),
-        double @double => BindConverter.FormatValue(@double, CultureInfo.InvariantCulture),
-        decimal @decimal => BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture),
-        _ => throw new InvalidOperationException($"Unsupported type {value!.GetType()}"),
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+        _ => throw new InvalidOperationException($"Unsupported type {value!.GetType()}")
     };
 
     private string GetStepString() => (string.IsNullOrEmpty(StepString) || StepString.Equals("any", StringComparison.OrdinalIgnoreCase)) ? "1" : StepString;
 
-    /// <summary>
-    /// 点击减少按钮式时回调此方法
-    /// </summary>
-    /// <returns></returns>
+    private static decimal ParseDecimal(string value) => decimal.Parse(value, CultureInfo.InvariantCulture);
+
+    private static TValue ParseValue(string value)
+    {
+        return value.TryConvertTo<TValue>(out var ret)
+            ? ret
+            : throw new InvalidOperationException($"Unsupported type {typeof(TValue)}");
+    }
+
+    private static TValue? Calculate(TValue? value, string step, bool increment)
+    {
+        TValue? ret = default;
+        if (value != null)
+        {
+            var factor = increment ? 1 : -1;
+            ret = value switch
+            {
+                sbyte @sbyte => (TValue)(object)(sbyte)Math.Clamp(@sbyte + factor * ParseDecimal(step), sbyte.MinValue, sbyte.MaxValue),
+                byte @byte => (TValue)(object)(byte)Math.Clamp(@byte + factor * ParseDecimal(step), byte.MinValue, byte.MaxValue),
+                short @short => (TValue)(object)(short)Math.Clamp(@short + factor * ParseDecimal(step), short.MinValue, short.MaxValue),
+                ushort @ushort => (TValue)(object)(ushort)Math.Clamp(@ushort + factor * ParseDecimal(step), ushort.MinValue, ushort.MaxValue),
+                int @int => (TValue)(object)(int)Math.Clamp(@int + factor * ParseDecimal(step), int.MinValue, int.MaxValue),
+                uint @uint => (TValue)(object)(uint)Math.Clamp(@uint + factor * ParseDecimal(step), uint.MinValue, uint.MaxValue),
+                long @long => (TValue)(object)(long)Math.Clamp(@long + factor * ParseDecimal(step), long.MinValue, long.MaxValue),
+                ulong @ulong => (TValue)(object)(ulong)Math.Clamp(@ulong + factor * ParseDecimal(step), ulong.MinValue, ulong.MaxValue),
+                float @float => (TValue)(object)(@float + factor * float.Parse(step, CultureInfo.InvariantCulture)),
+                double @double => (TValue)(object)(@double + factor * double.Parse(step, CultureInfo.InvariantCulture)),
+                decimal @decimal => (TValue)(object)(@decimal + factor * ParseDecimal(step)),
+                _ => value
+            };
+        }
+        return ret;
+    }
+
     private async Task OnClickDec()
     {
         var val = CurrentValue;
         var step = GetStepString();
-        switch (val)
-        {
-            case int @int:
-                val = (TValue)(object)(@int - int.Parse(step));
-                break;
-            case long @long:
-                val = (TValue)(object)(@long - long.Parse(step));
-                break;
-            case short @short:
-                val = (TValue)(object)(short)(@short - short.Parse(step));
-                break;
-            case float @float:
-                val = (TValue)(object)(@float - float.Parse(step));
-                break;
-            case double @double:
-                val = (TValue)(object)(@double - double.Parse(step));
-                break;
-            case decimal @decimal:
-                val = (TValue)(object)(@decimal - decimal.Parse(step));
-                break;
-        }
-
+        val = Calculate(val, step, false);
         CurrentValue = SetMax(SetMin(val));
         if (OnDecrement != null)
         {
@@ -236,36 +247,11 @@ public partial class BootstrapInputNumber<TValue>
         }
     }
 
-    /// <summary>
-    /// 点击增加按钮式时回调此方法
-    /// </summary>
-    /// <returns></returns>
     private async Task OnClickInc()
     {
         var val = CurrentValue;
         var step = GetStepString();
-        switch (val)
-        {
-            case int @int:
-                val = (TValue)(object)(@int + int.Parse(step));
-                break;
-            case long @long:
-                val = (TValue)(object)(@long + long.Parse(step));
-                break;
-            case short @short:
-                val = (TValue)(object)(short)(@short + short.Parse(step));
-                break;
-            case float @float:
-                val = (TValue)(object)(@float + float.Parse(step));
-                break;
-            case double @double:
-                val = (TValue)(object)(@double + double.Parse(step));
-                break;
-            case decimal @decimal:
-                val = (TValue)(object)(@decimal + decimal.Parse(step));
-                break;
-        }
-
+        val = Calculate(val, step, true);
         CurrentValue = SetMax(SetMin(val));
         if (OnIncrement != null)
         {
@@ -276,7 +262,6 @@ public partial class BootstrapInputNumber<TValue>
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override async Task OnBlur()
     {
         if (!PreviousParsingAttemptFailed)
@@ -302,28 +287,12 @@ public partial class BootstrapInputNumber<TValue>
 
     private TValue? SetMin(TValue? val)
     {
-        if (!string.IsNullOrEmpty(Min))
+        if (!string.IsNullOrEmpty(Min) && val != null)
         {
-            switch (val)
+            var min = ParseValue(Min);
+            if (Comparer<TValue>.Default.Compare(val, min) < 0)
             {
-                case int @int:
-                    val = (TValue)(object)Math.Max(@int, int.Parse(Min));
-                    break;
-                case long @long:
-                    val = (TValue)(object)Math.Max(@long, long.Parse(Min));
-                    break;
-                case short @short:
-                    val = (TValue)(object)Math.Max(@short, short.Parse(Min));
-                    break;
-                case float @float:
-                    val = (TValue)(object)Math.Max(@float, float.Parse(Min));
-                    break;
-                case double @double:
-                    val = (TValue)(object)Math.Max(@double, double.Parse(Min));
-                    break;
-                case decimal @decimal:
-                    val = (TValue)(object)Math.Max(@decimal, decimal.Parse(Min));
-                    break;
+                val = min;
             }
         }
 
@@ -332,28 +301,12 @@ public partial class BootstrapInputNumber<TValue>
 
     private TValue? SetMax(TValue? val)
     {
-        if (!string.IsNullOrEmpty(Max))
+        if (!string.IsNullOrEmpty(Max) && val != null)
         {
-            switch (val)
+            var max = ParseValue(Max);
+            if (Comparer<TValue>.Default.Compare(val, max) > 0)
             {
-                case int @int:
-                    val = (TValue)(object)Math.Min(@int, int.Parse(Max));
-                    break;
-                case long @long:
-                    val = (TValue)(object)Math.Min(@long, long.Parse(Max));
-                    break;
-                case short @short:
-                    val = (TValue)(object)Math.Min(@short, short.Parse(Max));
-                    break;
-                case float @float:
-                    val = (TValue)(object)Math.Min(@float, float.Parse(Max));
-                    break;
-                case double @double:
-                    val = (TValue)(object)Math.Min(@double, double.Parse(Max));
-                    break;
-                case decimal @decimal:
-                    val = (TValue)(object)Math.Min(@decimal, decimal.Parse(Max));
-                    break;
+                val = max;
             }
         }
 
@@ -366,7 +319,6 @@ public partial class BootstrapInputNumber<TValue>
     /// <param name="value"></param>
     /// <param name="result"></param>
     /// <param name="validationErrorMessage"></param>
-    /// <returns></returns>
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage)
     {
         bool ret;

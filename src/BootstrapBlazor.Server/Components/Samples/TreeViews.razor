@@ -1,6 +1,6 @@
-﻿@page "/tree-view"
+@page "/tree-view"
 @inject IStringLocalizer<TreeViews> Localizer
-@inject IStringLocalizer<Foo> LocalizerFoo
+@inject IStringLocalizer<Foo> FooLocalizer
 
 <h3>@Localizer["TreeViewsTitle"]</h3>
 <h4>@Localizer["TreeViewsDescription"]</h4>
@@ -15,6 +15,7 @@
         <li>@((MarkupString)Localizer["TreeViewsTips6"].Value)</li>
         <li>@((MarkupString)Localizer["TreeViewsTips7"].Value)</li>
         <li>@((MarkupString)Localizer["TreeViewsTips8"].Value)</li>
+        <li>@((MarkupString)Localizer["TreeViewsTipsOnBeforeTreeItemClick"].Value)</li>
     </ul>
 </Tips>
 
@@ -50,6 +51,14 @@
     </section>
     <TreeView Items="@CheckedItems" ShowCheckbox="true" OnTreeItemChecked="@OnTreeItemChecked" AutoCheckChildren="@AutoCheckChildren" AutoCheckParent="@AutoCheckParent"></TreeView>
     <ConsoleLogger @ref="Logger2"></ConsoleLogger>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["TreeViewDraggableTitle"]"
+           Introduction="@Localizer["TreeViewDraggableIntro"]"
+           Name="TreeDraggable">
+    <section ignore>@((MarkupString)Localizer["TreeViewDraggableDescription"].Value)</section>
+    <TreeView Items="@DraggableItems" AllowDrag="true" OnDragItemEndAsync="OnDragItemEndAsync">
+    </TreeView>
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["TreeViewTreeDisableTitle"]"
@@ -207,6 +216,6 @@
     </TreeView>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()"></AttributeTable>
+<AttributeTable Type="typeof(TreeView<>)"></AttributeTable>
 
-<AttributeTable Items="@GetTreeItemAttributes()" Title="@Localizer["TreeViewsAttribute"]"></AttributeTable>
+<AttributeTable Type="typeof(TreeViewItem<TreeFoo>)" Title="@Localizer["TreeViewsAttribute"]"></AttributeTable>

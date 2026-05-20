@@ -1,24 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Compile Include="..\..\src\BootstrapBlazor.Server\Data\Foo.cs" Link="Mics\Foo.cs" />
     <Compile Include="..\UnitTest\Core\BootstrapBlazorTestBase.cs" Link="Mics\BootstrapBlazorTestBase.cs" />
     <Compile Include="..\UnitTest\Core\TestBase.cs" Link="Mics\TestBase.cs" />
     <Compile Include="..\UnitTest\Extensions\IServiceCollectionExtensions.cs" Link="Mics\IServiceCollectionExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="bunit" Version="1.*" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
-    <PackageReference Include="xunit" Version="2.*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.*">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.*">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="bunit" Version="2.*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +26,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BootstrapBlazor\BootstrapBlazor.csproj" />
+    <ProjectReference Include="..\..\src\BootstrapBlazor.Server\BootstrapBlazor.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="BootstrapBlazor.Components"/>
+    <Using Include="Bunit"/>
+    <Using Include="Microsoft.AspNetCore.Components"/>
+    <Using Include="UnitTest.Core"/>
   </ItemGroup>
 
 </Project>

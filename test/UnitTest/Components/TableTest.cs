@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
@@ -20,7 +21,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void Items_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -37,7 +38,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var cut = Context.RenderComponent<Table<Foo>>(pb =>
+            var cut = Context.Render<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.Items, Foo.GenerateFoo(localizer));
                 pb.Add(a => a.OnQueryAsync, option => Task.FromResult<QueryData<Foo>>(null!));
@@ -51,7 +52,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var changed = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -86,7 +87,7 @@ public class TableTest : BootstrapBlazorTestBase
         var items = Foo.GenerateFoo(localizer, 2);
         var selectedRows = new List<Foo>();
         var count = 0;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -123,7 +124,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -192,7 +193,7 @@ public class TableTest : BootstrapBlazorTestBase
         var updated = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -218,7 +219,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -238,10 +239,10 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void ResetVisibleColumns_Ok()
+    public async Task ResetVisibleColumns_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -250,6 +251,7 @@ public class TableTest : BootstrapBlazorTestBase
                 pb.Add(a => a.ShowColorWhenToolbarButtonsCollapsed, true);
                 pb.Add(a => a.ShowColumnList, true);
                 pb.Add(a => a.Items, Foo.GenerateFoo(localizer, 2));
+                pb.Add(a => a.AllowResizing, true);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -264,31 +266,31 @@ public class TableTest : BootstrapBlazorTestBase
                 });
                 pb.Add(a => a.AutoScrollLastSelectedRowToView, true);
                 pb.Add(a => a.AutoScrollVerticalAlign, ScrollToViewAlign.Center);
-                pb.Add(a => a.OnAfterRenderCallback, (table, firstRender) =>
-                {
-                    if (firstRender)
-                    {
-                        table.ResetVisibleColumns(new List<ColumnVisibleItem>()
-                        {
-                            new(nameof(Foo.Name), true) { DisplayName = "Name-Display" },
-                            new(nameof(Foo.Address), false),
-                        });
-                    }
-                    return Task.CompletedTask;
-                });
             });
         });
 
         // Address 不可见
         var table = cut.FindComponent<Table<Foo>>();
+        await cut.InvokeAsync(() => table.Instance.ResetVisibleColumns(
+        [
+            new TableColumnState() { Name = nameof(Foo.Name), Visible = true, DisplayName = "Name-Display" },
+            new TableColumnState() { Name = nameof(Foo.Address), Visible = false }
+        ]));
+
         Assert.Single(table.Instance.GetVisibleColumns());
+
+        // 检查 ShowColumnList 中的 DisplayName 是否正确
+        var labels = table.FindAll(".form-check-label");
+        Assert.Equal(2, labels.Count);
+        Assert.Equal("姓名", labels[0].TextContent);
+        Assert.Equal("地址", labels[1].TextContent);
     }
 
     [Fact]
     public void TableColumns_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -310,7 +312,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowSkeleton_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -331,7 +333,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowLoading_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -352,7 +354,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task ShowSearch_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -381,7 +383,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var resetSearch = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -389,7 +391,6 @@ public class TableTest : BootstrapBlazorTestBase
                 pb.Add(a => a.ShowToolbar, true);
                 pb.Add(a => a.ShowSearch, true);
                 pb.Add(a => a.ShowSearchText, true);
-                pb.Add(a => a.AutoSearchOnInput, false);
                 pb.Add(a => a.ShowSearchTextTooltip, false);
                 pb.Add(a => a.SearchMode, SearchMode.Top);
                 pb.Add(a => a.Items, Foo.GenerateFoo(localizer, 2));
@@ -407,10 +408,10 @@ public class TableTest : BootstrapBlazorTestBase
                 });
             });
         });
-        var searchBox = cut.Find(".table-toolbar-search");
-        await cut.InvokeAsync(() => searchBox.KeyUp(new KeyboardEventArgs() { Key = "Enter" }));
-        await cut.InvokeAsync(() => searchBox.KeyUp(new KeyboardEventArgs() { Key = "Escape" }));
-        await cut.InvokeAsync(() => searchBox.Change("0"));
+        var searchBox = cut.FindComponents<BootstrapInput<string?>>().FirstOrDefault(i => i.Markup.Contains("table-toolbar-search"));
+        Assert.NotNull(searchBox);
+        await cut.InvokeAsync(() => searchBox.Instance.EnterCallback());
+        await cut.InvokeAsync(() => searchBox.Instance.EscCallback());
         Assert.True(resetSearch);
     }
 
@@ -419,7 +420,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var searchModel = new FooSearchModel();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -449,7 +450,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var searchModel = new FooSearchModel();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -472,10 +473,38 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task GetAdvanceSearches_OK()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var searchModel = new Foo() { Name = "test" };
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowSearch, true);
+                pb.Add(a => a.SearchModel, searchModel);
+                pb.Add(a => a.CustomerSearchTemplate, foo => builder => builder.AddContent(0, "test_CustomerSearchTemplate"));
+                pb.Add(a => a.ShowAdvancedSearch, true);
+                pb.Add(a => a.SearchMode, SearchMode.Popup);
+                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", foo.Name);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, "Searchable", true);
+                    builder.CloseComponent();
+                });
+            });
+        });
+    }
+
+    [Fact]
     public async Task ShowTopSearch_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -510,7 +539,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void CollapsedTopSearch_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -539,7 +568,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.DoesNotContain("card-body collapse show");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.CollapsedTopSearch, false);
         });
@@ -547,10 +576,147 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task UseSearchForm_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowSearch, true);
+                pb.Add(a => a.UseSearchForm, true);
+                pb.Add(a => a.SearchMode, SearchMode.Top);
+                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, DateTime?>>(0);
+                    builder.AddAttribute(1, "Field", DateTime.Today);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.DateTime), typeof(DateTime?)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, int>>(10);
+                    builder.AddAttribute(1, "Field", 0);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Count", typeof(int)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, EnumEducation?>>(0);
+                    builder.AddAttribute(1, "Field", EnumEducation.Middle);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Education), typeof(EnumEducation?)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, IEnumerable<string>>>(0);
+                    builder.AddAttribute(1, "Field", Enumerable.Empty<string>());
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Hobby), typeof(IEnumerable<string>)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, EnumEducation?>>(0);
+                    builder.AddAttribute(1, "Field", EnumEducation.Middle);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Education), typeof(EnumEducation?)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.AddAttribute(4, nameof(ITableColumn.Lookup), new List<SelectedItem>()
+                    {
+                        new SelectedItem("", "全部"),
+                        new SelectedItem("1", "中学"),
+                    });
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, bool>>(0);
+                    builder.AddAttribute(1, "Field", true);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Complete), typeof(bool)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, bool>>(0);
+                    builder.AddAttribute(1, "Field", true);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Complete), typeof(bool)));
+                    builder.AddAttribute(3, nameof(ITableColumn.Searchable), true);
+                    builder.AddAttribute(3, nameof(ITableColumn.SearchFormItemMetadata), new StringSearchMetadata());
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        cut.Contains("bb-editor bb-search-form");
+
+        // 触发 Filter
+        var searchForm = cut.FindComponent<SearchForm>();
+        Assert.NotNull(searchForm);
+
+        var input = searchForm.FindComponent<BootstrapInput<string>>();
+        Assert.NotNull(input);
+
+        var cb = input.Instance.OnValueChanged;
+        Assert.NotNull(cb);
+        await cb("test");
+
+        var table = cut.FindComponent<Table<Foo>>();
+        Assert.NotNull(table);
+        await cut.InvokeAsync(() => table.Instance.QueryAsync());
+    }
+
+    [Fact]
+    public async Task SearchItems_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowSearch, true);
+                pb.Add(a => a.UseSearchForm, true);
+                pb.Add(a => a.SearchItems, new List<SearchItem>()
+                {
+                    new SearchItem("Name", typeof(string), "名称") { Metadata = new StringSearchMetadata() }
+                });
+                pb.Add(a => a.SearchMode, SearchMode.Top);
+                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        cut.Contains("bb-editor bb-search-form");
+
+        // 触发 Filter
+        var searchForm = cut.FindComponent<SearchForm>();
+        Assert.NotNull(searchForm);
+
+        var input = searchForm.FindComponent<BootstrapInput<string>>();
+        Assert.NotNull(input);
+
+        var cb = input.Instance.OnValueChanged;
+        Assert.NotNull(cb);
+        await cb("test");
+
+        var table = cut.FindComponent<Table<Foo>>();
+        Assert.NotNull(table);
+        await cut.InvokeAsync(() => table.Instance.QueryAsync());
+    }
+
+    [Fact]
     public void ShowToolbar_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -578,7 +744,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var edit = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -603,7 +769,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.DoesNotContain("float-end table-toolbar-button");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowToolbar, true);
         });
@@ -618,11 +784,11 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void ResetFilters_Ok()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo>() { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.ShowFilterHeader, true);
                 pb.Add(a => a.TableColumns, new RenderFragment<Foo>(foo => builder =>
@@ -659,11 +825,11 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void OnFilterAsync_Null()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo>() { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.ShowFilterHeader, true);
                 pb.Add(a => a.TableColumns, new RenderFragment<Foo>(foo => builder =>
@@ -701,11 +867,11 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void ResetFilter_Null()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo>() { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.ShowFilterHeader, true);
                 pb.Add(a => a.TableColumns, new RenderFragment<Foo>(foo => builder =>
@@ -730,16 +896,26 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public async Task ShowColumnList_Ok()
     {
+        // 设置客户端存储
+        var state = new TableColumnClientStatus();
+        state.TableWidth = 500;
+        state.Columns = new List<TableColumnState>()
+        {
+            new TableColumnState() { Name = nameof(Foo.Name), Visible = false },
+            new TableColumnState() { Name = nameof(Foo.Address), Visible = true, Width = 120 }
+        };
+
+        Context.JSInterop.Setup<TableColumnClientStatus>("getColumnStates", "test").SetResult(state);
         var show = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.ShowToolbar, true);
                 pb.Add(a => a.ShowColumnList, true);
-                pb.Add(a => a.IsPopoverToolbarDropdownButton, true);
+                pb.Add(a => a.IsPopoverToolbarDropdownButton, false);
                 pb.Add(a => a.AllowResizing, true);
                 pb.Add(a => a.ShowColumnWidthTooltip, true);
                 pb.Add(a => a.ColumnWidthTooltipPrefix, "test");
@@ -763,9 +939,11 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
                     builder.CloseComponent();
                 });
+                pb.Add(a => a.ClientTableName, "test");
             });
         });
         cut.Contains("Test_Column_List");
+        cut.DoesNotContain("dropdown-menu-popover");
 
         var item = cut.FindComponents<Checkbox<bool>>()[0];
         await cut.InvokeAsync(item.Instance.OnToggleClick);
@@ -773,13 +951,47 @@ public class TableTest : BootstrapBlazorTestBase
 
         await cut.InvokeAsync(item.Instance.OnToggleClick);
         Assert.False(show);
+
+        var table = cut.FindComponent<Table<Foo>>();
+        table.Render(pb =>
+        {
+            pb.Add(a => a.IsPopoverToolbarDropdownButton, true);
+        });
+        table.Contains("dropdown-menu-popover");
+
+        state.Columns[0].Width = 100;
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
+        Assert.True(show);
+
+        cut.Contains("style=\"width: 220px;\"");
+
+        table.Render(pb =>
+        {
+            pb.Add(a => a.IsMultipleSelect, true);
+            pb.Add(a => a.ShowLineNo, true);
+            pb.Add(a => a.IsDetails, true);
+            pb.Add(a => a.DetailRowTemplate, foo => builder => builder.AddContent(0, "test_DetailRowTemplate"));
+        });
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
+        Assert.False(show);
+        cut.Contains("style=\"width: 240px;\"");
+
+        await cut.InvokeAsync(item.Instance.OnToggleClick);
+        Assert.True(show);
+        cut.Contains("style=\"width: 340px;\"");
+
+        // 检查 ShowColumnList 中的 DisplayName 是否正确
+        var labels = table.FindAll(".form-check-label");
+        Assert.Equal(2, labels.Count);
+        Assert.Equal("姓名", labels[0].TextContent);
+        Assert.Equal("地址", labels[1].TextContent);
     }
 
     [Fact]
     public void ShowCardView_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -792,18 +1004,20 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
                     builder.AddAttribute(1, "Field", "Name");
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, "CssClass", "test-css");
                     builder.CloseComponent();
                 });
             });
         });
         cut.Contains("Test_CardView");
+        cut.Contains("test-css");
     }
 
     [Fact]
     public async Task ShowExportButton_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -828,7 +1042,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("fa-solid fa-download");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ExportButtonIcon, "test-export-icon");
         });
@@ -840,7 +1054,7 @@ public class TableTest : BootstrapBlazorTestBase
         table.DoesNotContain("fa-solid fa-fw fa-file-excel");
         table.DoesNotContain("fa-solid fa-fw fa-file-pdf");
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExportCsvButton, true);
             pb.Add(a => a.ShowExportExcelButton, true);
@@ -863,7 +1077,7 @@ public class TableTest : BootstrapBlazorTestBase
         bool exported = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var export = Context.Services.GetRequiredService<ITableExport>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -917,7 +1131,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.InvokeAsync(() => csv.Click());
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.BeforeExportCallback, () =>
             {
@@ -936,7 +1150,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.NotNull(exportContext?.Options);
 
         // 设置模板不显示导出按钮
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.OnExportAsync, null);
         });
@@ -947,7 +1161,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowTopPagination_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -977,7 +1191,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task PageItemsSource_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1007,7 +1221,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageItemsSource_Null()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1032,7 +1246,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageIndex_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1083,7 +1297,7 @@ public class TableTest : BootstrapBlazorTestBase
         var isQuery = false;
         var triggerByPagination = true;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1134,7 +1348,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var isFirstQuery = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1177,7 +1391,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageItems_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1210,7 +1424,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageInfoTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1236,7 +1450,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageInfoBodyTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1263,7 +1477,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var templated = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1292,7 +1506,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void GotoNavigatorLabelText_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1317,7 +1531,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageInfoText_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1342,7 +1556,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void PageInfoText_Empty()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1365,7 +1579,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsFixedHeader_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1392,7 +1606,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void TextEllipsis_Ok(bool ellipsis)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1426,7 +1640,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowCopyColumn_Ok(bool showCopy)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1459,7 +1673,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowCopyColumnTooltip_Ok(bool showCopyTooltip)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1494,7 +1708,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void AllowResizing_Ok(bool resizing)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1528,7 +1742,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColWidth_Ok(int? width)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1565,7 +1779,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColumnFixed_Ok(bool showExtendButton, bool isFixedHeader)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1591,27 +1805,27 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.AddAttribute(3, "Width", 100);
                     builder.CloseComponent();
 
-                    builder.OpenComponent<TableColumn<Foo, string>>(10);
-                    builder.AddAttribute(11, "Field", foo.Address);
-                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.OpenComponent<TableColumn<Foo, bool>>(10);
+                    builder.AddAttribute(11, "Field", foo.Complete);
+                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Complete), typeof(bool)));
                     builder.CloseComponent();
 
                     builder.OpenComponent<TableColumn<Foo, string>>(10);
                     builder.AddAttribute(11, "Field", foo.Address);
-                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.AddAttribute(13, nameof(TableColumn<Foo, string>.Fixed), true);
+                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(foo.Address), typeof(string)));
+                    builder.AddAttribute(13, nameof(TableColumn<,>.Fixed), true);
                     builder.CloseComponent();
 
-                    builder.OpenComponent<TableColumn<Foo, string>>(10);
-                    builder.AddAttribute(11, "Field", foo.Address);
-                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.AddAttribute(13, nameof(TableColumn<Foo, string>.Fixed), true);
+                    builder.OpenComponent<TableColumn<Foo, EnumEducation?>>(10);
+                    builder.AddAttribute(11, "Field", foo.Education);
+                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(foo.Education), typeof(EnumEducation?)));
+                    builder.AddAttribute(13, nameof(TableColumn<,>.Fixed), true);
                     builder.AddAttribute(3, "Width", 100);
                     builder.CloseComponent();
 
-                    builder.OpenComponent<TableColumn<Foo, string>>(10);
-                    builder.AddAttribute(11, "Field", foo.Address);
-                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.OpenComponent<TableColumn<Foo, IEnumerable<string>>>(10);
+                    builder.AddAttribute(11, "Field", foo.Hobby);
+                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(foo.Hobby), typeof(IEnumerable<string>)));
                     builder.AddAttribute(13, nameof(TableColumn<Foo, string>.Fixed), true);
                     builder.CloseComponent();
                 });
@@ -1620,40 +1834,107 @@ public class TableTest : BootstrapBlazorTestBase
 
         cut.Contains("left: 0px;");
         cut.Contains("left: 200px;");
-        cut.Contains("left: 500px;");
         if (showExtendButton)
         {
             if (isFixedHeader)
             {
-                cut.Contains("right: 238px;");
+                cut.Contains("right: 438px;");
+                cut.Contains("right: 338px;");
                 cut.Contains("right: 138px;");
                 cut.Contains("right: 8px;");
             }
             else
             {
-                cut.Contains("right: 230px;");
+                cut.Contains("right: 430px;");
+                cut.Contains("right: 330px;");
                 cut.Contains("right: 130px;");
                 cut.Contains("right: 0px;");
             }
         }
         if (!showExtendButton)
         {
-            cut.Contains("right: 100px;");
+            cut.Contains("right: 300px;");
+            cut.Contains("right: 200px;");
             cut.Contains("right: 0px;");
 
             if (isFixedHeader)
             {
-                cut.Contains("right: 108px;");
+                cut.Contains("right: 308px;");
+                cut.Contains("right: 208px;");
                 cut.Contains("right: 8px;");
             }
         }
     }
 
     [Fact]
+    public void ColumnFixed_TailColumn_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.Items, Foo.GenerateFoo(localizer, 2));
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", foo.Name);
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Name), typeof(string)));
+                    builder.AddAttribute(3, nameof(TableColumn<,>.Fixed), true);
+                    builder.AddAttribute(4, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, int>>(5);
+                    builder.AddAttribute(6, "Field", foo.Count);
+                    builder.AddAttribute(7, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Count), typeof(int)));
+                    builder.AddAttribute(8, nameof(TableColumn<,>.Fixed), true);
+                    builder.AddAttribute(9, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(10);
+                    builder.AddAttribute(11, "Field", foo.Address);
+                    builder.AddAttribute(12, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Address), typeof(string)));
+                    builder.AddAttribute(13, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, DateTime?>>(14);
+                    builder.AddAttribute(15, "Field", foo.DateTime);
+                    builder.AddAttribute(16, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.DateTime), typeof(DateTime?)));
+                    builder.AddAttribute(17, nameof(TableColumn<,>.Fixed), true);
+                    builder.AddAttribute(18, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, EnumEducation?>>(19);
+                    builder.AddAttribute(20, "Field", foo.Education);
+                    builder.AddAttribute(21, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Education), typeof(EnumEducation?)));
+                    builder.AddAttribute(22, nameof(TableColumn<,>.Fixed), true);
+                    builder.AddAttribute(23, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, bool>>(24);
+                    builder.AddAttribute(25, "Field", foo.Complete);
+                    builder.AddAttribute(26, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Complete), typeof(bool)));
+                    builder.AddAttribute(27, nameof(TableColumn<,>.Fixed), true);
+                    builder.AddAttribute(28, nameof(TableColumn<,>.Width), 100);
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        cut.Contains("style=\"left: 0px;\"");
+        cut.Contains("style=\"left: 100px;\"");
+        cut.Contains("style=\"right: 200px;\"");
+        cut.Contains("style=\"right: 100px;\"");
+        cut.Contains("style=\"right: 0px;\"");
+        cut.DoesNotContain("style=\"left: 300px;\"");
+    }
+
+    [Fact]
     public void ScrollWidth_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1680,7 +1961,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("--bb-scroll-width: 5px; --bb-scroll-hover-width: 5px;");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ScrollWidth, 6);
             pb.Add(a => a.ScrollHoverWidth, 6);
@@ -1690,7 +1971,7 @@ public class TableTest : BootstrapBlazorTestBase
         var options = cut.Services.GetRequiredService<IOptionsMonitor<BootstrapBlazorOptions>>();
         options.CurrentValue.ScrollOptions.ScrollWidth = 7;
         options.CurrentValue.ScrollOptions.ScrollHoverWidth = 7;
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ScrollWidth, null);
             pb.Add(a => a.ScrollHoverWidth, null);
@@ -1702,7 +1983,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void FixedColumn_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1720,7 +2001,7 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
                     builder.AddAttribute(1, "Field", foo.Name);
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                    builder.AddAttribute(3, nameof(TableColumn<Foo, string>.Fixed), true);
+                    builder.AddAttribute(3, nameof(TableColumn<,>.Fixed), true);
                     builder.CloseComponent();
                 });
                 pb.Add(a => a.DetailRowTemplate, foo => builder =>
@@ -1740,7 +2021,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("style=\"left: 236px;\"");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.FixedDetailRowHeaderColumn, false);
         });
@@ -1751,7 +2032,7 @@ public class TableTest : BootstrapBlazorTestBase
         // Name
         cut.Contains("style=\"left: 136px;\"");
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.FixedMultipleColumn, false);
         });
@@ -1760,14 +2041,14 @@ public class TableTest : BootstrapBlazorTestBase
         // Name
         cut.Contains("style=\"left: 100px;\"");
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.FixedLineNoColumn, false);
         });
         // Name
         cut.Contains("style=\"left: 0px;\"");
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.FixedDetailRowHeaderColumn, true);
             pb.Add(a => a.FixedLineNoColumn, true);
@@ -1784,7 +2065,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColumnMinWidth_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1807,7 +2088,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void Column_IsFixedDetailColumn()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1845,7 +2126,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColumnFixed_Null()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1890,7 +2171,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsMultipleSelect_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1916,7 +2197,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowLineNo_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1940,7 +2221,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void FixedMultipleColumn_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -1961,6 +2242,13 @@ public class TableTest : BootstrapBlazorTestBase
             });
         });
         Assert.Contains("left: 36px;", cut.Markup);
+
+        var table = cut.FindComponent<Table<Foo>>();
+        table.Render(pb =>
+        {
+            pb.Add(a => a.TableSize, TableSize.Compact);
+        });
+        Assert.Contains("left: 28px;", cut.Markup);
     }
 
     [Theory]
@@ -1969,7 +2257,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsExtendButtonsInRowHeader_Ok(bool inRowHeader)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2000,7 +2288,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void RowButtonTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2015,13 +2303,24 @@ public class TableTest : BootstrapBlazorTestBase
                 });
             });
         });
+
+        cut.Contains("<div class=\"btn-group\">");
+
+        var table = cut.FindComponent<Table<Foo>>();
+        Assert.NotNull(table);
+
+        table.Render(pb =>
+        {
+            pb.Add(a => a.IsGroupExtendButtons, false);
+        });
+        cut.Contains("<div class=\"btn-separate\">");
     }
 
     [Fact]
     public void ShowExtendButtons_Table_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2045,7 +2344,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void OnCellRender_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2078,7 +2377,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void OnCellRender_ValueTemplate_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2107,7 +2406,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsFixedFooter_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2136,7 +2435,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowFooter_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2169,7 +2468,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void TableFooter_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2197,7 +2496,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsHideFooterWhenNoData_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2221,19 +2520,19 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("table-footer-test");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsHideFooterWhenNoData, false);
         });
         cut.WaitForAssertion(() => cut.Contains("table-footer-test"));
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.Items, null);
         });
         cut.WaitForAssertion(() => cut.Contains("table-footer-test"));
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.Items, null);
             pb.Add(a => a.IsHideFooterWhenNoData, true);
@@ -2248,7 +2547,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var row = 0;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2266,7 +2565,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Equal(0, row);
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.OnBeforeRenderRow, foo => row++);
         });
@@ -2279,7 +2578,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void FooterTemplate_Ok(TableRenderMode mode)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2307,7 +2606,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void Filterable_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2331,7 +2630,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task Filterable_Virtualize()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2372,7 +2671,7 @@ public class TableTest : BootstrapBlazorTestBase
         var clickCallback = false;
         var confirmCallback = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2392,6 +2691,9 @@ public class TableTest : BootstrapBlazorTestBase
                 {
                     builder.OpenComponent<TableToolbarPopConfirmButton<Foo>>(0);
                     builder.AddAttribute(1, nameof(TableToolbarPopConfirmButton<Foo>.Text), "test");
+                    builder.AddAttribute(5, nameof(TableToolbarPopConfirmButton<Foo>.TooltipText), "test-tooltip");
+                    builder.AddAttribute(6, nameof(TableToolbarPopConfirmButton<Foo>.TooltipPlacement), Placement.Bottom);
+                    builder.AddAttribute(7, nameof(TableToolbarPopConfirmButton<Foo>.TooltipTrigger), "hover");
                     builder.AddAttribute(3, nameof(TableToolbarPopConfirmButton<Foo>.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, e =>
                     {
                         clicked = true;
@@ -2412,6 +2714,9 @@ public class TableTest : BootstrapBlazorTestBase
         });
 
         var button = cut.FindComponent<PopConfirmButton>();
+        Assert.Equal("test-tooltip", button.Instance.TooltipText);
+        Assert.Equal(Placement.Bottom, button.Instance.TooltipPlacement);
+        Assert.Equal("hover", button.Instance.TooltipTrigger);
         await cut.InvokeAsync(() => button.Instance.OnConfirm!.Invoke());
         Assert.True(clickCallback);
         Assert.True(clicked);
@@ -2426,7 +2731,7 @@ public class TableTest : BootstrapBlazorTestBase
         var clickWithoutRender = false;
         var selected = 0;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2520,7 +2825,7 @@ public class TableTest : BootstrapBlazorTestBase
             new() { Name = "Test2", Complete = false },
             new() { Name = "Test3", Complete = true },
         };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2573,7 +2878,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var clickCallback = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2610,7 +2915,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ToolbarButton_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2628,7 +2933,7 @@ public class TableTest : BootstrapBlazorTestBase
                 pb.Add(a => a.TableToolbarTemplate, builder =>
                 {
                     builder.OpenComponent<TableToolbarButton<Foo>>(0);
-                    builder.AddAttribute(1, nameof(TableToolbarButton<Foo>.Text), "test-after");
+                    builder.AddAttribute(1, nameof(TableToolbarButton<>.Text), "test-after");
                     builder.CloseComponent();
                 });
                 pb.Add(a => a.TableToolbarBeforeTemplate, builder =>
@@ -2661,7 +2966,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void CustomerToolbarButton_Disable()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2689,19 +2994,19 @@ public class TableTest : BootstrapBlazorTestBase
         var button = cut.FindComponents<Button>().First(b => b.Instance.Text == "test-async");
         cut.InvokeAsync(() => button.Instance.OnClickWithoutRender!.Invoke());
         var toolbar = cut.FindComponent<TableToolbar<Foo>>();
-        toolbar.SetParametersAndRender();
+        toolbar.Render();
     }
 
     [Fact]
     public void TableToolbar_Null()
     {
-        var cut = Context.RenderComponent<TableToolbarButton<Foo>>();
+        var cut = Context.Render<TableToolbarButton<Foo>>();
         Assert.Equal("", cut.Markup);
 
-        var cut1 = Context.RenderComponent<TableToolbarPopConfirmButton<Foo>>();
+        var cut1 = Context.Render<TableToolbarPopConfirmButton<Foo>>();
         Assert.Equal("", cut1.Markup);
 
-        var cut2 = Context.RenderComponent<TableToolbarComponent<Foo>>();
+        var cut2 = Context.Render<TableToolbarComponent<Foo>>();
         Assert.Equal("", cut2.Markup);
     }
 
@@ -2709,7 +3014,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ScrollMode_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<Table<Foo>>(pb =>
@@ -2731,7 +3036,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.NotNull(virtualComponent);
 
         var table = cut.FindComponent<Table<Foo>>();
-        var exception = Assert.Throws<InvalidOperationException>(() => table.SetParametersAndRender(pb =>
+        var exception = Assert.Throws<InvalidOperationException>(() => table.Render(pb =>
         {
             pb.Add(a => a.IsTree, true);
         }));
@@ -2742,7 +3047,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowEmpty_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2762,7 +3067,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("colspan=\"1\"");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DetailRowTemplate, foo => builder => builder.AddContent(0, foo.Name));
         });
@@ -2774,7 +3079,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var isVirtual = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2830,7 +3135,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void RenderPlaceHolderRow_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2860,7 +3165,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("table-cell is-ph");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendButtons, true);
         });
@@ -2874,7 +3179,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var showDetail = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2917,7 +3222,7 @@ public class TableTest : BootstrapBlazorTestBase
         var items = Foo.GenerateFoo(localizer, 4);
         Foo? currentDetailRow = null;
         var toggleDetailRow = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -2962,7 +3267,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 更改为手风琴模式
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsAccordion, true);
         });
@@ -2973,7 +3278,7 @@ public class TableTest : BootstrapBlazorTestBase
             await table.Instance.ExpandDetailRow(items[2]);
             await table.Instance.ExpandDetailRow(items[3]);
         });
-        table.SetParametersAndRender();
+        table.Render();
         rows = cut.FindAll(".detail-row-test");
         Assert.Equal(4, rows.Count);
 
@@ -2992,7 +3297,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var edited = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3042,7 +3347,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void MultiHeaderTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3069,7 +3374,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void HeaderTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3095,7 +3400,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColumnToolboxTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3122,7 +3427,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var sorted = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3158,12 +3463,12 @@ public class TableTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => table.Instance.ResetSortAsync());
 
         var column = cut.FindComponent<TableColumn<Foo, string>>();
-        column.SetParametersAndRender(pb =>
+        column.Render(pb =>
         {
             pb.Add(a => a.DefaultSort, true);
         });
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.OnSort, null);
         });
@@ -3175,7 +3480,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         // 外部未排序，组件内部自动排序
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3212,7 +3517,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowFilterHeader_Ok(bool showCheckboxText)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3235,6 +3540,30 @@ public class TableTest : BootstrapBlazorTestBase
                 });
             });
         });
+
+        if (showCheckboxText == false)
+        {
+            cut.Contains("width: 36px;");
+        }
+        else
+        {
+            cut.Contains("width: 80px;");
+        }
+
+        var table = cut.FindComponent<Table<Foo>>();
+        table.Render(pb =>
+        {
+            pb.Add(a => a.TableSize, TableSize.Compact);
+        });
+
+        if (showCheckboxText == false)
+        {
+            cut.Contains("width: 28px;");
+        }
+        else
+        {
+            cut.Contains("width: 80px;");
+        }
     }
 
     [Theory]
@@ -3243,7 +3572,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowFilterHeader_ExtendButton_Ok(bool fixedHeader)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3267,7 +3596,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task ShowDetailRow_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3302,7 +3631,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsDetails_Ok(bool? isDetails)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3335,7 +3664,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColSpan_OK()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3382,7 +3711,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsTree_Items()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -3406,7 +3735,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task IsTree_OnQuery()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -3444,7 +3773,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task IsTree_OnTreeExpand()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -3476,7 +3805,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void IsTree_TableRowEqualityComparer()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTreeTable<Cat>>(pb => pb.Add(a => a.ModelEqualityComparer, (x, y) => x.Id == y.Id));
         });
@@ -3489,7 +3818,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void IsTree_KeyAttribute()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTreeTable<Cat>>(pb => pb.Add(a => a.CustomKeyAttribute, typeof(CatKeyAttribute)));
         });
@@ -3502,7 +3831,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void IsTree_EqualityComparer()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTreeTable<Dummy>>();
         });
@@ -3515,7 +3844,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void IsTree_Equality()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTreeTable<Dog>>();
         });
@@ -3531,7 +3860,7 @@ public class TableTest : BootstrapBlazorTestBase
         // 展开树状节点
         // 重新查询后节点依然展开
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<Table<FooTree>>(pb =>
@@ -3579,7 +3908,7 @@ public class TableTest : BootstrapBlazorTestBase
         nodes = cut.FindAll("tbody tr");
         Assert.Equal(4, nodes.Count);
 
-        table.SetParametersAndRender(pb => pb.Add(a => a.OnTreeExpand, null));
+        table.Render(pb => pb.Add(a => a.OnTreeExpand, null));
         await Assert.ThrowsAsync<InvalidOperationException>(() => table.Instance.QueryAsync());
     }
 
@@ -3589,7 +3918,7 @@ public class TableTest : BootstrapBlazorTestBase
         // 收起树状节点
         // 重新查询后节点依然收起
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -3690,7 +4019,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task IsTree_OnQuery_NoKey()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooNoKeyTree>>(pb =>
             {
@@ -3736,7 +4065,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task IsTree_ToggleTreeRow()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -3808,7 +4137,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task InCell_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3834,6 +4163,19 @@ public class TableTest : BootstrapBlazorTestBase
         });
         var button = cut.Find("tbody tr td button");
         await cut.InvokeAsync(() => button.Click());
+
+        // 增加 Validate 测试
+        // 设置姓名为 null 保存按钮不成功
+        var nameField = cut.Find("tbody tr td input");
+        Assert.Equal("张三 0001", nameField.GetAttribute("value"));
+
+        await cut.InvokeAsync(() => nameField.Change(""));
+        Assert.Contains("is-invalid", nameField.ToMarkup());
+        await cut.InvokeAsync(() => button.Click());
+
+        await cut.InvokeAsync(() => nameField.Change("张三 0001"));
+        Assert.Contains("is-valid", nameField.ToMarkup());
+        await cut.InvokeAsync(() => button.Click());
     }
 
     [Fact]
@@ -3844,7 +4186,7 @@ public class TableTest : BootstrapBlazorTestBase
             Name = "test_name"
         };
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3869,7 +4211,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Null(searchModel.Name);
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowAdvancedSearch, false);
         });
@@ -3881,7 +4223,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void SearchTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3904,7 +4246,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.NotNull(table.Instance.SearchModel);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.SearchModel, null);
             pb.Add(a => a.CreateSearchModelCallback, () => new Foo());
@@ -3916,7 +4258,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task SearchTemplate_Null()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3949,7 +4291,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowSearchTextTooltip_Ok(bool showTooltip)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -3986,7 +4328,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowResetButton_Ok(bool showResetButton)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4022,7 +4364,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ShowSearchButton_Ok(bool showSearchButton)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4050,7 +4392,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task SearchText_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4098,7 +4440,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var reset = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4134,7 +4476,7 @@ public class TableTest : BootstrapBlazorTestBase
         var clicked = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4161,7 +4503,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 设置 非多选模式
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb => pb.Add(a => a.IsMultipleSelect, true));
+        table.Render(pb => pb.Add(a => a.IsMultipleSelect, true));
 
         clicked = false;
         await cut.InvokeAsync(() => row.Click());
@@ -4172,7 +4514,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.True(clicked);
 
         // 设置 Table 模式
-        table.SetParametersAndRender(pb => pb.Add(a => a.RenderMode, TableRenderMode.Table));
+        table.Render(pb => pb.Add(a => a.RenderMode, TableRenderMode.Table));
 
         clicked = false;
         row = cut.Find("tbody tr");
@@ -4187,7 +4529,7 @@ public class TableTest : BootstrapBlazorTestBase
         var clicked = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4218,7 +4560,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4246,7 +4588,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 卡片模式下点击编辑按钮
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.RenderMode, TableRenderMode.CardView);
         });
@@ -4261,7 +4603,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4298,7 +4640,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         var btn = cut.Find(selector);
         cut.InvokeAsync(() => btn.Click());
-        Context.DisposeComponents();
+        Context.Dispose();
     }
 
     [Fact]
@@ -4306,7 +4648,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4345,7 +4687,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableCellComponent_Ok()
     {
-        var cut = Context.RenderComponent<TableCellComponent>();
+        var cut = Context.Render<TableCellComponent>();
         cut.MarkupMatches("");
     }
 
@@ -4354,7 +4696,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4388,7 +4730,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4426,7 +4768,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var clicked = false;
         var clicked2 = false;
-        var cut1 = Context.RenderComponent<TableExtensionButton>(pb =>
+        var cut1 = Context.Render<TableExtensionButton>(pb =>
         {
             pb.Add(a => a.ChildContent, builder =>
             {
@@ -4452,15 +4794,15 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableCellButton_Null()
     {
-        var cut = Context.RenderComponent<TableCellButton>();
+        var cut = Context.Render<TableCellButton>();
         Assert.Equal("", cut.Markup);
-        Context.DisposeComponents();
+        Context.Dispose();
     }
 
     [Fact]
     public void TableCellNormalButton_Ok()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<TableExtensionButton>(pb =>
             {
@@ -4478,7 +4820,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4507,7 +4849,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Equal(0, checkboxs);
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb => pb.Add(a => a.Items, Array.Empty<Foo>()));
+        table.Render(pb => pb.Add(a => a.Items, Array.Empty<Foo>()));
         input = cut.FindComponents<Checkbox<Foo>>()[0];
         await cut.InvokeAsync(input.Instance.OnToggleClick);
     }
@@ -4517,7 +4859,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4551,7 +4893,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var Items = Foo.GenerateFoo(localizer, 6);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4643,7 +4985,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4668,7 +5010,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4693,7 +5035,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4710,7 +5052,7 @@ public class TableTest : BootstrapBlazorTestBase
         });
         var table = cut.FindComponent<Table<Foo>>();
         var seqs = table.Instance.Columns.Select(i => i.Order);
-        Assert.Equal(new List<int>() { 20, 40, 50, 60, 70, 100, -3 }, seqs);
+        Assert.Equal([20, 40, 50, 60, 70, 100, -3], seqs);
     }
 
     [Fact]
@@ -4718,7 +5060,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4743,7 +5085,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4768,7 +5110,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4795,7 +5137,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4821,7 +5163,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4845,7 +5187,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task TableColumn_DefaultSortOrder()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4878,7 +5220,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4900,9 +5242,10 @@ public class TableTest : BootstrapBlazorTestBase
         });
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Equal(2, table.Instance.Columns.Count);
-        Assert.Equal(2, table.Instance.GetVisibleColumns().Count());
+        Assert.Equal(2, table.Instance.GetVisibleColumns().Count);
 
-        table.SetParametersAndRender(pb =>
+        // 更新 Ignore 值
+        table.Render(pb =>
         {
             pb.Add(a => a.TableColumns, foo => builder =>
             {
@@ -4918,9 +5261,37 @@ public class TableTest : BootstrapBlazorTestBase
                 builder.CloseComponent();
             });
         });
+
         table = cut.FindComponent<Table<Foo>>();
         Assert.Equal(2, table.Instance.Columns.Count);
         Assert.Single(table.Instance.GetVisibleColumns());
+
+        // 更新 Ignore 值
+        table.Render(pb =>
+        {
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Address");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                builder.AddAttribute(3, "Ignore", false);
+                builder.CloseComponent();
+
+                builder.OpenComponent<TableColumn<Foo, int>>(0);
+                builder.AddAttribute(1, "Field", 1);
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, nameof(Foo.Count), typeof(int)));
+                builder.CloseComponent();
+            });
+        });
+
+        table = cut.FindComponent<Table<Foo>>();
+        Assert.Equal(3, table.Instance.Columns.Count);
+        Assert.Equal(3, table.Instance.GetVisibleColumns().Count);
     }
 
     [Theory]
@@ -4930,7 +5301,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4957,7 +5328,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -4988,7 +5359,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5094,14 +5465,14 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableColumn_GetDisplayName()
     {
-        var cut = Context.RenderComponent<TableColumn<Foo, string>>(pb =>
+        var cut = Context.Render<TableColumn<Foo, string>>(pb =>
         {
             pb.Add(a => a.Text, null);
             pb.Add(a => a.FieldName, null);
         });
         Assert.Equal("", cut.Instance.GetDisplayName());
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.FieldName, "FieldName");
         });
@@ -5111,7 +5482,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableColumn_EditTemplate()
     {
-        var cut = Context.RenderComponent<TableColumn<Foo, string>>(pb =>
+        var cut = Context.Render<TableColumn<Foo, string>>(pb =>
         {
             pb.Add(a => a.EditTemplate, new RenderFragment<Foo>(foo => builder =>
             {
@@ -5136,7 +5507,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableColumn_SearchTemplate()
     {
-        var cut = Context.RenderComponent<TableColumn<Foo, string>>(pb =>
+        var cut = Context.Render<TableColumn<Foo, string>>(pb =>
         {
             pb.Add(a => a.SearchTemplate, new RenderFragment<Foo>(foo => builder =>
             {
@@ -5161,7 +5532,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableColumn_GetFieldName()
     {
-        var cut = Context.RenderComponent<TableColumn<Foo, string>>(pb =>
+        var cut = Context.Render<TableColumn<Foo, string>>(pb =>
         {
             pb.Add(a => a.FieldName, "Name");
         });
@@ -5169,7 +5540,7 @@ public class TableTest : BootstrapBlazorTestBase
         var v = col.GetFieldName();
         Assert.Equal("Name", v);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.FieldName, "");
             pb.Add(a => a.Field, "Name");
@@ -5184,7 +5555,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -5203,7 +5574,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void TableColumn_ComplexObject()
     {
-        var cut = Context.RenderComponent<TableColumn<MockComplexFoo, string>>(pb =>
+        var cut = Context.Render<TableColumn<MockComplexFoo, string>>(pb =>
         {
             pb.Add(a => a.Field, "");
         });
@@ -5211,7 +5582,7 @@ public class TableTest : BootstrapBlazorTestBase
         var v = col.GetFieldName();
         Assert.Equal("", v);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.FieldExpression, Utility.GenerateValueExpression(new MockComplexFoo(), "Foo.Name", typeof(string)));
         });
@@ -5227,7 +5598,7 @@ public class TableTest : BootstrapBlazorTestBase
         {
             new() { Name = "test1", Foo = Foo.Generate(localizer) }
         };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<MockComplexFoo>>(pb =>
             {
@@ -5251,7 +5622,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var selectedRows = new List<Foo>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5289,7 +5660,7 @@ public class TableTest : BootstrapBlazorTestBase
         var items = FooNoKeyTree.Generate(localizer);
         var selectedRows = new List<FooNoKeyTree>();
         selectedRows.AddRange(items.Take(2));
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooNoKeyTree>>(pb =>
             {
@@ -5322,7 +5693,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var selectedRows = new List<Foo>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5332,6 +5703,7 @@ public class TableTest : BootstrapBlazorTestBase
                 pb.Add(a => a.ShowLoading, false);
                 pb.Add(a => a.RenderModeResponsiveWidth, BreakPoint.Medium);
                 pb.Add(a => a.SetRowClassFormatter, foo => "test_row_class");
+                pb.Add(a => a.SetRowStyleFormatter, foo => "height: 36px;");
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -5342,13 +5714,14 @@ public class TableTest : BootstrapBlazorTestBase
             });
         });
         cut.Contains("test_row_class");
+        cut.Contains("height: 36px;");
     }
 
     [Fact]
     public void OnQueryAsync_DataService()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5371,7 +5744,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5404,7 +5777,7 @@ public class TableTest : BootstrapBlazorTestBase
         var modify = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5456,7 +5829,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5489,7 +5862,7 @@ public class TableTest : BootstrapBlazorTestBase
         var itemChanged = ItemChangedType.Add;
         var afterSave = false;
         var afterModify = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5543,7 +5916,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var afterCancelSave = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5584,7 +5957,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var afterCancelSave = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5639,7 +6012,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var afterCancelSave = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5692,7 +6065,7 @@ public class TableTest : BootstrapBlazorTestBase
         var added = false;
         var afterModify = false;
         var itemChanged = ItemChangedType.Update;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5760,7 +6133,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var added = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5809,7 +6182,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         var edited = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5845,7 +6218,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -5866,69 +6239,16 @@ public class TableTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => table.Instance.QueryAsync());
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void ReloadColumnWidth_Ok(bool fixedHeader)
-    {
-        Context.JSInterop.Setup<string>("reloadColumnWidth", "test_client_name").SetResult("""
-        {
-            "cols": [
-                { "name": "Name", "width": 20 },
-                { "name": "Address", "width": 80 }
-            ],
-            "table": 100
-        }
-        """);
-        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
-        {
-            pb.AddChildContent<Table<Foo>>(pb =>
-            {
-                pb.Add(a => a.IsFixedHeader, fixedHeader);
-                pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.ClientTableName, "test_client_name");
-                pb.Add(a => a.AllowResizing, true);
-                pb.Add(a => a.Items, items);
-                pb.Add(a => a.TableColumns, foo => builder =>
-                {
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Name");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                    builder.CloseComponent();
-
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Address");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.CloseComponent();
-                });
-            });
-        });
-        var table = cut.FindComponent<Table<Foo>>();
-        Assert.Contains("style=\"width: 100px;\"", table.Markup);
-    }
-
     [Fact]
-    public void ReloadColumnWidth_TableWidth_Invalid()
+    public async Task FitAllColumnWidth_Ok()
     {
-        Context.JSInterop.Setup<string>("reloadColumnWidth", "test_client_name").SetResult("""
-            {
-                "cols": [
-                    { "name": "Name", "width": 20 },
-                    { "name": "Address", "width": 80 }
-                ],
-                "table": 123.12
-            }
-            """);
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.ClientTableName, "test_client_name");
                 pb.Add(a => a.AllowResizing, true);
                 pb.Add(a => a.Items, items);
                 pb.Add(a => a.TableColumns, foo => builder =>
@@ -5946,85 +6266,8 @@ public class TableTest : BootstrapBlazorTestBase
             });
         });
         var table = cut.FindComponent<Table<Foo>>();
-        Assert.Contains("<col style=\"width: 20px;\" />", table.Markup);
-    }
-
-    [Fact]
-    public void ReloadColumnWidth_NoTableElement()
-    {
-        Context.JSInterop.Setup<string>("reloadColumnWidth", "test_client_name").SetResult("""
-            {
-                "cols": [
-                    { "name": "Name", "width": 20 },
-                    { "name": "Address", "width": 80 }
-                ]
-            }
-            """);
-        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
-        {
-            pb.AddChildContent<Table<Foo>>(pb =>
-            {
-                pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.ClientTableName, "test_client_name");
-                pb.Add(a => a.AllowResizing, true);
-                pb.Add(a => a.Items, items);
-                pb.Add(a => a.TableColumns, foo => builder =>
-                {
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Name");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                    builder.CloseComponent();
-
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Address");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.CloseComponent();
-                });
-            });
-        });
-        var table = cut.FindComponent<Table<Foo>>();
-        Assert.Contains("<col style=\"width: 20px;\" />", table.Markup);
-    }
-
-    [Fact]
-    public void ReloadColumnWidth_Columns_Invalid()
-    {
-        Context.JSInterop.Setup<string>("reloadColumnWidth", "test_client_name").SetResult("""
-            {
-                "cols": {
-                    "name": "Name",
-                    "name": "Address"
-                }
-            }
-            """);
-        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
-        {
-            pb.AddChildContent<Table<Foo>>(pb =>
-            {
-                pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.ClientTableName, "test_client_name");
-                pb.Add(a => a.AllowResizing, true);
-                pb.Add(a => a.Items, items);
-                pb.Add(a => a.TableColumns, foo => builder =>
-                {
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Name");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                    builder.CloseComponent();
-
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Address");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.CloseComponent();
-                });
-            });
-        });
-        var table = cut.FindComponent<Table<Foo>>();
-        Assert.DoesNotContain("<col style=\"width: 20px;\" />", table.Markup);
+        Assert.NotNull(table);
+        await cut.InvokeAsync(() => table.Instance.FitAllColumnWidth());
     }
 
     [Fact]
@@ -6033,7 +6276,7 @@ public class TableTest : BootstrapBlazorTestBase
         var selectedRows = new List<Foo>();
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6071,7 +6314,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6100,7 +6343,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Equal(2, cols.Count);
 
         var resp = cut.FindComponent<Responsive>().Instance;
-        await resp.OnResize(BreakPoint.Small);
+        await cut.InvokeAsync(() => resp.OnResize(BreakPoint.Small));
 
         var row = table.Find("tbody > tr");
         Assert.Equal(1, row.ChildElementCount);
@@ -6112,7 +6355,7 @@ public class TableTest : BootstrapBlazorTestBase
         Context.JSInterop.Setup<BreakPoint>("getResponsive").SetResult(BreakPoint.Small);
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6145,7 +6388,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var sortList = new List<string>();
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6187,7 +6430,7 @@ public class TableTest : BootstrapBlazorTestBase
             compared = true;
             return x!.GetValue("Id") == y!.GetValue("Id");
         };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<DynamicObject>>(pb =>
             {
@@ -6204,11 +6447,134 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task DynamicContext_InCell_ChangeDetection_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<DynamicObject>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.IsMultipleSelect, true);
+                pb.Add(a => a.EditMode, EditMode.InCell);
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowExtendButtons, true);
+                pb.Add(a => a.DynamicContext, CreateDynamicContext(localizer));
+            });
+        });
+
+        // 选中行
+        var input = cut.FindComponents<Checkbox<DynamicObject>>()[1];
+        await cut.InvokeAsync(input.Instance.OnToggleClick);
+
+        // 点击编辑按钮
+        var editButton = cut.FindComponents<TableToolbarButton<DynamicObject>>()[1];
+        await cut.InvokeAsync(() => editButton.Instance.OnClick.InvokeAsync());
+
+        // 点击取消按钮
+        var cancelButton = cut.FindComponents<Button>().First(i => i.Instance.Text == "取消");
+        await cut.InvokeAsync(() => cancelButton.Instance.OnClick.InvokeAsync());
+
+        InvokeCleanCache();
+
+        var items = GetDynamicTypeCacheItems();
+        Assert.NotNull(items);
+        Assert.Empty(items);
+    }
+
+    [Fact]
+    public async Task DynamicContext_EditForm_ChangeDetection_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<DynamicObject>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.IsMultipleSelect, true);
+                pb.Add(a => a.EditMode, EditMode.EditForm);
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowExtendButtons, true);
+                pb.Add(a => a.DynamicContext, CreateDynamicContext(localizer));
+            });
+        });
+
+        // 选中行
+        var input = cut.FindComponents<Checkbox<DynamicObject>>()[1];
+        await cut.InvokeAsync(input.Instance.OnToggleClick);
+
+        // 点击编辑按钮
+        var editButton = cut.FindComponents<TableToolbarButton<DynamicObject>>()[1];
+        await cut.InvokeAsync(() => editButton.Instance.OnClick.InvokeAsync());
+
+        // 点击取消按钮
+        var cancelButton = cut.FindComponents<Button>().First(i => i.Instance.Text == "取消");
+        await cut.InvokeAsync(() => cancelButton.Instance.OnClick.InvokeAsync());
+
+        InvokeCleanCache();
+
+        var items = GetDynamicTypeCacheItems();
+        Assert.NotNull(items);
+        Assert.Empty(items);
+    }
+
+    [Fact]
+    public async Task DynamicContext_IsMultipleSelect_ChangeDetection_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<DynamicObject>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.IsMultipleSelect, true);
+                pb.Add(a => a.DynamicContext, CreateDynamicContext(localizer));
+            });
+        });
+
+        InvokeCleanCache();
+
+        var items = GetDynamicTypeCacheItems();
+        Assert.NotNull(items);
+        Assert.Empty(items);
+    }
+
+    private static IEnumerable<Type> GetDynamicTypeCacheItems()
+    {
+        // 表格使用动态创建类型后，不能被 Blazor 底层 ChangeDetection 缓存，否则生成的动态 Assembly 无法被释放
+        // 通过反射查看是否被缓存
+        var type = typeof(ComponentBase).Assembly.GetType("Microsoft.AspNetCore.Components.ChangeDetection");
+        Assert.NotNull(type);
+
+        var fieldInfo = type.GetField("_immutableObjectTypesCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(fieldInfo);
+
+        IEnumerable<Type>? items = null;
+        if (fieldInfo.GetValue(null) is ConcurrentDictionary<Type, bool> cache)
+        {
+            items = cache.Keys.Where(i => i.Assembly.GetName().Name == "BootstrapBlazor_DynamicAssembly");
+        }
+
+        return items ?? [];
+    }
+
+    private static void InvokeCleanCache()
+    {
+        var type = typeof(Table<>).Assembly.GetType("BootstrapBlazor.Components.ChangeDetectionCleanTask");
+        Assert.NotNull(type);
+
+        var methodInfo = type.GetMethod("DoTask", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(methodInfo);
+
+        methodInfo.Invoke(null, null);
+    }
+
+    [Fact]
     public async Task DynamicContext_Add()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<DynamicObject>>(pb =>
             {
@@ -6233,7 +6599,7 @@ public class TableTest : BootstrapBlazorTestBase
         data.Rows.Add("test01");
         data.AcceptChanges();
 
-        var cut = Context.RenderComponent<Table<DynamicObject>>(pb =>
+        var cut = Context.Render<Table<DynamicObject>>(pb =>
         {
             pb.Add(a => a.RenderMode, TableRenderMode.Table);
             pb.Add(a => a.DynamicContext, new DataTableDynamicContext(data));
@@ -6246,7 +6612,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<DynamicObject>>(pb =>
             {
@@ -6275,7 +6641,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockDynamicTable>(pb =>
             {
@@ -6299,7 +6665,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockDynamicTable>(pb =>
             {
@@ -6315,15 +6681,15 @@ public class TableTest : BootstrapBlazorTestBase
     public void CustomerSearches_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.OnQueryAsync, op =>
                 {
-                    op.CustomerSearches.AddRange(new List<IFilterAction>() { new MockFilterAction() });
-                    op.Filters.AddRange(new List<IFilterAction>() { new MockFilterAction() });
+                    op.CustomerSearches.AddRange([new MockFilterAction()]);
+                    op.Filters.AddRange([new MockFilterAction()]);
                     return OnQueryAsync(localizer, isAdvanceSearch: false, isFilter: false)(op);
                 });
                 pb.Add(a => a.TableColumns, foo => builder =>
@@ -6342,7 +6708,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6362,7 +6728,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.DoesNotContain("<div class=\"table-toolbar\"></div>", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowToolbar, true);
         });
@@ -6374,7 +6740,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6396,7 +6762,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Contains("fa-regular fa-pen-to-square", table.Markup);
         Assert.Contains("fa-solid fa-xmark", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowDefaultButtons, false);
         });
@@ -6411,7 +6777,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6431,7 +6797,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-solid fa-plus", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowAddButton, false);
         });
@@ -6443,7 +6809,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6464,7 +6830,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-solid fa-arrows-rotate", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowRefresh, false);
         });
@@ -6476,7 +6842,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6496,7 +6862,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-regular fa-pen-to-square", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowEditButton, false);
         });
@@ -6508,7 +6874,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6532,7 +6898,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 即使选中行，编辑按钮仍然被禁用
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DisableEditButtonCallback, items =>
             {
@@ -6547,7 +6913,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6571,7 +6937,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 新建按钮被禁用
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DisableAddButtonCallback, items =>
             {
@@ -6586,7 +6952,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6606,7 +6972,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-solid fa-xmark", table.Markup);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowDeleteButton, false);
         });
@@ -6618,7 +6984,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6641,7 +7007,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 即使选中行，编辑按钮仍然被禁用
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DisableDeleteButtonCallback, items =>
             {
@@ -6656,7 +7022,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6678,7 +7044,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-regular fa-pen-to-square", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButtonCallback, foo => false);
         });
@@ -6690,7 +7056,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6712,7 +7078,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-solid fa-xmark", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendDeleteButtonCallback, foo => false);
         });
@@ -6724,7 +7090,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6748,13 +7114,13 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-regular fa-pen-to-square", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButton, false);
         });
         Assert.DoesNotContain("fa-regular fa-pen-to-square", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButton, true);
             pb.Add(a => a.ShowDefaultButtons, false);
@@ -6772,7 +7138,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6795,13 +7161,13 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Contains("fa-solid fa-xmark", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendDeleteButton, false);
         });
         Assert.DoesNotContain("fa-solid fa-xmark", table.Find("tbody").ToMarkup());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendDeleteButton, true);
             pb.Add(a => a.ShowDefaultButtons, false);
@@ -6821,7 +7187,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6851,7 +7217,7 @@ public class TableTest : BootstrapBlazorTestBase
         var modal = cut.FindComponent<Modal>();
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButtonCallback, foo => false);
         });
@@ -6872,7 +7238,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6912,7 +7278,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6939,7 +7305,7 @@ public class TableTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(input.Instance.OnToggleClick);
         await cut.InvokeAsync(() => deleteButton.Instance.OnBeforeClick());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowExtendDeleteButtonCallback, foo => false);
         });
@@ -6950,7 +7316,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void OnConfirm_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -6978,7 +7344,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.InvokeAsync(input.Instance.OnToggleClick);
         cut.InvokeAsync(() => deleteButton.Instance.OnConfirm!.Invoke());
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.PageItemsSource, [1, 2, 4, 8]);
         });
@@ -6989,7 +7355,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ExportAsync_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7028,11 +7394,11 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 可见列为 2 列
         var columns = table.Instance.GetVisibleColumns();
-        Assert.Equal(2, columns.Count());
+        Assert.Equal(2, columns.Count);
 
         // 由于设置了 IgnoreWhenExport 为 true 所以导出时不包含 Address 列
         ITableExportDataContext<Foo>? exportContext = null;
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.OnExportAsync, context =>
             {
@@ -7058,7 +7424,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void TableRender_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7075,7 +7441,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task EFCoreDataService_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7104,7 +7470,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7135,7 +7501,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7160,7 +7526,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7183,7 +7549,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var data = CreateDynamicContext(localizer);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<DynamicObject>>(pb =>
             {
@@ -7205,7 +7571,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void TreeNodeConverter_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -7233,7 +7599,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void GetTreeClassString_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<FooTree>>(pb =>
             {
@@ -7272,7 +7638,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var callback = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7301,7 +7667,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var callback = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7331,12 +7697,13 @@ public class TableTest : BootstrapBlazorTestBase
     public void TableSize_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.TableSize, TableSize.Normal);
+                pb.Add(a => a.IsMultipleSelect, true);
                 pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
@@ -7350,7 +7717,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.DoesNotContain("table-sm");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.TableSize, TableSize.Compact);
         });
@@ -7361,12 +7728,12 @@ public class TableTest : BootstrapBlazorTestBase
     public void EmptyImage_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.ShowEmpty, true);
                 pb.Add(a => a.EmptyImage, "/images/empty.jpg");
                 pb.Add(a => a.TableColumns, foo => builder =>
@@ -7385,12 +7752,12 @@ public class TableTest : BootstrapBlazorTestBase
     public void EmptyTemplate_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.ShowEmpty, true);
                 pb.Add(a => a.EmptyTemplate, builder => builder.AddContent(0, "empty-test"));
                 pb.Add(a => a.TableColumns, foo => builder =>
@@ -7409,7 +7776,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsBordered_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7433,7 +7800,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var index = 0;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -7463,7 +7830,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task AutoRefresh_Cancel()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7489,12 +7856,12 @@ public class TableTest : BootstrapBlazorTestBase
     public void HeaderStyle_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.HeaderStyle, TableHeaderStyle.Light);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
@@ -7508,7 +7875,7 @@ public class TableTest : BootstrapBlazorTestBase
         cut.Contains("table-light");
 
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.HeaderStyle, TableHeaderStyle.Dark);
         });
@@ -7519,12 +7886,12 @@ public class TableTest : BootstrapBlazorTestBase
     public void HeaderTextWrap_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.HeaderTextWrap, true);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
@@ -7543,12 +7910,12 @@ public class TableTest : BootstrapBlazorTestBase
     public void TableColumn_HeaderTextWrap_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.HeaderTextWrap, false);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
@@ -7564,21 +7931,28 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void OnColumnCreating_Ok()
+    public async Task OnColumnCreating_Ok()
     {
+        var visible = false;
         var creating = false;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.Items, items);
-                pb.Add(a => a.OnColumnCreating, cols =>
+                pb.Add(a => a.OnColumnCreating, async cols =>
                 {
-                    creating = true;
-                    return Task.CompletedTask;
+                    await Task.Yield();
+
+                    var column = cols.Find(i => i.GetFieldName() == nameof(Foo.Address));
+                    if (column != null)
+                    {
+                        column.Visible = visible;
+                        creating = true;
+                    }
                 });
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
@@ -7586,10 +7960,34 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.AddAttribute(1, "Field", "Name");
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
                     builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Address");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.AddAttribute(3, "Visible", true);
+                    builder.CloseComponent();
                 });
             });
         });
-        Assert.True(creating);
+
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.True(creating);
+            var table = cut.FindComponent<Table<Foo>>();
+            Assert.Single(table.Instance.GetVisibleColumns());
+        });
+
+        // 二次渲染触发 OnColumnCreating
+        visible = true;
+        creating = false;
+        cut.Render();
+
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.True(creating);
+            var table = cut.FindComponent<Table<Foo>>();
+            Assert.Equal(2, table.Instance.GetVisibleColumns().Count);
+        });
     }
 
     [Fact]
@@ -7598,11 +7996,11 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var op = Context.Services.GetRequiredService<IOptionsMonitor<BootstrapBlazorOptions>>();
         op.CurrentValue.TableSettings.TableRenderMode = TableRenderMode.CardView;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -7635,11 +8033,11 @@ public class TableTest : BootstrapBlazorTestBase
     public void AutoGenerateColumns_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo>());
+                pb.Add(a => a.Items, []);
                 pb.Add(a => a.AutoGenerateColumns, true);
             });
         });
@@ -7652,7 +8050,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void QueryItems_Null()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7674,11 +8072,11 @@ public class TableTest : BootstrapBlazorTestBase
     public void GetValue_ColorPicker()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new() { Name = null }, new() { Name = "#fff" } });
+                pb.Add(a => a.Items, [new() { Name = null }, new() { Name = "#fff" }]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -7696,7 +8094,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task GetValue_LookupServiceKey()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7714,19 +8112,19 @@ public class TableTest : BootstrapBlazorTestBase
         });
 
         var col = cut.FindComponent<TableColumn<Foo, bool>>();
-        col.SetParametersAndRender(pb =>
+        col.Render(pb =>
         {
-            pb.Add(a => a.Lookup, new List<SelectedItem>()
-            {
+            pb.Add(a => a.Lookup,
+            [
                 new("True", "True"),
                 new("False", "False")
-            });
+            ]);
         });
 
         var table = cut.FindComponent<MockTable>();
         await cut.InvokeAsync(() => table.Instance.QueryAsync());
 
-        col.SetParametersAndRender(pb =>
+        col.Render(pb =>
         {
             pb.Add(a => a.ShowTips, true);
             pb.Add(a => a.Lookup, null);
@@ -7739,7 +8137,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task GetValue_LookupServiceKey_Null()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7766,7 +8164,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task GetValue_LookupServiceKey_NullText()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7793,7 +8191,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task GetValue_LookupServiceKey_NullValue()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -7864,11 +8262,11 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task Value_Formatter()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new() { Count = 10 } });
+                pb.Add(a => a.Items, [new() { Count = 10 }]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, int>>(0);
@@ -7883,7 +8281,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         var col = cut.FindComponent<TableColumn<Foo, int>>();
         var formatted = false;
-        col.SetParametersAndRender(pb =>
+        col.Render(pb =>
         {
             pb.Add(a => a.Formatter, new Func<object?, Task<string?>>(obj =>
             {
@@ -7902,11 +8300,11 @@ public class TableTest : BootstrapBlazorTestBase
     public void Value_Enum()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, EnumEducation?>>(0);
@@ -7917,9 +8315,9 @@ public class TableTest : BootstrapBlazorTestBase
             });
         });
         var table = cut.FindComponent<MockTable>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
-            pb.Add(a => a.Items, new List<Foo> { new() { Education = EnumEducation.Primary } });
+            pb.Add(a => a.Items, [new() { Education = EnumEducation.Primary }]);
         });
     }
 
@@ -7927,11 +8325,11 @@ public class TableTest : BootstrapBlazorTestBase
     public void Value_Datetime()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, DateTime?>>(0);
@@ -7948,11 +8346,11 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var items = new List<string>() { "test-0" };
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new() { Hobby = ["test-1", "test-2"] } });
+                pb.Add(a => a.Items, [new() { Hobby = ["test-1", "test-2"] }]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, IEnumerable<string>>>(0);
@@ -7968,11 +8366,11 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void RenderCell_CanWrite_False()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockRenderCellTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<ReadonlyFoo> { new() });
+                pb.Add(a => a.Items, [new()]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<ReadonlyFoo, string>>(0);
@@ -7992,7 +8390,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Equal("<div class=\"form-control is-display\"></div>", cut1.Markup);
 
         var col = cut.FindComponent<TableColumn<ReadonlyFoo, string>>();
-        col.SetParametersAndRender(pb =>
+        col.Render(pb =>
         {
             pb.Add(a => a.Template, foo => builder => builder.AddContent(0, "test-Template"));
         });
@@ -8026,7 +8424,9 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void PlaceHolder_Ok()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        // 占位符仅在 OnQueryAsync 不为空时生效
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -8042,6 +8442,7 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
                     builder.CloseComponent();
                 });
+                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
             });
         });
 
@@ -8050,7 +8451,7 @@ public class TableTest : BootstrapBlazorTestBase
         var tds = cut1.FindAll("td");
         Assert.Equal(4, tds.Count);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsExtendButtonsInRowHeader, false);
         });
@@ -8062,11 +8463,11 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void RenderCell_Editable_True()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
-                pb.Add(a => a.Items, new List<Foo> { new ReadonlyFoo() });
+                pb.Add(a => a.Items, [new ReadonlyFoo()]);
                 pb.Add(a => a.TableColumns, foo => builder =>
                 {
                     builder.OpenComponent<TableColumn<Foo, string>>(0);
@@ -8086,7 +8487,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.Contains("<input type=\"text\"", cut1.Markup);
 
         var col = cut.FindComponent<TableColumn<Foo, string>>();
-        col.SetParametersAndRender(pb =>
+        col.Render(pb =>
         {
             pb.Add(a => a.EditTemplate, foo => builder => builder.AddContent(0, "test-EditTemplate"));
         });
@@ -8100,7 +8501,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task OnQuery_Save()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8131,7 +8532,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task OnQuery_Delete()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<MockTable>(pb =>
             {
@@ -8158,7 +8559,7 @@ public class TableTest : BootstrapBlazorTestBase
     public async Task OnQuery_Add()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8185,7 +8586,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsAutoCollapsedToolbarButton_Ok()
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8212,7 +8613,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void IsMarkupString_Ok()
     {
         var items = new Foo[] { new() { Name = "<div>Name - Test</div>", Address = "<div>Address - Test</div>" } };
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8247,7 +8648,7 @@ public class TableTest : BootstrapBlazorTestBase
         var items = Foo.GenerateFoo(localizer, 2);
         var context = CreateDynamicContext(localizer);
         var rows = context.GetItems().Take(1);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<DynamicObject>>(pb =>
             {
@@ -8269,7 +8670,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         context = CreateDynamicContext(localizer);
         var table = cut.FindComponent<Table<DynamicObject>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.DynamicContext, context);
         });
@@ -8280,7 +8681,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8296,7 +8697,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         // 设置斑马线
         var table = cut.FindComponent<Table<Foo>>();
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.IsStriped, true);
         });
@@ -8310,7 +8711,7 @@ public class TableTest : BootstrapBlazorTestBase
         var items = Foo.GenerateFoo(localizer, 2);
         items[0].Complete = true;
         items[1].Complete = false;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8324,7 +8725,7 @@ public class TableTest : BootstrapBlazorTestBase
         var table = cut.FindComponent<Table<Foo>>();
         Assert.Equal(3, table.FindComponents<Checkbox<Foo>>().Count);
 
-        table.SetParametersAndRender(pb =>
+        table.Render(pb =>
         {
             pb.Add(a => a.ShowRowCheckboxCallback, foo => foo.Complete);
         });
@@ -8337,63 +8738,25 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public async Task AutoFitContentCallback_Ok()
-    {
-        var name = "";
-        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
-        {
-            pb.AddChildContent<Table<Foo>>(pb =>
-            {
-                pb.Add(a => a.RenderMode, TableRenderMode.Table);
-                pb.Add(a => a.AllowDragColumn, true);
-                pb.Add(a => a.ClientTableName, "table-unit-test");
-                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
-                pb.Add(a => a.OnAutoFitContentAsync, fieldName =>
-                {
-                    name = fieldName;
-                    return Task.FromResult(100.65f);
-                });
-                pb.Add(a => a.TableColumns, foo => builder =>
-                {
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(1, "Field", "Name");
-                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
-                    builder.CloseComponent();
-
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(3, "Field", "Address");
-                    builder.AddAttribute(4, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
-                    builder.CloseComponent();
-                });
-            });
-        });
-
-        var table = cut.FindComponent<Table<Foo>>();
-        float v = 0f;
-        await cut.InvokeAsync(async () => v = await table.Instance.AutoFitContentCallback("DateTime"));
-        Assert.Equal(100.65f, v);
-    }
-
-    [Fact]
     public async Task AllowDragColumn_Ok()
     {
-        Context.JSInterop.Setup<List<string>>("reloadColumnOrder", "table-unit-test").SetResult(["Name", "Address"]);
-        Context.JSInterop.SetupVoid("saveColumnOrder").SetVoidResult();
-
         var name = "";
+        TableColumnClientStatus? clientState = null;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.AllowDragColumn, true);
+                pb.Add(a => a.ShowToolbar, true);
+                pb.Add(a => a.ShowColumnList, true);
                 pb.Add(a => a.ClientTableName, "table-unit-test");
                 pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
-                pb.Add(a => a.OnDragColumnEndAsync, (fieldName, columns) =>
+                pb.Add(a => a.OnTableColumnClientStatusChanged, (fieldName, state) =>
                 {
                     name = fieldName;
+                    clientState = state;
                     return Task.CompletedTask;
                 });
                 pb.Add(a => a.TableColumns, foo => builder =>
@@ -8403,47 +8766,70 @@ public class TableTest : BootstrapBlazorTestBase
                     builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
                     builder.CloseComponent();
 
-                    builder.OpenComponent<TableColumn<Foo, string>>(0);
-                    builder.AddAttribute(3, "Field", "Address");
-                    builder.AddAttribute(4, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.OpenComponent<TableColumn<Foo, string>>(3);
+                    builder.AddAttribute(4, "Field", "Address");
+                    builder.AddAttribute(5, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, int>>(6);
+                    builder.AddAttribute(7, "Field", foo.Count);
+                    builder.AddAttribute(8, "FieldExpression", Utility.GenerateValueExpression(foo, "Count", typeof(int)));
                     builder.CloseComponent();
                 });
             });
         });
 
         var table = cut.FindComponent<Table<Foo>>();
+        await cut.InvokeAsync(() => table.Instance.DragColumnCallback(1, 0));
+        Assert.Equal("Address", name);
+        Assert.NotNull(clientState);
+
+        var columns = cut.FindAll("th");
+        Assert.Contains("地址", columns[0].InnerHtml);
+        Assert.Contains("姓名", columns[1].InnerHtml);
+
         await cut.InvokeAsync(async () =>
         {
-            await table.Instance.DragColumnCallback(1, 0);
-            Assert.Equal("Address", name);
+            await table.Instance.DragColumnCallback(2, 3);
         });
 
+        // 更改可见列
+        var checkbox = cut.Find(".dropdown-item .form-check-input");
+
+        await cut.InvokeAsync(() => checkbox.Click());
+        await cut.InvokeAsync(() => checkbox.Click());
+
         await cut.InvokeAsync(async () =>
         {
-            var columns = cut.FindAll("th");
-            Assert.Contains("地址", columns[0].InnerHtml);
-            Assert.Contains("姓名", columns[1].InnerHtml);
-
-            await table.Instance.DragColumnCallback(2, 3);
+            await table.Instance.DragColumnCallback(3, 4);
         });
     }
 
     [Fact]
-    public async Task OnResizeColumnCallback_Ok()
+    public async Task OnTableColumnClientStatusChanged_ResizeColumn_Ok()
     {
+        var state = new TableColumnClientStatus();
+        state.TableWidth = 500;
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Name), Visible = false, DisplayName = "Name-Display" });
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Address), Visible = true, Width = 120, DisplayName = "Address-Display" });
+
+        Context.JSInterop.Setup<TableColumnClientStatus>("getColumnStates", "test").SetResult(state);
+
         var name = "";
-        var width = 0f;
+        TableColumnClientStatus? clientState = null;
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
+                pb.Add(a => a.ClientTableName, "test");
                 pb.Add(a => a.RenderMode, TableRenderMode.Table);
                 pb.Add(a => a.AllowResizing, true);
-                pb.Add(a => a.OnResizeColumnAsync, (field, colWidth) =>
+                pb.Add(a => a.FitColumnWidthIncludeHeader, true);
+                pb.Add(a => a.OnTableColumnClientStatusChanged, (field, state) =>
                 {
                     name = field;
-                    width = colWidth;
+                    clientState = state;
                     return Task.CompletedTask;
                 });
                 pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
@@ -8463,11 +8849,157 @@ public class TableTest : BootstrapBlazorTestBase
         });
 
         var table = cut.FindComponent<Table<Foo>>();
-        await cut.InvokeAsync(() => table.Instance.ResizeColumnCallback(1, 100));
+        var newState = new TableColumnClientStatus();
+        newState.TableWidth = 100;
+        newState.Columns.Add(new TableColumnState() { Name = "Name", Width = 50 });
+        newState.Columns.Add(new TableColumnState() { Name = "Address", Width = 50 });
+        await cut.InvokeAsync(() => table.Instance.ResizeColumnCallback(nameof(Foo.Address), newState));
         Assert.Equal("Address", name);
-        Assert.Equal(100, width);
+        Assert.NotNull(clientState);
+    }
 
-        await cut.InvokeAsync(() => table.Instance.ResizeColumnCallback(20, 100));
+    [Fact]
+    public async Task ClearTableColumnClientStatus_Ok()
+    {
+        var state = new TableColumnClientStatus();
+        state.TableWidth = 220;
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Name), Visible = true, Width = 100 });
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Address), Visible = true, Width = 120 });
+
+        Context.JSInterop.Setup<TableColumnClientStatus>("getColumnStates", "test_clear").SetResult(state);
+        var invoker = Context.JSInterop.SetupVoid("clearColumnStates", "test_clear");
+        invoker.SetVoidResult();
+
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.ClientTableName, "test_clear");
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.AllowResizing, true);
+                pb.Add(a => a.OnQueryAsync, OnQueryAsync(localizer));
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, "Width", 80);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(3, "Field", "Address");
+                    builder.AddAttribute(4, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        // 由于启用了客户端持久化 Name 列宽使用 100 而非 80
+        var table = cut.FindComponent<Table<Foo>>();
+        var colGroup = table.Find("colgroup");
+        Assert.Contains("style=\"width: 100px;\"", colGroup.ToMarkup());
+        Assert.Contains("style=\"width: 120px;\"", colGroup.ToMarkup());
+
+        // 清除客户端状态
+        await cut.InvokeAsync(() => table.Instance.ClearTableColumnClientStatus());
+        invoker.VerifyInvoke("clearColumnStates");
+        Assert.Contains("style=\"width: 80px;\"", colGroup.ToMarkup());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ReloadColumnWidth_Ok(bool fixedHeader)
+    {
+        var state = new TableColumnClientStatus();
+        state.TableWidth = 220;
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Name), Visible = true, Width = 100, DisplayName = "Name-Display" });
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Address), Visible = true, Width = 120, DisplayName = "Address-Display" });
+
+        Context.JSInterop.Setup<TableColumnClientStatus>("getColumnStates", "test_client_name").SetResult(state);
+
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var items = Foo.GenerateFoo(localizer, 2);
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.IsFixedHeader, fixedHeader);
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.ClientTableName, "test_client_name");
+                pb.Add(a => a.AllowResizing, true);
+                pb.Add(a => a.Items, items);
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Address");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+        var table = cut.FindComponent<Table<Foo>>();
+
+        Assert.Contains("style=\"width: 220px;\"", table.Markup);
+        if (fixedHeader)
+        {
+            Assert.Contains("style=\"width: 215px;\"", table.Markup);
+        }
+    }
+
+    [Fact]
+    public async Task OnLoadTableColumnClientStatus_Ok()
+    {
+        var state = new TableColumnClientStatus();
+        state.TableWidth = 100;
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Name), Visible = true, Width = 100, DisplayName = "Name-Display" });
+        state.Columns.Add(new TableColumnState() { Name = nameof(Foo.Address), Visible = false, Width = 120, DisplayName = "Address-Display" });
+
+        var loaded = false;
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var items = Foo.GenerateFoo(localizer, 2);
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.ShowColumnList, true);
+                pb.Add(a => a.AllowResizing, true);
+                pb.Add(a => a.Items, items);
+                pb.Add(a => a.OnLoadTableColumnClientStatus, () =>
+                {
+                    loaded = true;
+                    return Task.FromResult(state);
+                });
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Address");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.True(loaded);
+        });
+
+        var table = cut.FindComponent<Table<Foo>>();
+        Assert.Single(table.Instance.GetVisibleColumns());
+        Assert.Contains("style=\"width: 100px;\"", table.Markup);
     }
 
     [Theory]
@@ -8478,7 +9010,7 @@ public class TableTest : BootstrapBlazorTestBase
     public void ColumnWidth_Ok(int? width, bool fixedHeader)
     {
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8510,7 +9042,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         Context.JSInterop.Setup<string?>("getResponsive").SetResult("Large");
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8534,7 +9066,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         IEnumerable<ITableColumn>? columns = null;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8571,7 +9103,7 @@ public class TableTest : BootstrapBlazorTestBase
         var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
         var items = Foo.GenerateFoo(localizer, 2);
         IEnumerable<ITableColumn>? columns = null;
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<Foo>>(pb =>
             {
@@ -8603,7 +9135,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void CreateTItem_Ok()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Table<MockFoo>>(pb =>
             {
@@ -8637,7 +9169,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
         {
-            Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+            Context.Render<BootstrapBlazorRoot>(pb =>
             {
                 pb.Add(a => a.EnableErrorLogger, false);
                 pb.AddChildContent<Table<MockFoo>>(pb =>
@@ -8671,7 +9203,7 @@ public class TableTest : BootstrapBlazorTestBase
     [Fact]
     public void Modify_Ok()
     {
-        var cut = Context.RenderComponent<Table<Foo>>(pb =>
+        var cut = Context.Render<Table<Foo>>(pb =>
         {
             pb.Add(a => a.TableColumns, foo => builder =>
             {
@@ -8688,7 +9220,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.False(ProhibitEdit(cut.Instance));
         Assert.False(ProhibitDelete(cut.Instance));
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButton, true);
             pb.Add(a => a.ShowExtendDeleteButton, true);
@@ -8698,7 +9230,7 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.True(ProhibitEdit(cut.Instance));
         Assert.True(ProhibitDelete(cut.Instance));
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowExtendEditButton, true);
             pb.Add(a => a.ShowExtendDeleteButton, true);
@@ -8717,6 +9249,143 @@ public class TableTest : BootstrapBlazorTestBase
         Assert.True(ProhibitEdit(cut.Instance));
         Assert.True(ProhibitDelete(cut.Instance));
     }
+
+    [Fact]
+    public void Table_Sortable()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<Table<Foo>>(pb =>
+        {
+            pb.AddCascadingValue<ISortableList>(new SortableList());
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+            });
+            pb.Add(a => a.RenderMode, TableRenderMode.Table);
+            pb.Add(a => a.Items, Foo.GenerateFoo(localizer));
+        });
+    }
+
+    [Theory]
+    [InlineData(TableRenderMode.Table)]
+    [InlineData(TableRenderMode.CardView)]
+    public void Table_ShowMoreButton_Ok(TableRenderMode mode)
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<Table<Foo>>(pb =>
+        {
+            pb.AddCascadingValue<ISortableList>(new SortableList());
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+            });
+            pb.Add(a => a.RenderMode, mode);
+            pb.Add(a => a.Items, Foo.GenerateFoo(localizer));
+            pb.Add(a => a.ShowExtendButtons, true);
+            pb.Add(a => a.ShowMoreButton, true);
+            pb.Add(a => a.MoreButtonDropdownTemplate, context => builder =>
+            {
+                builder.AddMarkupContent(0, "<div>dropdown-item-more-template</div>");
+            });
+        });
+
+        cut.Contains("<div>dropdown-item-more-template</div");
+        cut.Contains("更多");
+
+        cut.Render(pb =>
+        {
+            pb.Add(a => a.MoreButtonText, "more_button");
+            pb.Add(a => a.MoreButtonColor, Color.Danger);
+        });
+
+        cut.Contains("more_button");
+    }
+
+    [Fact]
+    public async Task ShowColumnListControls_Ok()
+    {
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<Table<Foo>>(pb =>
+        {
+            pb.AddCascadingValue<ISortableList>(new SortableList());
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Address");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                builder.CloseComponent();
+            });
+            pb.Add(a => a.RenderMode, TableRenderMode.Table);
+            pb.Add(a => a.Items, Foo.GenerateFoo(localizer));
+            pb.Add(a => a.ShowToolbar, true);
+            pb.Add(a => a.ShowColumnList, true);
+            pb.Add(a => a.ShowColumnListControls, true);
+        });
+
+        cut.Contains("dropdown-menu dropdown-menu-end shadow dropdown-menu-controls");
+        cut.Contains("column-list-items");
+
+        var buttons = cut.FindAll(".column-list-controls button");
+        Assert.Equal(2, buttons.Count);
+
+        await cut.InvokeAsync(() => buttons[1].Click());
+        await cut.InvokeAsync(() => buttons[0].Click());
+    }
+
+    [Fact]
+    public async Task UpdateTableState_Ok()
+    {
+        var argumentsCount = 0;
+        object? obj = null;
+        Context.JSInterop.SetupVoid("updateTableState", invocationMatcher =>
+        {
+            argumentsCount = invocationMatcher.Arguments.Count;
+            obj = invocationMatcher.Arguments[1];
+            return true;
+        });
+
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<Table<Foo>>(pb =>
+        {
+            pb.Add(a => a.ScrollIntoViewBehavior, ScrollIntoViewBehavior.Auto);
+            pb.Add(a => a.TableColumns, foo => builder =>
+            {
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Name");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                builder.CloseComponent();
+
+                builder.OpenComponent<TableColumn<Foo, string>>(0);
+                builder.AddAttribute(1, "Field", "Address");
+                builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Address", typeof(string)));
+                builder.CloseComponent();
+            });
+            pb.Add(a => a.RenderMode, TableRenderMode.Table);
+            pb.Add(a => a.Items, Foo.GenerateFoo(localizer));
+        });
+
+        // 更新客户端持久化键值
+        cut.Render(pb =>
+        {
+            pb.Add(a => a.ClientTableName, "table-unit-test");
+        });
+
+        Assert.Equal(2, argumentsCount);
+        Assert.NotNull(obj);
+    }
+
+    class SortableList : ISortableList { }
 
     static bool ProhibitEdit(Table<Foo> @this)
     {
@@ -9013,7 +9682,7 @@ public class TableTest : BootstrapBlazorTestBase
     {
         public TableRenderMode ShouldBeTable()
         {
-            ScreenSize = BreakPoint.Large;
+            InvokeScreen(BreakPoint.Large);
             RenderModeResponsiveWidth = BreakPoint.Medium;
             RenderMode = TableRenderMode.Auto;
             return base.ActiveRenderMode;
@@ -9021,7 +9690,7 @@ public class TableTest : BootstrapBlazorTestBase
 
         public TableRenderMode ShouldBeCardView()
         {
-            ScreenSize = BreakPoint.ExtraSmall;
+            InvokeScreen(BreakPoint.ExtraSmall);
             RenderModeResponsiveWidth = BreakPoint.Medium;
             RenderMode = TableRenderMode.Auto;
             return base.ActiveRenderMode;
@@ -9061,6 +9730,14 @@ public class TableTest : BootstrapBlazorTestBase
         public string? TestGetCellClassString(ITableColumn col) => base.GetCellClassString(col, false, false);
 
         public string? TestGetHeaderWrapperClassString(ITableColumn col) => base.GetHeaderWrapperClassString(col);
+
+        private void InvokeScreen(object val)
+        {
+            var fieldInfo = GetType().BaseType!.GetField("_screenSize", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(fieldInfo);
+
+            fieldInfo.SetValue(this, val);
+        }
     }
 
     private class MockRenderCellTable : Table<ReadonlyFoo>

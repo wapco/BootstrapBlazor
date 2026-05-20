@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -10,10 +10,10 @@ public class ListGroupTest : BootstrapBlazorTestBase
     [Fact]
     public void Items_Ok()
     {
-        var cut = Context.RenderComponent<ListGroup<Foo>>();
+        var cut = Context.Render<ListGroup<Foo>>();
         cut.MarkupMatches("<div class=\"list-group\"><div class=\"list-group-body scroll\"></div></div>");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Items,
             [
@@ -27,10 +27,10 @@ public class ListGroupTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void ClickItem_Ok()
+    public async Task ClickItem_Ok()
     {
         var clicked = false;
-        var cut = Context.RenderComponent<ListGroup<Foo>>(pb =>
+        var cut = Context.Render<ListGroup<Foo>>(pb =>
         {
             pb.Add(a => a.Items,
             [
@@ -44,14 +44,36 @@ public class ListGroupTest : BootstrapBlazorTestBase
             });
         });
         var item = cut.Find(".list-group-item");
-        item.Click();
-        cut.WaitForState(() => clicked);
+        await cut.InvokeAsync(() => item.Click());
+        Assert.True(clicked);
+    }
+
+    [Fact]
+    public async Task DoubleClickItem_Ok()
+    {
+        var clicked = false;
+        var cut = Context.Render<ListGroup<Foo>>(pb =>
+        {
+            pb.Add(a => a.Items,
+            [
+                new() { Name = "Test 1" },
+                new() { Name = "Test 1" }
+            ]);
+            pb.Add(a => a.OnDoubleClickItem, foo =>
+            {
+                clicked = true;
+                return Task.CompletedTask;
+            });
+        });
+        var item = cut.Find(".list-group-item");
+        await cut.InvokeAsync(() => item.DoubleClick());
+        Assert.True(clicked);
     }
 
     [Fact]
     public void GetItemText_Ok()
     {
-        var cut = Context.RenderComponent<ListGroup<Foo?>>(pb =>
+        var cut = Context.Render<ListGroup<Foo?>>(pb =>
         {
             pb.Add(a => a.Items,
             [
@@ -64,7 +86,7 @@ public class ListGroupTest : BootstrapBlazorTestBase
         var item = cut.Find(".list-group-item");
         Assert.Equal("Test 1", item.TextContent);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.GetItemDisplayText, null);
         });
@@ -74,7 +96,7 @@ public class ListGroupTest : BootstrapBlazorTestBase
     [Fact]
     public void HeaderText_Ok()
     {
-        var cut = Context.RenderComponent<ListGroup<Foo>>(pb =>
+        var cut = Context.Render<ListGroup<Foo>>(pb =>
         {
             pb.Add(a => a.Items,
             [
@@ -90,7 +112,7 @@ public class ListGroupTest : BootstrapBlazorTestBase
     [Fact]
     public void HeaderTemplate_Ok()
     {
-        var cut = Context.RenderComponent<ListGroup<Foo>>(pb =>
+        var cut = Context.Render<ListGroup<Foo>>(pb =>
         {
             pb.Add(a => a.Items,
             [
@@ -109,7 +131,7 @@ public class ListGroupTest : BootstrapBlazorTestBase
     [Fact]
     public void ItemTemplate_Ok()
     {
-        var cut = Context.RenderComponent<ListGroup<Foo>>(pb =>
+        var cut = Context.Render<ListGroup<Foo>>(pb =>
         {
             pb.Add(a => a.Items,
             [

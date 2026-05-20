@@ -1,4 +1,4 @@
-﻿@page "/sortable-list"
+@page "/sortable-list"
 @inject IStringLocalizer<SortableLists> Localizer
 @inject IStringLocalizer<Foo> FooLocalizer
 
@@ -85,7 +85,7 @@
             </SortableList>
         </div>
         <div class="col-12 col-sm-6">
-            <SortableList Option="_option32">
+            <SortableList Option="_option32" OnAdd="OnAddClone">
                 <div class="sl-list row g-2">
                     @foreach (var item in ItemsCloneRight)
                     {
@@ -187,7 +187,7 @@
            Introduction="@Localizer["SortableListTableIntro"]"
            Name="Table">
     <SortableList Option="_optionTable" OnUpdate="OnUpdateTable">
-        <Table TItem="Foo" Items="@Items" IsStriped="true" ShowLineNo="true">
+        <Table TItem="Foo" Items="@Items" IsStriped="true" ShowLineNo="true" RenderMode="TableRenderMode.Table">
             <TableColumns>
                 <TableColumn @bind-Field="@context.DateTime" Width="180" />
                 <TableColumn @bind-Field="@context.Name" />
@@ -268,4 +268,10 @@
     </div>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<AttributeTable Type="typeof(SortableList)"></AttributeTable>
+
+<AttributeTable Type="typeof(SortableListItem)"></AttributeTable>
+
+<AttributeTable Type="typeof(SortableOption)"></AttributeTable>
+
+<AttributeTable Type="typeof(SortableEvent)"></AttributeTable>

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -9,9 +9,10 @@ using System.Text.Json.Serialization;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// QueryPageOptions json converter
+/// <para lang="zh">QueryPageOptions 类序列化转换器</para>
+/// <para lang="en">QueryPageOptions json converter</para>
 /// </summary>
-public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
+public sealed class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
 {
     /// <summary>
     /// <inheritdoc/>
@@ -19,8 +20,6 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
     /// <param name="reader"></param>
     /// <param name="typeToConvert"></param>
     /// <param name="options"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public override QueryPageOptions? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var ret = new QueryPageOptions();
@@ -74,11 +73,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
                     else if (propertyName == "searchModel")
                     {
                         reader.Read();
-                        var val = JsonSerializer.Deserialize<object>(ref reader, options);
-                        if (val != null)
-                        {
-                            ret.SearchModel = val;
-                        }
+                        ReadSearchModel(ref reader, ret, options);
                     }
                     else if (propertyName == "pageIndex")
                     {
@@ -116,7 +111,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
                                 {
                                     break;
                                 }
-                                var val = JsonSerializer.Deserialize<SearchFilterAction>(ref reader, options);
+                                var val = JsonSerializer.Deserialize<SerializeFilterAction>(ref reader, options);
                                 if (val != null)
                                 {
                                     ret.Searches.Add(val);
@@ -135,7 +130,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
                                 {
                                     break;
                                 }
-                                var val = JsonSerializer.Deserialize<SearchFilterAction>(ref reader, options);
+                                var val = JsonSerializer.Deserialize<SerializeFilterAction>(ref reader, options);
                                 if (val != null)
                                 {
                                     ret.CustomerSearches.Add(val);
@@ -154,7 +149,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
                                 {
                                     break;
                                 }
-                                var val = JsonSerializer.Deserialize<SearchFilterAction>(ref reader, options);
+                                var val = JsonSerializer.Deserialize<SerializeFilterAction>(ref reader, options);
                                 if (val != null)
                                 {
                                     ret.AdvanceSearches.Add(val);
@@ -173,7 +168,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
                                 {
                                     break;
                                 }
-                                var val = JsonSerializer.Deserialize<SearchFilterAction>(ref reader, options);
+                                var val = JsonSerializer.Deserialize<SerializeFilterAction>(ref reader, options);
                                 if (val != null)
                                 {
                                     ret.Filters.Add(val);
@@ -203,7 +198,6 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
     /// <param name="writer"></param>
     /// <param name="value"></param>
     /// <param name="options"></param>
-    /// <exception cref="NotImplementedException"></exception>
     public override void Write(Utf8JsonWriter writer, QueryPageOptions value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -231,8 +225,7 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
         }
         if (value.SearchModel != null)
         {
-            writer.WritePropertyName("searchModel");
-            writer.WriteRawValue(JsonSerializer.Serialize(value.SearchModel, options));
+            WriteSearchModel(writer, value.SearchModel, options);
         }
         if (value.PageIndex > 1)
         {
@@ -259,7 +252,8 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
             writer.WriteStartArray("searches");
             foreach (var filter in value.Searches)
             {
-                writer.WriteRawValue(JsonSerializer.Serialize(filter, options));
+                var serializeFilterAction = new SerializeFilterAction() { Filter = filter.GetFilterConditions() };
+                writer.WriteRawValue(JsonSerializer.Serialize(serializeFilterAction, options));
             }
             writer.WriteEndArray();
         }
@@ -268,7 +262,8 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
             writer.WriteStartArray("customerSearches");
             foreach (var filter in value.CustomerSearches)
             {
-                writer.WriteRawValue(JsonSerializer.Serialize(filter, options));
+                var serializeFilterAction = new SerializeFilterAction() { Filter = filter.GetFilterConditions() };
+                writer.WriteRawValue(JsonSerializer.Serialize(serializeFilterAction, options));
             }
             writer.WriteEndArray();
         }
@@ -277,7 +272,8 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
             writer.WriteStartArray("advanceSearches");
             foreach (var filter in value.AdvanceSearches)
             {
-                writer.WriteRawValue(JsonSerializer.Serialize(filter, options));
+                var serializeFilterAction = new SerializeFilterAction() { Filter = filter.GetFilterConditions() };
+                writer.WriteRawValue(JsonSerializer.Serialize(serializeFilterAction, options));
             }
             writer.WriteEndArray();
         }
@@ -286,7 +282,8 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
             writer.WriteStartArray("filters");
             foreach (var filter in value.Filters)
             {
-                writer.WriteRawValue(JsonSerializer.Serialize(filter, options));
+                var serializeFilterAction = new SerializeFilterAction() { Filter = filter.GetFilterConditions() };
+                writer.WriteRawValue(JsonSerializer.Serialize(serializeFilterAction, options));
             }
             writer.WriteEndArray();
         }
@@ -299,5 +296,53 @@ public class JsonQueryPageOptionsConverter : JsonConverter<QueryPageOptions>
             writer.WriteBoolean("isTriggerByPagination", value.IsFirstQuery);
         }
         writer.WriteEndObject();
+    }
+
+    private static void WriteSearchModel(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject("searchModel");
+        writer.WriteString("type", value.GetType().AssemblyQualifiedName);
+        writer.WritePropertyName("value");
+        writer.WriteRawValue(JsonSerializer.Serialize(value, options));
+        writer.WriteEndObject();
+    }
+
+    private static void ReadSearchModel(ref Utf8JsonReader reader, QueryPageOptions value, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    break;
+                }
+
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = reader.GetString();
+                    if (propertyName == "type")
+                    {
+                        reader.Read();
+                        Type? type = TypeExtensions.GetSafeType(reader.GetString());
+
+                        reader.Read();
+                        propertyName = reader.GetString();
+                        if (propertyName == "value")
+                        {
+                            reader.Read();
+                            if (type != null)
+                            {
+                                value.SearchModel = JsonSerializer.Deserialize(ref reader, type, options);
+                            }
+                            else
+                            {
+                                value.SearchModel = JsonSerializer.Deserialize<object>(ref reader, options);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿@namespace BootstrapBlazor.Components
+@namespace BootstrapBlazor.Components
 @typeparam TItem
 
 <div class="float-start table-toolbar-button">
@@ -14,16 +14,19 @@
                     @if (button is TableToolbarButton<TItem> { IsShow: true } b)
                     {
                         <Button AdditionalAttributes="b.AdditionalAttributes" Size="b.Size"
-                                Color="@b.Color" Icon="@b.Icon" Text="@b.Text" IsAsync="@b.IsAsync"
+                                Color="@b.Color" Icon="@b.Icon" Text="@b.Text"
                                 OnClickWithoutRender="() => OnToolbarButtonClick(b)"
                                 TooltipText="@b.TooltipText" TooltipPlacement="@b.TooltipPlacement" TooltipTrigger="@b.TooltipTrigger"
-                                IsDisabled="GetDisabled(b)"></Button>
+                                IsAsync="@b.IsAsync" IsDisabled="GetDisabled(b)" IsKeepDisabled="@b.IsKeepDisabled"
+                                IsBlock="@b.IsBlock" IsOutline="@b.IsOutline"></Button>
                     }
                     else if (button is TableToolbarPopConfirmButton<TItem> { IsShow: true } pb)
                     {
                         <PopConfirmButton AdditionalAttributes="pb.AdditionalAttributes" CustomClass="@pb.CustomClass"
                                           Color="@pb.Color" Icon="@pb.Icon" Text="@pb.Text" Size="pb.Size" ShowShadow="@pb.ShowShadow"
                                           IsAsync="@pb.IsAsync" IsDisabled="GetDisabled(pb)" IsBlock="@pb.IsBlock" IsOutline="@pb.IsOutline"
+                                          TooltipText="@pb.TooltipText" TooltipPlacement="@pb.TooltipPlacement"
+                                          TooltipTrigger="@pb.TooltipTrigger"
                                           OnBeforeClick="@pb.OnBeforeClick" OnClose="@pb.OnClose" OnConfirm="() => OnConfirm(pb)"
                                           ConfirmIcon="@pb.ConfirmIcon" ConfirmButtonColor="@pb.ConfirmButtonColor"
                                           ConfirmButtonText="@pb.ConfirmButtonText" CloseButtonColor="@pb.CloseButtonColor"
@@ -33,8 +36,10 @@
                     }
                     else if (button is TableToolbarComponent<TItem> { IsShow: true } cb)
                     {
-                        <CascadingValue Value="OnGetSelectedRows" IsFixed="true">
-                            @cb.ChildContent
+                        <CascadingValue Value="button" IsFixed="true">
+                            <CascadingValue Value="OnGetSelectedRows" IsFixed="true">
+                                @cb.ChildContent
+                            </CascadingValue>
                         </CascadingValue>
                     }
                 }

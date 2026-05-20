@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -95,6 +95,7 @@ public sealed partial class DateTimePickers
     private bool _disableToday = true;
     private DateTime? _disabledNullValue = DateTime.Today;
     private DateTime _disabledValue = DateTime.Today;
+    private bool _isButton = false;
 
     private async Task<List<DateTime>> OnGetDisabledDaysCallback(DateTime start, DateTime end)
     {
@@ -139,158 +140,4 @@ public sealed partial class DateTimePickers
         _picker2.ClearDisabledDays();
         return Task.CompletedTask;
     }
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = "OnClickConfirm",
-            Description = Localizer["Event1"],
-            Type ="Action"
-        },
-        new()
-        {
-            Name = "ValueChanged",
-            Description = Localizer["Event2"],
-            Type ="EventCallback<DateTime?>"
-        },
-        new()
-        {
-            Name = "OnGetDisabledDaysCallback",
-            Description = Localizer["OnGetDisabledDaysCallbackEvent"],
-            Type ="Func<DateTime, DateTime, Task<List<DateTime>>>"
-        }
-    ];
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["Att1"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowSidebar",
-            Description = Localizer["Att2"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["Att3"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Format",
-            Description = Localizer["Att4"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = "yyyy-MM-dd"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["Att6"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Value",
-            Description = Localizer["Att8"],
-            Type = "TValue",
-            ValueList = "DateTime | DateTime?",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = nameof(DateTimePicker<DateTime>.FirstDayOfWeek),
-            Description = Localizer["AttrFirstDayOfWeek"],
-            Type = "DayOfWeek",
-            ValueList = " — ",
-            DefaultValue = "Sunday"
-        },
-        new()
-        {
-            Name = "ViewMode",
-            Description = Localizer["Att9"],
-            Type = "DatePickerViewMode",
-            ValueList = " Date / DateTime / Year / Month",
-            DefaultValue = "Date"
-        },
-        new() {
-            Name = "AutoClose",
-            Description = Localizer["AttrAutoClose"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "IsEditable",
-            Description = Localizer["AttrIsEditable"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "ShowLunar",
-            Description = Localizer["AttrShowLunar"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "ShowSolarTerm",
-            Description = Localizer["AttrShowSolarTerm"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "ShowFestivals",
-            Description = Localizer["AttrShowFestivals"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "ShowHolidays",
-            Description = Localizer["AttrShowHolidays"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "EnableDisabledDaysCache",
-            Description = Localizer["AttrEnableDisabledDaysCache"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "true"
-        },
-        new() {
-            Name = "DisplayDisabledDayAsEmpty",
-            Description = Localizer["AttrDisplayDisabledDayAsEmpty"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        }
-    ];
 }

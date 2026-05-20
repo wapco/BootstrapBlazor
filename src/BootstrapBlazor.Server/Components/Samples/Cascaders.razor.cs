@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -74,86 +74,8 @@ public sealed partial class Cascaders
         _items[2].AddItem(new CascaderItem("item3_child2", Localizer["item3_child2"]));
     }
 
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = nameof(Cascader<string>.OnSelectedItemChanged),
-            Description = Localizer["Event1"],
-            Type ="Func<CascaderItem[], Task>"
-        }
-    ];
-
-    private void OnValidate()
+    private async Task OnValidate()
     {
-        ValidateForm1.Validate();
+        await ValidateForm1.ValidateAsync();
     }
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["Att1"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["Att2"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "PlaceHolder",
-            Description = Localizer["Att3"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = Localizer["Att3Default"]!
-        },
-        new()
-        {
-            Name = "Class",
-            Description = Localizer["Att4"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = Localizer["Att5"],
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["Att6"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["Att7"],
-            Type = "IEnumerable<CascaderItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -8,12 +8,101 @@ using System.Globalization;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// IEditItem 扩展方法
+/// <para lang="zh">IEditItem 扩展方法</para>
+/// <para lang="en">IEditItem extension methods</para>
 /// </summary>
 public static class IEditItemExtensions
 {
     /// <summary>
-    /// 继承 class 标签中设置的参数值
+    /// <para lang="zh">将 ITableColumn 转换为 ISearchItem</para>
+    /// <para lang="en">Convert ITableColumn to ISearchItem</para>
+    /// </summary>
+    /// <param name="column"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static ISearchItem ParseSearchItem(this ITableColumn column, SearchFormLocalizerOptions options)
+    {
+        var item = new SearchItem(column.GetFieldName(), column.PropertyType, column.GetDisplayName())
+        {
+            Cols = column.Cols,
+            ShowLabelTooltip = column.ShowLabelTooltip,
+            GroupName = column.GroupName,
+            GroupOrder = column.GroupOrder,
+            Order = column.Order,
+            Metadata = column.BuildSearchMetadata(options)
+        };
+
+        return item;
+    }
+
+    private static ISearchFormItemMetadata BuildSearchMetadata(this ITableColumn column, SearchFormLocalizerOptions options)
+    {
+        // 自定义搜索项逻辑
+        if (column.SearchFormItemMetadata is not null)
+        {
+            return column.SearchFormItemMetadata;
+        }
+
+        ISearchFormItemMetadata? metaData = null;
+        var fieldType = column.PropertyType;
+        var type = Nullable.GetUnderlyingType(fieldType) ?? fieldType;
+        if (Utility.IsCheckboxList(type, column.ComponentType))
+        {
+            metaData = new CheckboxListSearchMetadata()
+            {
+                Items = column.Items
+            };
+        }
+        else if (column.IsLookup())
+        {
+            metaData = new SelectSearchMetadata()
+            {
+                Items = column.Items
+            };
+        }
+        else if (type.IsEnum)
+        {
+            metaData = new SelectSearchMetadata()
+            {
+                Items = type.ToSelectList(new SelectedItem() { Value = "", Text = options.SelectAllText }),
+            };
+        }
+        else if (fieldType.IsNumberWithDotSeparator())
+        {
+            metaData = new NumberSearchMetadata()
+            {
+                StartValueLabelText = options.NumberStartValueLabelText,
+                EndValueLabelText = options.NumberEndValueLabelText,
+                ValueType = type
+            };
+        }
+        else if (fieldType.IsBoolean())
+        {
+            metaData = new SelectSearchMetadata()
+            {
+                Items = new List<SelectedItem>()
+                {
+                    new SelectedItem() { Value = "", Text = options.BooleanAllText },
+                    new SelectedItem() { Value = "True", Text = options.BooleanTrueText },
+                    new SelectedItem() { Value = "False", Text = options.BooleanFalseText }
+                }
+            };
+        }
+        else if (fieldType.IsDateTime())
+        {
+            metaData = new DateTimeRangeSearchMetadata();
+        }
+        else
+        {
+            metaData = new StringSearchMetadata() { FilterAction = FilterAction.Contains };
+        }
+
+        return metaData;
+    }
+
+    /// <summary>
+    /// <para lang="zh">继承 class 标签中设置的参数值</para>
+    /// <para lang="en">Inherit the parameter value set in the class tag</para>
     /// </summary>
     /// <param name="dest"></param>
     /// <param name="source"></param>
@@ -33,7 +122,8 @@ public static class IEditItemExtensions
     }
 
     /// <summary>
-    /// 属性赋值方法
+    /// <para lang="zh">属性赋值方法</para>
+    /// <para lang="en">Property assignment method</para>
     /// </summary>
     /// <param name="dest"></param>
     /// <param name="source"></param>
@@ -112,14 +202,15 @@ public static class IEditItemExtensions
         if (col.IsRequiredWhenAdd.HasValue) dest.IsRequiredWhenAdd = col.IsRequiredWhenAdd;
         if (col.IsRequiredWhenEdit.HasValue) dest.IsRequiredWhenEdit = col.IsRequiredWhenEdit;
         if (col.IgnoreWhenExport.HasValue) dest.IgnoreWhenExport = col.IgnoreWhenExport;
+        if (col.SearchFormItemMetadata != null) dest.SearchFormItemMetadata = col.SearchFormItemMetadata;
     }
 
     /// <summary>
-    /// 将 ITableColumn 集合转化为 IFilterAction 集合
+    /// <para lang="zh">将 ITableColumn 集合转化为 IFilterAction 集合</para>
+    /// <para lang="en">Convert attributes to IFilterAction collection</para>
     /// </summary>
     /// <param name="columns"></param>
     /// <param name="searchText"></param>
-    /// <returns></returns>
     public static List<IFilterAction> ToSearches(this IEnumerable<ITableColumn> columns, string? searchText)
     {
         var searches = new List<IFilterAction>();
@@ -175,12 +266,12 @@ public static class IEditItemExtensions
     }
 
     /// <summary>
-    /// 当前单元格方法
+    /// <para lang="zh">当前单元格方法</para>
+    /// <para lang="en">Render cell method</para>
     /// </summary>
     /// <typeparam name="TItem"></typeparam>
     /// <param name="col"></param>
     /// <param name="item"></param>
-    /// <returns></returns>
     public static RenderFragment RenderValue<TItem>(this ITableColumn col, TItem item) => builder =>
     {
         var val = col.GetItemValue(item);
@@ -192,44 +283,46 @@ public static class IEditItemExtensions
         {
             builder.AddContent(20, v1.RenderSwitch());
         }
+        else if (col.Formatter != null)
+        {
+            // <para lang="zh">格式化回调委托</para>
+            // <para lang="en">Format callback delegate</para>
+            builder.OpenComponent<TableFormatContent>(40);
+            builder.AddAttribute(45, nameof(TableFormatContent.Formatter), col.Formatter);
+            builder.AddAttribute(46, nameof(TableFormatContent.Item),
+                new TableColumnContext<TItem, object?>(item, val));
+            builder.CloseComponent();
+        }
         else
         {
             string? content;
-            if (col.Formatter != null)
+            if (!string.IsNullOrEmpty(col.FormatString))
             {
-                // 格式化回调委托
-                builder.OpenComponent<TableFormatContent>(40);
-                builder.AddAttribute(45, nameof(TableFormatContent.Formatter), col.Formatter);
-                builder.AddAttribute(46, nameof(TableFormatContent.Item), new TableColumnContext<TItem, object?>(item, val));
-                builder.CloseComponent();
+                // <para lang="zh">格式化字符串</para>
+                // <para lang="en">Format string</para>
+                content = Utility.Format(val, col.FormatString);
+            }
+            else if (col.PropertyType.IsDateTime())
+            {
+                content = Utility.Format(val, CultureInfo.CurrentUICulture.DateTimeFormat);
+            }
+            else if (val is IEnumerable<object> v)
+            {
+                content = string.Join(",", v);
             }
             else
             {
-                if (!string.IsNullOrEmpty(col.FormatString))
-                {
-                    // 格式化字符串
-                    content = Utility.Format(val, col.FormatString);
-                }
-                else if (col.PropertyType.IsDateTime())
-                {
-                    content = Utility.Format(val, CultureInfo.CurrentUICulture.DateTimeFormat);
-                }
-                else if (val is IEnumerable<object> v)
-                {
-                    content = string.Join(",", v);
-                }
-                else
-                {
-                    content = val?.ToString();
-                }
-                builder.AddContent(30, col.RenderLookupContent(content, item));
+                content = val?.ToString();
             }
+
+            builder.AddContent(30, col.RenderLookupContent(content, item));
         }
     };
 
     private static RenderFragment RenderSwitch(this bool value) => builder =>
     {
-        // 自动化处理 bool 值
+        // <para lang="zh">自动化处理 bool 值</para>
+        // <para lang="en">Automated processing of bool values</para>
         builder.OpenComponent(0, typeof(Switch));
         builder.AddAttribute(1, "Value", value);
         builder.AddAttribute(2, "IsDisabled", true);
@@ -320,7 +413,8 @@ public static class IEditItemExtensions
                 var t = ret.GetType();
                 if (t.IsEnum)
                 {
-                    // 如果是枚举这里返回 枚举的描述信息
+                    // <para lang="zh">如果是枚举这里返回 枚举的描述信息</para>
+                    // <para lang="en">If it is an enumeration, return the description information of the enumeration here</para>
                     var itemName = ret.ToString();
                     if (!string.IsNullOrEmpty(itemName))
                     {
@@ -342,13 +436,11 @@ public static class IEditItemExtensions
 
     internal static bool GetTextEllipsis(this ITableColumn col) => col.TextEllipsis ?? false;
 
-    internal static bool GetVisible(this ITableColumn col) => col.Visible ?? true;
+    internal static bool GetVisible(this ITableColumn col, BreakPoint point = BreakPoint.None) => col.Visible ?? true && col.ShownWithBreakPoint <= point;
 
     internal static bool GetShowCopyColumn(this ITableColumn col) => col.ShowCopyColumn ?? false;
 
     internal static bool GetShowTips(this ITableColumn col) => col.ShowTips ?? false;
 
     internal static Alignment GetAlign(this ITableColumn col) => col.Align ?? Alignment.None;
-
-    internal static int? GetColumnFixedWidth(this ITableColumn col, int width) => col.Fixed ? col.Width ?? width : col.Width;
 }

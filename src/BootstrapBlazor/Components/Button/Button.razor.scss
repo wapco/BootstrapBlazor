@@ -1,3 +1,5 @@
+@use "../../wwwroot/scss/variables" as *;
+
 .btn {
     --bs-btn-font-size: #{$bs-btn-font-size};
     --bs-btn-focus-box-shadow: #{$bs-btn-focus-box-shadow};
@@ -88,5 +90,15 @@
         button {
             display: block;
         }
+    }
+
+    > .input-group-text:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    > .input-group-text:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 }

@@ -1,7 +1,7 @@
-﻿@page "/select"
+@page "/select"
 @inject DialogService Dialog
 @inject IStringLocalizer<Selects> Localizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["SelectsTitle"]</h3>
 
@@ -288,7 +288,7 @@
                         </div>
                         <Divider />
                         <div class="select-custom-body">
-                            <img src="@WebsiteOption.CurrentValue.GetAvatarUrl(foo.Id)" class="bb-avatar" />
+                            <img src="@WebsiteOption.Value.GetAvatarUrl(foo.Id)" class="bb-avatar" />
                             <div class="select-custom-detail">
                                 <div class="d-flex">
                                     <div class="flex-fill">
@@ -366,8 +366,8 @@
            Name="ConfirmSelect">
     <section ignore>
         <ul class="ul-demo">
-            <li>@((MarkupString)Localizer["SelectConfifrmSelectDesc1"].Value)</li>
-            <li>@((MarkupString)Localizer["SelectConfifrmSelectDesc2"].Value)</li>
+            <li>@((MarkupString)Localizer["SelectConfirmSelectDesc1"].Value)</li>
+            <li>@((MarkupString)Localizer["SelectConfirmSelectDesc2"].Value)</li>
         </ul>
     </section>
     <div class="row">
@@ -452,26 +452,26 @@
     <p class="code-label">1. 使用 OnQueryAsync 作为数据源</p>
     <div class="row mb-3">
         <div class="col-6">
-            <Select IsVirtualize="true" OnQueryAsync="OnQueryAsync" @bind-Value="VirtualItem1"
+            <Select IsVirtualize="true" OnQueryAsync="OnQueryAsync" @bind-Value="_virtualItem1"
+                    DefaultVirtualizeItemText="@VirtualItemText1"
                     ShowSearch="_showSearch" IsClearable="_isClearable"></Select>
         </div>
         <div class="col-6">
-            <Display TValue="string" Value="@VirtualItem1?.Text"></Display>
+            <Display TValue="int?" Value="@_virtualItem1"></Display>
         </div>
     </div>
 
     <p class="code-label">2. 使用 Items 作为数据源</p>
     <div class="row">
         <div class="col-6">
-            <Select IsVirtualize="true" Items="VirtualItems" @bind-Value="VirtualItem2"
+            <Select IsVirtualize="true" Items="VirtualItems" @bind-Value="_virtualItem2"
+                    DefaultVirtualizeItemText="@VirtualItemText2"
                     ShowSearch="_showSearch" IsClearable="_isClearable"></Select>
         </div>
         <div class="col-6">
-            <Display TValue="string" Value="@VirtualItem2?.Text"></Display>
+            <Display TValue="int?" Value="@_virtualItem2"></Display>
         </div>
     </div>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
-
-<EventTable Items="@GetEvents()" />
+<AttributeTable Type="typeof(Select<>)" />

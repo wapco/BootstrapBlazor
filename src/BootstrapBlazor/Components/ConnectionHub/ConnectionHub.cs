@@ -1,12 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// 客户端链接组件
+/// <para lang="zh">客户端链接组件</para>
+/// <para lang="en">Client connection component</para>
 /// </summary>
 [BootstrapModuleAutoLoader(ModuleName = "hub", JSObjectReference = true)]
 public class ConnectionHub : BootstrapModuleComponentBase
@@ -31,6 +35,11 @@ public class ConnectionHub : BootstrapModuleComponentBase
     [NotNull]
     private IOptions<BootstrapBlazorOptions>? BootstrapBlazorOptions { get; set; }
 
+    [Inject]
+    [NotNull]
+    private IServiceProvider? Provider { get; set; }
+
+
     private IIpLocatorProvider? _ipLocatorProvider;
 
     private ThrottleOptions? _throttleOptions;
@@ -38,7 +47,6 @@ public class ConnectionHub : BootstrapModuleComponentBase
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override async Task InvokeInitAsync()
     {
         var options = BootstrapBlazorOptions.Value.ConnectionHubOptions;
@@ -57,10 +65,10 @@ public class ConnectionHub : BootstrapModuleComponentBase
     }
 
     /// <summary>
-    /// JSInvoke 回调方法
+    /// <para lang="zh">JSInvoke 回调方法</para>
+    /// <para lang="en">JSInvoke callback method</para>
     /// </summary>
     /// <param name="client"></param>
-    /// <returns></returns>
     [JSInvokable]
     public async Task Callback(ClientInfo client)
     {
@@ -76,6 +84,17 @@ public class ConnectionHub : BootstrapModuleComponentBase
                 {
                     _ipLocatorProvider ??= IpLocatorFactory.Create(BootstrapBlazorOptions.Value.IpLocatorOptions.ProviderName);
                     client.City = await _ipLocatorProvider.Locate(client.Ip);
+                }
+
+                var authenticationStateProvider = Provider.GetService<AuthenticationStateProvider>();
+                if (authenticationStateProvider != null)
+                {
+                    var state = await authenticationStateProvider.GetAuthenticationStateAsync();
+                    var identity = state.User.Identity;
+                    if (identity is { IsAuthenticated: true })
+                    {
+                        client.UserName = identity.Name;
+                    }
                 }
                 ConnectionService.AddOrUpdate(client);
             });

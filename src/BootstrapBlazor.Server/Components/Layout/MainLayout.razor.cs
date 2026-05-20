@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -22,14 +22,14 @@ public partial class MainLayout : IDisposable
 
     [Inject]
     [NotNull]
-    private IOptionsMonitor<WebsiteOptions>? WebsiteOption { get; set; }
+    private IOptions<WebsiteOptions>? WebsiteOption { get; set; }
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<BaseLayout>? Localizer { get; set; }
+    private IStringLocalizer<MainLayout>? Localizer { get; set; }
 
     [NotNull]
-    private string? Title { get; set; }
+    private string? UpdateTooltip { get; set; }
 
     [NotNull]
     private string? ChatTooltip { get; set; }
@@ -43,7 +43,7 @@ public partial class MainLayout : IDisposable
 
         DispatchService.Subscribe(Dispatch);
 
-        Title ??= Localizer[nameof(Title)];
+        UpdateTooltip ??= Localizer[nameof(UpdateTooltip)];
         ChatTooltip ??= Localizer[nameof(ChatTooltip)];
     }
 

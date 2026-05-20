@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -203,7 +203,7 @@ public sealed partial class Dialogs
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     /// <summary>
     /// Foo 类为Demo测试用，如有需要请自行下载源码查阅
@@ -212,7 +212,7 @@ public sealed partial class Dialogs
     /// </summary>
     private async Task OnSaveDialogClick()
     {
-        var foo = Foo.Generate(LocalizerFoo);
+        var foo = Foo.Generate(FooLocalizer);
         await DialogService.ShowSaveDialog<DialogSaveDetail>("Save", () =>
         {
             // 此处可以访问 foo 实例进行入库操作等
@@ -309,148 +309,4 @@ public sealed partial class Dialogs
             EmailInputValue = string.Join(";", Emails);
         }
     }
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private static AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Component",
-            Description = "Parameters of the component referenced in the dialog Body",
-            Type = "DynamicComponent",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "BodyContext",
-            Description = "pop-up window",
-            Type = "object",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "HeaderTemplate",
-            Description = "Modal body ModalHeader template",
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "BodyTemplate",
-            Description = "Modal body ModalBody component",
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "FooterTemplate",
-            Description = "ModalFooter component at the bottom of the modal",
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "IsCentered",
-            Description = "Whether to center vertically",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "IsScrolling",
-            Description = "Whether to scroll when the text of the pop-up window is too long",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowCloseButton",
-            Description = "whether to show the close button",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowHeaderCloseButton",
-            Description = "Whether to display the close button on the right side of the title bar",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowFooter",
-            Description = "whether to display Footer",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = nameof(DialogOption.ShowPrintButton),
-            Description = "Whether to show the print button",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(DialogOption.ShowPrintButtonInHeader),
-            Description = "Whether the print button is displayed in the Header",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Size",
-            Description = "Size of dialog",
-            Type = "Size",
-            ValueList = "None / ExtraSmall / Small / Medium / Large / ExtraLarge",
-            DefaultValue = "Large"
-        },
-        new()
-        {
-            Name = nameof(DialogOption.FullScreenSize),
-            Description = "Full screen when smaller than a certain size",
-            Type = "Size",
-            ValueList = "None / Always / Small / Medium / Large / ExtraLarge",
-            DefaultValue = "None"
-        },
-        new()
-        {
-            Name = "Title",
-            Description = "Popup title",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " not set "
-        },
-        new()
-        {
-            Name = nameof(DialogOption.PrintButtonText),
-            Description = "print button display text",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = "The value set in the resource file"
-        },
-        new()
-        {
-            Name = nameof(DialogOption.ShowMaximizeButton),
-            Description = "Whether to show the maximize button",
-            Type = "boolean",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        }
-    ];
 }

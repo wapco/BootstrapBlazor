@@ -1,4 +1,4 @@
-﻿@namespace BootstrapBlazor.Components
+@namespace BootstrapBlazor.Components
 @typeparam TValue
 @inherits UploadBase<TValue>
 
@@ -6,7 +6,7 @@
 {
     <BootstrapLabel required="@Required" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
 }
-<div @attributes="@AdditionalAttributes" class="@ClassString" id="@Id">
+<div @attributes="@AdditionalAttributes" class="@ClassString" id="@Id" data-bb-previewer-id="@PreviewerId">
     <div class="upload-body is-avatar">
         @if (IsUploadButtonAtFirst && ShowAddButton())
         {
@@ -16,8 +16,9 @@
         {
             <div @key="item" class="@GetItemClassString()" id="@item.ValidateId" style="@ItemStyleString">
                 <Avatar Url="@item.PrevUrl" />
-                <div class="upload-item-actions">
-                    <span class="upload-item-delete" @onclick="@(e => OnFileDelete(item))">
+                <div class="upload-item-actions" @onclick="@(() => Preview(item))">
+                    <span class="upload-item-delete" @onclick="@(e => OnFileDelete(item))"
+                          @onclick:stopPropagation="true">
                         <i class="@DeleteIcon"></i>
                     </span>
                     @if (GetShowProgress(item))
@@ -41,6 +42,10 @@
             @RenderAdd
         }
     </div>
+    @if (ShowPreviewList)
+    {
+        <ImagePreviewer Id="@PreviewerId" PreviewList="PreviewList"></ImagePreviewer>
+    }
     <InputFile AdditionalAttributes="@GetUploadAdditionalAttributes()" OnChange="OnFileChange" />
 </div>
 

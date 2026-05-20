@@ -1,0 +1,227 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the Apache 2.0 License
+// See the LICENSE file in the project root for more information.
+// Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
+
+using System.Globalization;
+
+namespace BootstrapBlazor.Server.Components.Samples;
+
+/// <summary>
+/// 海康威视网络摄像机组件
+/// </summary>
+public partial class HikVisions
+{
+    [Inject, NotNull]
+    private SwalService? SwalService { get; set; }
+
+    [Inject, NotNull]
+    private ToastService? ToastService { get; set; }
+
+    private HikVisionWebPlugin _hikVision = default!;
+
+    private string _ip = "47.121.113.151";
+    private int _port = 9980;
+    private string _password = "vhbn8888";
+    private string _userName = "admin";
+    private bool _inited;
+
+    private bool _loginStatus => _hikVision.IsMultipleWindowType ? false : _hikVision.IsLogin;
+    private bool _logoutStatus => _hikVision.IsMultipleWindowType ? false : !_hikVision.IsLogin;
+    private bool _startRealPlayStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: false };
+    private bool _stopRealPlayStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: true };
+    private bool _openSoundStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: true, IsOpenSound: false };
+    private bool _closeSoundStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: true, IsOpenSound: true };
+    private bool _startRecordStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: true, IsStartRecord: false };
+    private bool _stopRecordStatus => _hikVision.IsMultipleWindowType ? false : _hikVision is not { IsLogin: true, IsRealPlaying: true, IsStartRecord: true };
+
+    private List<SelectedItem> _analogChannels = [];
+    private int _channelId = 1;
+    private int _streamType = 1;
+    private readonly List<SelectedItem> _streamTypes =
+    [
+        new SelectedItem("1", "主码流"),
+        new SelectedItem("2", "子码流"),
+        new SelectedItem("3", "第三码流"),
+        new SelectedItem("4", "转码码流")
+    ];
+    private readonly List<SelectedItem> _iWndTypes =
+    [
+        new SelectedItem("1", "1*1"),
+        new SelectedItem("2", "2*2"),
+        new SelectedItem("3", "3*3"),
+        new SelectedItem("4", "4*4"),
+        new SelectedItem("1*2", "1*2"),
+        new SelectedItem("2*1", "2*1")
+    ];
+    private string _iWndType = "1";
+    private async Task OnLogin()
+    {
+        await _hikVision.Login(_ip, _port, _userName, _password, HikVisionLoginType.Http);
+    }
+
+    private async Task OnLogout()
+    {
+        _analogChannels.Clear();
+        await _hikVision.Logout();
+    }
+
+    private async Task OnStartRealPlay()
+    {
+        await _hikVision.StartRealPlay(_streamType, _channelId);
+    }
+
+    private async Task OnStopRealPlay()
+    {
+        await _hikVision.StopRealPlay();
+    }
+
+    private async Task OnOpenSound()
+    {
+        var result = await _hikVision.OpenSound();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "打开声音成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "打开声音失败");
+        }
+    }
+
+    private async Task OnCloseSound()
+    {
+        var result = await _hikVision.CloseSound();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "关闭声音成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "关闭声音失败");
+        }
+    }
+
+    private async Task OnCapture()
+    {
+        var result = await _hikVision.CapturePicture();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "抓图成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "抓图失败");
+        }
+    }
+
+    private async Task OnCaptureAndDownload()
+    {
+        var result = await _hikVision.CapturePictureAndDownload();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "抓图成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "抓图失败");
+        }
+    }
+
+    private async Task OnStartRecord()
+    {
+        var result = await _hikVision.StartRecord();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "开始录像成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "开始录像失败");
+        }
+    }
+
+    private async Task OnStopRecord()
+    {
+        var result = await _hikVision.StopRecord();
+        if (result)
+        {
+            await ToastService.Success("消息通知", "结束录像成功");
+        }
+        else
+        {
+            await ToastService.Error("消息通知", "结束录像失败");
+        }
+    }
+
+    private async Task OnInitedAsync(bool initialized)
+    {
+        _inited = initialized;
+        if (_inited)
+        {
+            StateHasChanged();
+        }
+        else
+        {
+            await SwalService.Show(new SwalOption()
+            {
+                Category = SwalCategory.Error,
+                Title = "组件初始化错误",
+                Content = "组件初始化失败，请检查浏览器是否安装海康威视插件或插件是否启用",
+                ShowFooter = true,
+                FooterTemplate = new RenderFragment(builder =>
+                {
+                    builder.OpenElement(0, "div");
+                    builder.AddContent(1, "请访问");
+                    builder.OpenElement(10, "a");
+                    builder.AddAttribute(11, "href", "https://open.hikvision.com/download/5cda567cf47ae80dd41a54b3?type=20&id=77c7f9ab64da4dbe8b2df7efe3365ec2");
+                    builder.AddAttribute(12, "target", "_blank");
+                    builder.AddAttribute(13, "style", "margin:0 8px;");
+                    builder.AddContent(14, "海康威视官网下载插件");
+                    builder.CloseElement();
+                    builder.AddContent(2, "进行安装。");
+                    builder.CloseElement();
+                })
+            });
+        }
+    }
+
+    private Task OnLoginAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnGetChannelsAsync(HikVisionChannel channel)
+    {
+        _analogChannels = channel.AnalogChannels.Select(i => new SelectedItem(i.Id.ToString(CultureInfo.InvariantCulture), i.Name!)).ToList();
+        _channelId = channel.AnalogChannels.FirstOrDefault()?.Id ?? 1;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnLogoutAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnStartRealPlayedAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnStopRealPlayedAsync()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnWndTypeChanged(SelectedItem item)
+    {
+        _iWndType = item.Value;
+        await _hikVision.ChangeWindowNum(_iWndType);
+        StateHasChanged();
+    }
+}

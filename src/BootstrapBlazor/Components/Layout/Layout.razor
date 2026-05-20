@@ -1,11 +1,11 @@
-﻿@namespace BootstrapBlazor.Components
+@namespace BootstrapBlazor.Components
 @inherits BootstrapModuleComponentBase
 @attribute [BootstrapModuleAutoLoader(JSObjectReference = true)]
 
 @if (_init)
 {
     <CascadingValue Value="this" IsFixed="true">
-        @if (IsAuthenticated)
+        @if (_authenticated)
         {
             <section @attributes="AdditionalAttributes" id="@Id" class="@ClassString" style="@StyleString">
                 @if (Side == null)
@@ -126,8 +126,9 @@
         }
         else
         {
-            <ErrorLogger EnableErrorLogger="@_enableErrorLogger" ShowToast="@_showToast" ToastTitle="@ErrorLoggerToastTitle" 
-                         EnableILogger="@_enableILogger" OnErrorHandleAsync="OnErrorHandleAsync" OnInitializedCallback="OnErrorLoggerInitialized">
+            <ErrorLogger EnableErrorLogger="@EnableLogger" EnableILogger="@EnableILogger"
+                         ShowToast="@ShowToast" ToastTitle="@ErrorLoggerToastTitle"
+                         OnErrorHandleAsync="OnErrorHandleAsync">
                 @HandlerMain()
             </ErrorLogger>
         }
@@ -135,10 +136,10 @@
 
     RenderFragment RenderTab =>
     @<Tab ClickTabToNavigation="ClickTabToNavigation" AdditionalAssemblies="@AdditionalAssemblies"
-          ShowExtendButtons="ShowTabExtendButtons" ShowClose="ShowTabItemClose" AllowDrag="AllowDragTab"        
+          ShowExtendButtons="ShowTabExtendButtons" ShowClose="ShowTabItemClose" AllowDrag="AllowDragTab"
           DefaultUrl="@TabDefaultUrl" ExcludeUrls="@ExcludeUrls" IsOnlyRenderActiveTab="IsOnlyRenderActiveTab"
           TabStyle="TabStyle" ShowToolbar="@ShowToolbar" ToolbarTemplate="@ToolbarTemplate"
-          ShowContextMenu="ShowTabContextMenu"
+          ShowContextMenu="ShowTabContextMenu" OnTabHeaderTextLocalizer="OnTabHeaderTextLocalizer"
           BeforeContextMenuTemplate="@BeforeTabContextMenuTemplate" ContextMenuTemplate="@TabContextMenuTemplate"
           ContextMenuRefreshIcon="@TabContextMenuRefreshIcon" ContextMenuCloseIcon="@TabContextMenuCloseIcon"
           ContextMenuCloseOtherIcon="@TabContextMenuCloseOtherIcon" ContextMenuCloseAllIcon="@TabContextMenuCloseAllIcon"
@@ -146,9 +147,11 @@
           ShowRefreshToolbarButton="ShowRefreshToolbarButton" ShowFullscreenToolbarButton="ShowFullscreenToolbarButton"
           RefreshToolbarButtonIcon="@RefreshToolbarButtonIcon" FullscreenToolbarButtonIcon="@FullscreenToolbarButtonIcon"
           RefreshToolbarTooltipText="@RefreshToolbarTooltipText" FullscreenToolbarTooltipText="@FullscreenToolbarTooltipText"
-          OnToolbarRefreshCallback="OnToolbarRefreshCallback" TabHeader="TabHeader"
+          OnToolbarRefreshCallback="OnToolbarRefreshCallback" TabHeader="TabHeader" OnCloseTabItemAsync="OnCloseTabItemAsync"
           Body="@Main" NotAuthorized="NotAuthorized!" NotFound="NotFound!" NotFoundTabText="@NotFoundTabText"
-          EnableErrorLogger="@_enableErrorLogger" ErrorLoggerToastTitle="@ErrorLoggerToastTitle">
+          EnableErrorLogger="@EnableLogger" EnableErrorLoggerILogger="@EnableErrorLoggerILogger"
+          ShowErrorLoggerToast="ShowErrorLoggerToast" ErrorLoggerToastTitle="@ErrorLoggerToastTitle"
+          OnErrorHandleAsync="OnErrorHandleAsync">
     </Tab>;
 
     RenderFragment RenderFooter =>

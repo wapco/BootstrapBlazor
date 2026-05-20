@@ -1,6 +1,10 @@
 ﻿@page "/ip"
 @inject IStringLocalizer<Ips> Localizer
 
+<h3>@Localizer["IpTitle"]</h3>
+
+<h4>@Localizer["IpSubTitle"]</h4>
+
 <DemoBlock Title="@Localizer["IpNormalTitle"]" Introduction="@Localizer["IpNormalIntro"]" Name="Normal">
     <IpAddress @bind-Value="@Value" />
     <div class="mt-3">@Value</div>
@@ -9,3 +13,5 @@
 <DemoBlock Title="@Localizer["IsDisabledTitle"]" Introduction="@Localizer["IsDisabledIntro"]" Name="IsDisabled">
     <IpAddress Value="@Value" IsDisabled="true" />
 </DemoBlock>
+
+<AttributeTable Type="typeof(IpAddress)" />

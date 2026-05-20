@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -177,10 +177,11 @@ class TreeFoo
     /// 树状数据层次化方法
     /// </summary>
     /// <param name="items">数据集合</param>
-    public static List<TreeViewItem<TreeFoo>> CascadingTree(IEnumerable<TreeFoo> items) => items.CascadingTree(null, (foo, parent) => foo.ParentId == parent?.Value.Id, foo => new TreeViewItem<TreeFoo>(foo)
+    /// <param name="treeviewItemCallback">节点状态回调方法</param>
+    public static List<TreeViewItem<TreeFoo>> CascadingTree(IEnumerable<TreeFoo> items, Action<TreeViewItem<TreeFoo>>? treeviewItemCallback = null) => items.CascadingTree(null, (foo, parent) => foo.ParentId == parent?.Value.Id, foo => new TreeViewItem<TreeFoo>(foo)
     {
         Text = foo.Text,
         Icon = foo.Icon,
         IsActive = foo.IsActive
-    });
+    }, treeviewItemCallback);
 }

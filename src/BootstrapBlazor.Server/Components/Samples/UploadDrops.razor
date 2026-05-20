@@ -1,5 +1,5 @@
-﻿@page "/upload-drop"
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@page "/upload-drop"
+@inject IOptions<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<UploadDrops> Localizer
 @inject ToastService ToastService
 
@@ -13,7 +13,7 @@
 
 <DemoBlock Title="@Localizer["DropUploadTitle"]" Introduction="@Localizer["DropUploadIntro"]" Name="Normal">
     <section ignore>
-        <div class="row g-3">
+        <div class="row g-3" style="--bb-input-group-label-width: 186px;">
             <div class="col-12 col-sm-6">
                 <BootstrapInputGroup>
                     <BootstrapInputGroupLabel DisplayText="IsDisabled"></BootstrapInputGroupLabel>
@@ -57,4 +57,4 @@
                 ShowProgress="@_showProgress" ShowUploadFileList="@_showUploadFileList" ShowFooter="@_showFooter"></DropUpload>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()"></AttributeTable>
+<AttributeTable Type="typeof(DropUpload)"></AttributeTable>

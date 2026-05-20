@@ -1,4 +1,8 @@
-﻿.table-container {
+.dropdown-menu-popover {
+    --bb-table-columnlist-max-height: var(--bb-dropdown-max-height);
+}
+
+.table-container {
     --bb-table-td-padding-x: .5rem;
     --bb-table-td-padding-y: .5rem;
     --bb-table-cardview-label-width: 30%;
@@ -27,6 +31,8 @@
     --bb-table-pagination-active-border-color: rgba(var(--bs-body-color-rgb), .15);
     position: relative;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 
     .nav-pages {
         margin-block-start: .5rem;
@@ -42,6 +48,20 @@
     .table-card {
         &.table-fixed {
             overflow: auto;
+        }
+    }
+
+    .table-shim {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        height: 1%;
+
+        > .table-fixed-body {
+            flex: 1;
+            min-height: 0;
+            height: 1%;
         }
     }
 }
@@ -72,7 +92,7 @@
 }
 
 .table-sm {
-    --bb-table-td-padding-x: .25rem;
+    --bb-table-td-padding-x: .35rem;
     --bb-table-td-padding-y: .25rem;
 }
 
@@ -129,6 +149,7 @@
 .table thead th {
     white-space: nowrap;
     vertical-align: top;
+    overflow: hidden;
 }
 
 .table thead th.sortable .table-text {
@@ -307,9 +328,25 @@
     margin-block-end: .5rem;
 }
 
-.table-toolbar .dropdown-menu {
-    max-height: var(--bb-table-columnlist-max-height);
-    overflow: auto;
+.table-toolbar .dropdown-column .dropdown-menu,
+.dropdown-menu-popover {
+
+    &:not(.dropdown-menu-controls) {
+        max-height: var(--bb-table-columnlist-max-height);
+        overflow: auto;
+    }
+
+    .column-list-controls {
+        display: flex;
+        flex-wrap: nowrap;
+        padding: 0 var(--bs-dropdown-item-padding-x);
+        margin-block-end: .5rem;
+    }
+
+    .column-list-items {
+        max-height: var(--bb-table-columnlist-max-height);
+        overflow: auto;
+    }
 }
 
 .table-toolbar .dropdown-menu .dropdown-item span {
@@ -549,7 +586,6 @@ tr.active:not(.is-edit):hover {
 
 .table-fixed-column {
     .table {
-        table-layout: fixed;
         border-collapse: separate;
         border-spacing: 0;
     }
@@ -921,11 +957,12 @@ form .table .table-cell > textarea {
     overflow-y: auto;
     overflow-x: hidden;
     padding: 1rem;
+    max-height: calc(100vh - 133px);
 }
 
 .modal-dialog-table.modal-dialog-scrollable .modal-body .form-footer {
     margin: 0;
-    padding: 1rem;
+    padding: 0.5rem 1rem;
 }
 
 .table-wrap thead th .table-cell .table-text {
@@ -961,5 +998,17 @@ form .table .table-cell > textarea {
 @keyframes drag-column {
     50% {
         border-bottom-color: var(--bs-primary);
+    }
+}
+
+.bb-sortable tr {
+    cursor: pointer;
+}
+
+.btn-separate {
+    display: inline-flex;
+
+    > button:not(:last-child) {
+        margin-inline-end: .25rem;
     }
 }

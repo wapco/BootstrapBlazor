@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -23,16 +23,26 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
     }
 
     [Theory]
+    [InlineData(typeof(sbyte?), true)]
+    [InlineData(typeof(byte?), true)]
     [InlineData(typeof(int?), true)]
+    [InlineData(typeof(uint?), true)]
     [InlineData(typeof(long?), true)]
+    [InlineData(typeof(ulong?), true)]
     [InlineData(typeof(float?), true)]
     [InlineData(typeof(short?), true)]
+    [InlineData(typeof(ushort?), true)]
     [InlineData(typeof(double?), true)]
     [InlineData(typeof(decimal?), true)]
+    [InlineData(typeof(sbyte), true)]
+    [InlineData(typeof(byte), true)]
     [InlineData(typeof(int), true)]
+    [InlineData(typeof(uint), true)]
     [InlineData(typeof(long), true)]
+    [InlineData(typeof(ulong), true)]
     [InlineData(typeof(float), true)]
     [InlineData(typeof(short), true)]
+    [InlineData(typeof(ushort), true)]
     [InlineData(typeof(double), true)]
     [InlineData(typeof(decimal), true)]
     [InlineData(typeof(DateTime?), false)]
@@ -304,6 +314,17 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public void HasParameterAttribute_Ok()
+    {
+        var instance = new MockObject();
+        var pi = instance.GetType().GetProperty("Mock");
+        Assert.False(pi.HasParameterAttribute(typeof(Foo)));
+
+        pi = instance.GetType().GetProperty(nameof(instance.Foo));
+        Assert.False(pi.HasParameterAttribute(typeof(Foo)));
+    }
+
+    [Fact]
     public void CreateInstance_Ok()
     {
         var exception = Assert.ThrowsAny<Exception>(() => ObjectExtensions.CreateInstance<MockComplexObject>(true));
@@ -315,6 +336,19 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
         var instance = ObjectExtensions.CreateInstance<MockComplexObject>(false);
         Assert.NotNull(instance);
         Assert.Null(instance.Test);
+
+        // 接口类型不报错
+        Assert.Null(ObjectExtensions.CreateInstance<MockInterface>(true));
+
+        var bar = ObjectExtensions.CreateInstance<MockObject>(true);
+        Assert.NotNull(bar);
+        Assert.NotNull(bar.Foo);
+        Assert.Null(bar.Bar);
+    }
+
+    private interface MockInterface
+    {
+        string? Name { get; set; }
     }
 
     private class MockComplexObject
@@ -322,6 +356,15 @@ public class ObjectExtensionsTest : BootstrapBlazorTestBase
         public Foo? Foo { get; set; }
 
         public (string Name, int Count)[]? Test { get; set; }
+    }
+
+    private class MockObject
+    {
+        public string? Name { get; set; }
+
+        public Foo? Foo { get; set; }
+
+        public Foo? Bar { get; }
     }
 
     private class MockStatic

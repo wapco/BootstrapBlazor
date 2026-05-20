@@ -1,4 +1,6 @@
-﻿.upload {
+@use "../../wwwroot/scss/variables" as *;
+
+.upload {
     --bb-upload-body-margin-top: #{$bb-upload-body-margin-top};
     --bb-upload-body-list-max-height: #{$bb-upload-body-list-max-height};
     --bb-upload-body-list-item-padding: #{$bb-upload-body-list-item-padding};
@@ -83,7 +85,7 @@
 }
 
 .upload .upload-body.is-list .cancel-icon {
-    margin-left: .5rem;
+    margin-inline-start: .5rem;
     color: var(--bs-danger);
 }
 
@@ -117,7 +119,7 @@
 .upload .upload-body.is-avatar .upload-item:not(.is-form):not(.is-valid):not(.is-invalid):hover,
 .upload .upload-body.is-avatar .upload-item:not(.is-form).is-valid,
 .upload .upload-body.is-card .upload-item.is-valid,
-.upload .upload-body.is-card .upload-item:not(.disabled):hover {
+.upload .upload-body.is-card .upload-item:not(.disabled):not(.is-valid):not(.is-invalid):hover {
     border-color: var(--bb-upload-body-list-item-hover-color);
 }
 
@@ -155,6 +157,14 @@
 .upload .upload-body.is-avatar .upload-item:hover .upload-item-actions .upload-item-delete {
     display: block;
     color: var(--bs-danger);
+    padding: 0.25rem;
+    border-radius: var(--bs-border-radius);
+    border: 1px solid var(--bs-danger);
+}
+
+.upload .upload-body.is-avatar .upload-item:hover .upload-item-actions .upload-item-delete:hover {
+    color: var(--bs-white);
+    background-color: var(--bs-danger);
 }
 
 .upload .upload-body.is-avatar .upload-item.is-invalid .upload-item-spin {
@@ -169,8 +179,11 @@
     width: var(--bb-upload-card-width);
     height: var(--bb-upload-card-height);
     position: relative;
-    cursor: pointer;
     overflow: hidden;
+
+    &.is-preview img {
+        cursor: pointer;
+    }
 }
 
 .upload .upload-body.is-card .upload-item .upload-item-actions {
@@ -184,8 +197,12 @@
     display: block;
 }
 
-.upload .upload-body.is-card .is-invalid .upload-item-body {
+.upload .upload-body.is-card .upload-item.is-invalid {
     border-color: var(--bs-danger);
+}
+
+.upload .upload-body.is-card .upload-item.is-valid {
+    border-color: var(--bs-success);
 }
 
 .upload .upload-body.is-card .upload-item-body {
@@ -206,21 +223,22 @@
     display: none;
 }
 
-.upload .upload-body.is-card .upload-item-size {
+.upload .upload-body.is-card .upload-item-file {
     margin: 1rem auto;
-    text-align: center;
     font-size: 0.625rem;
     display: flex;
+    flex-wrap: nowrap;
     justify-content: center;
-}
+    align-items: center;
 
-.upload .upload-body.is-card .upload-item-size span {
-    max-width: calc(100% - 4.5rem);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    white-space: nowrap;
-    padding-right: 0.25rem;
+    .upload-item-file-name {
+        max-width: calc(100% - 4.5rem);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        white-space: nowrap;
+        padding-right: 0.25rem;
+    }
 }
 
 .upload .upload-item .upload-item-label {
@@ -291,7 +309,6 @@
 }
 
 .upload.is-drop {
-
     &.dropping {
         .upload-drop-body {
             border-color: var(--bs-success);
@@ -311,6 +328,14 @@
     &.disabled {
         .upload-drop-body {
             border-color: var(--bs-border-color);
+        }
+    }
+
+    &:not(.disabled) {
+        .upload-drop-body {
+            em {
+                color: var(--bs-primary);
+            }
         }
     }
 
@@ -334,7 +359,6 @@
         }
 
         em {
-            color: var(--bs-primary);
             font-style: normal;
         }
     }

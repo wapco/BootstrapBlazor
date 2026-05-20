@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -59,10 +59,10 @@ public partial class ValidateForms
         ValidataModel = new CustomValidataModel { Name = "", Telephone1 = "123456789", Telephone2 = "123456789" };
 
         // 初始化参数
-        Hobbies2 = Foo.GenerateHobbies(LocalizerFoo);
-        Hobbies3 = Foo.GenerateHobbies(LocalizerFoo);
-        Hobbies4 = Foo.GenerateHobbies(LocalizerFoo);
-        Hobbies7 = Foo.GenerateHobbies(LocalizerFoo);
+        Hobbies2 = Foo.GenerateHobbies(FooLocalizer);
+        Hobbies3 = Foo.GenerateHobbies(FooLocalizer);
+        Hobbies4 = Foo.GenerateHobbies(FooLocalizer);
+        Hobbies7 = Foo.GenerateHobbies(FooLocalizer);
 
         ComplexModel = new ComplexFoo()
         {
@@ -103,7 +103,7 @@ public partial class ValidateForms
 
     private Task OnValidSetError(EditContext context)
     {
-        FooForm.SetError<Foo>(f => f.Name, Localizer["DatabaseExistLog"]);
+        FooForm?.SetError<Foo>(f => f.Name, Localizer["DatabaseExistLog"]);
         return Task.CompletedTask;
     }
 
@@ -199,7 +199,7 @@ public partial class ValidateForms
     private Task OnValidComplexModel(EditContext context)
     {
         Logger5.Log(Localizer["OnValidSubmitCallBackLog"]);
-        ComplexForm.SetError("Dummy.Dummy2.Name", Localizer["DatabaseExistLog"]);
+        ComplexForm?.SetError("Dummy.Dummy2.Name", Localizer["DatabaseExistLog"]);
         return Task.CompletedTask;
     }
 
@@ -249,10 +249,9 @@ public partial class ValidateForms
     [NotNull]
     private ValidateForm? ValidatorForm { get; set; }
 
-    private Task OnValidator()
+    private async Task OnValidator()
     {
-        ValidatorForm.Validate();
-        return Task.CompletedTask;
+        await ValidatorForm.ValidateAsync();
     }
 
     [NotNull]
@@ -281,104 +280,4 @@ public partial class ValidateForms
         Logger8.Log(Localizer["OnInvalidSubmitCallBackLog"]);
         return Task.CompletedTask;
     }
-
-    #region 参数说明
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Model",
-            Description = Localizer["Model"],
-            Type = "object",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ValidateAllProperties",
-            Description = Localizer["ValidateAllProperties"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(ValidateForm.DisableAutoSubmitFormByEnter),
-            Description = Localizer[nameof(ValidateForm.DisableAutoSubmitFormByEnter)],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowRequiredMark",
-            Description = Localizer["ShowRequiredMark"],
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowLabelTooltip",
-            Description = Localizer["ShowLabelTooltip"],
-            Type = "bool?",
-            ValueList = "true/false/null",
-            DefaultValue = "null"
-        },
-        new()
-        {
-            Name = "LabelWidth",
-            Description = Localizer["LabelWidth"],
-            Type = "int?",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Description = Localizer["ChildContent"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "OnValidSubmit",
-            Description = Localizer["OnValidSubmit"],
-            Type = "EventCallback<EditContext>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "OnInvalidSubmit",
-            Description = Localizer["OnInvalidSubmit"],
-            Type = "EventCallback<EditContext>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private MethodItem[] GetMethods() =>
-    [
-        new()
-        {
-            Name = "SetError",
-            Description = Localizer["SetError"],
-            Parameters = "PropertyName, ErrorMessage",
-            ReturnValue = " — "
-        },
-        new()
-        {
-            Name = "Validate",
-            Description = Localizer["Validate"],
-            Parameters = " — ",
-            ReturnValue = "boolean"
-        }
-    ];
-    #endregion
 }

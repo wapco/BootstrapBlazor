@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -36,18 +36,27 @@ public partial class TablesEdit
 
     private string? PlaceHolderString { get; set; }
 
-    private string DataServiceUrl => $"{WebsiteOption.CurrentValue.GiteeRepositoryUrl}/wikis/Table%20%E7%BB%84%E4%BB%B6%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1%E4%BB%8B%E7%BB%8D?sort_id=3207977";
+    private string DataServiceUrl => $"{WebsiteOption.Value.GiteeRepositoryUrl}/wikis/Table%20%E7%BB%84%E4%BB%B6%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1%E4%BB%8B%E7%BB%8D?sort_id=3207977";
+
+    private bool _useGroup = false;
+
+    private string? GetEducationDesc(EnumEducation? item) => item switch
+    {
+        EnumEducation.Primary => Localizer["TablesEditTemplateDisplayDetail1"],
+        EnumEducation.Middle => Localizer["TablesEditTemplateDisplayDetail2"],
+        _ => ""
+    };
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
     protected override void OnInitialized()
     {
-        Items = Foo.GenerateFoo(LocalizerFoo, 4);
-        EditItems = Foo.GenerateFoo(LocalizerFoo, 4);
-        Hobbies = Foo.GenerateHobbies(LocalizerFoo);
-        CustomerDataService = new FooDataService<Foo>(LocalizerFoo);
-        BindItems = Foo.GenerateFoo(LocalizerFoo).Take(5).ToList();
+        Items = Foo.GenerateFoo(FooLocalizer, 4);
+        EditItems = Foo.GenerateFoo(FooLocalizer, 4);
+        Hobbies = Foo.GenerateHobbies(FooLocalizer);
+        CustomerDataService = new FooDataService<Foo>(FooLocalizer);
+        BindItems = Foo.GenerateFoo(FooLocalizer).Take(5).ToList();
         PlaceHolderString ??= Localizer["TablesEditShowSearchPlaceHolderString"];
     }
 

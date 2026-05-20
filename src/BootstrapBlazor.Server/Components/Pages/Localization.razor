@@ -1,4 +1,4 @@
-﻿@page "/localization"
+@page "/localization"
 @inject IStringLocalizer<Localization> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -28,6 +28,10 @@
         <li>@Localizer["N8"]</li>
         <li>@Localizer["N9"]</li>
         <li>@Localizer["ES"]</li>
+        <li>@Localizer["RU"]</li>
+        <li>@Localizer["TH"]</li>
+        <li>@Localizer["UK"]</li>
+        <li>@Localizer["IT"]</li>
         <li>@Localizer["TW"]</li>
     </ul>
     <div class="mt-2">
@@ -68,8 +72,6 @@
 
 <p><b>2. @Localizer["N24"]</b></p>
 
-<Tab>
-    <TabItem Text="NET6.0" Icon="fa-solid fa-code" Closable="false">
 <Pre>builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
@@ -77,17 +79,11 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddBootstrapBlazor();
 
 // @Localizer["N26"]
-builder.Services.AddRequestLocalization&lt;IOptionsMonitor&lt;BootstrapBlazorOptions&gt;&gt;((localizerOption, blazorOption)=>
+builder.Services.AddRequestLocalization&lt;IOptions&lt;BootstrapBlazorOptions&gt;&gt;((localizerOption, blazorOption)=>
 {
-    blazorOption.OnChange(op => Invoke(op));
-    Invoke(blazorOption.CurrentValue);
-
-    void Invoke(BootstrapBlazorOptions option)
-    {
-        var supportedCultures = option.GetSupportedCultures();
-        localizerOption.SupportedCultures = supportedCultures;
-        localizerOption.SupportedUICultures = supportedCultures;
-    }
+    var supportedCultures = blazorOption.Value.GetSupportedCultures();
+    localizerOption.SupportedCultures = supportedCultures;
+    localizerOption.SupportedUICultures = supportedCultures;
 });
 
 var app = builder.Build();
@@ -99,33 +95,6 @@ if (option != null)
     app.UseRequestLocalization(option.Value);
 }
 </Pre>
-    </TabItem>
-    <TabItem Text="NET5.0" Icon="fa-solid fa-code" Closable="false">
-<Pre class="mb-3">public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // @Localizer["N28"]
-        services.AddBootstrapBlazor();
-
-        // @Localizer["N29"]
-        services.AddRequestLocalization&lt;IOptions&lt;BootstrapBlazorOptions&gt;&gt;((localizerOption, blazorOption) =>
-        {
-            var supportedCultures = blazorOption.Value.GetSupportedCultures();
-
-            localizerOption.SupportedCultures = supportedCultures;
-            localizerOption.SupportedUICultures = supportedCultures;
-        });
-    }
-
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        // @Localizer["N30"]
-        app.UseRequestLocalization(app.ApplicationServices.GetService&lt;IOptions&lt;RequestLocalizationOptions&gt;&gt;()!.Value);
-    }
-}</Pre>
-    </TabItem>
-</Tab>
 
 <p><b>3. @Localizer["N31"]</b></p>
 <Pre class="mb-3">[Route("[controller]/[action]")]

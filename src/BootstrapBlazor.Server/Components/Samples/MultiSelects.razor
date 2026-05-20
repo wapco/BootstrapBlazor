@@ -1,4 +1,4 @@
-﻿@page "/multi-select"
+@page "/multi-select"
 @inject IStringLocalizer<MultiSelects> Localizer
 
 <h3>@Localizer["MultiSelectsTitle"]</h3>
@@ -359,6 +359,4 @@ private enum MultiSelectEnumFoo
     </div>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()"></AttributeTable>
-
-<EventTable Items="@GetEvents()"></EventTable>
+<AttributeTable Type="typeof(MultiSelect<>)"></AttributeTable>

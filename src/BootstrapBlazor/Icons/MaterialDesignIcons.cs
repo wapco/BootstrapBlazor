@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -61,7 +61,7 @@ internal static class MaterialDesignIcons
         { ComponentIcons.StepErrorIcon, "mdi mdi-close" },
 
         { ComponentIcons.FilterButtonFilterIcon, "mdi mdi-filter-outline" },
-        { ComponentIcons.FilterButtonClearIcon, "mdi mdi-filter-remove-outline" },
+        { ComponentIcons.FilterButtonClearIcon, "mdi mdi-cancel" },
 
         { ComponentIcons.TableFilterPlusIcon, "mdi mdi-plus" },
         { ComponentIcons.TableFilterMinusIcon, "mdi mdi-minus" },
@@ -152,6 +152,7 @@ internal static class MaterialDesignIcons
 
         { ComponentIcons.TableAddButtonIcon, "mdi mdi-plus" },
         { ComponentIcons.TableEditButtonIcon, "mdi mdi-file-edit-outline" },
+        { ComponentIcons.TableMoreButtonIcon, "mdi mdi-dots-horizontal" },
         { ComponentIcons.TableDeleteButtonIcon, "mdi mdi-close" },
         { ComponentIcons.TableRefreshButtonIcon, "mdi mdi-refresh" },
         { ComponentIcons.TableCardViewButtonIcon, "mdi mdi-menu" },

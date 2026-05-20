@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,7 +6,8 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Dialog component
+/// <para lang="zh">Dialog 组件</para>
+/// <para lang="en">Dialog component</para>
 /// </summary>
 public partial class Dialog : IDisposable
 {
@@ -16,12 +17,9 @@ public partial class Dialog : IDisposable
 
     [NotNull]
     private Modal? _modal = null;
-
-    [NotNull]
     private Func<Task>? _onShownAsync = null;
-
-    [NotNull]
     private Func<Task>? _onCloseAsync = null;
+    private Func<Task<bool>>? _onClosingAsync = null;
 
     private readonly Dictionary<Dictionary<string, object>, (bool IsKeyboard, bool IsBackdrop, Func<Task>? OnCloseCallback)> DialogParameters = [];
     private Dictionary<string, object>? _currentParameter;
@@ -49,7 +47,6 @@ public partial class Dialog : IDisposable
     /// <inheritdoc/>
     /// </summary>
     /// <param name="firstRender"></param>
-    /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -90,6 +87,8 @@ public partial class Dialog : IDisposable
                 StateHasChanged();
             }
         };
+
+        _onClosingAsync = option.OnClosingAsync;
 
         _isKeyboard = option.IsKeyboard;
         _isBackdrop = option.IsBackdrop;
@@ -166,6 +165,11 @@ public partial class Dialog : IDisposable
 
     private static RenderFragment RenderDialog(int index, Dictionary<string, object> parameter) => builder =>
     {
+        if (index > 0)
+        {
+            parameter[nameof(ModalDialog.IsScrolling)] = true;
+        }
+
         builder.OpenComponent<ModalDialog>(100 + index);
         builder.AddMultipleAttributes(101 + index, parameter);
         builder.SetKey(parameter);
@@ -173,7 +177,8 @@ public partial class Dialog : IDisposable
     };
 
     /// <summary>
-    /// Dispose method
+    /// <para lang="zh">Dispose method</para>
+    /// <para lang="en">Dispose method</para>
     /// </summary>
     /// <param name="disposing"></param>
     protected virtual void Dispose(bool disposing)

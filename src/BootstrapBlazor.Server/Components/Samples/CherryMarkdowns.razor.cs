@@ -52,7 +52,7 @@ public partial class CherryMarkdowns
     {
         var url = Path.Combine("images", "uploader",
             $"{Path.GetFileNameWithoutExtension(arg.FileName)}-{DateTimeOffset.Now:yyyyMMddHHmmss}{Path.GetExtension(arg.FileName)}");
-        var fileName = Path.Combine(WebsiteOption.CurrentValue.WebRootPath, url);
+        var fileName = Path.Combine(WebsiteOption.Value.WebRootPath, url);
         var ret = await arg.SaveToFile(fileName);
         return ret ? url : "";
     }
@@ -60,56 +60,4 @@ public partial class CherryMarkdowns
     [Inject]
     [NotNull]
     private IStringLocalizer<CherryMarkdowns>? Localizer { get; set; }
-
-    private static AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "EditorSettings",
-            Description = "编辑器设置",
-            Type = "EditorSettings",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ToolbarSettings",
-            Description = "工具栏设置",
-            Type = "ToolbarSettings",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Value",
-            Description = "组件值",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Html",
-            Description = "组件 Html 代码",
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "OnFileUpload",
-            Description = "文件上传回调方法",
-            Type = "Func<CherryMarkdownUploadFile, Task<string>>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "IsViewer",
-            Description = "组件是否为浏览器模式",
-            Type = "bool",
-            ValueList = "true/false",
-            DefaultValue = "false"
-        }
-    ];
 }

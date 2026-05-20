@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,25 +6,29 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// BootstrapLabel 组件
+/// <para lang="zh">BootstrapLabel 组件</para>
+/// <para lang="en">BootstrapLabel component</para>
 /// </summary>
 public partial class BootstrapLabel
 {
     /// <summary>
-    /// 获得/设置 组件值 显示文本 默认 null
+    /// <para lang="zh">获得/设置 组件值 显示文本 默认 null</para>
+    /// <para lang="en">Gets or sets the component value display text. Default is null</para>
     /// </summary>
     [Parameter]
     [NotNull]
     public string? Value { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示 Tooltip 多用于标签文字过长导致裁减时使用 默认 false 不显示
+    /// <para lang="zh">获得/设置 是否显示 Tooltip 多用于标签文字过长导致裁减时使用 默认 false 不显示</para>
+    /// <para lang="en">Gets or sets whether to display a tooltip for the label, often used when the label text is too long and gets truncated. Default is false</para>
     /// </summary>
     [Parameter]
     public bool? ShowLabelTooltip { get; set; }
 
     /// <summary>
-    /// 获得/设置 标签宽度 默认 null 未设置使用全局设置 <code>--bb-row-label-width</code> 值
+    /// <para lang="zh">获得/设置 标签宽度 默认 null 未设置使用全局设置 <code>--bb-row-label-width</code> 值</para>
+    /// <para lang="en">Gets or sets the label width. Default is null, uses the global setting <code>--bb-row-label-width</code> value</para>
     /// </summary>
     [Parameter]
     public int? LabelWidth { get; set; }
@@ -39,13 +43,13 @@ public partial class BootstrapLabel
         .Build();
 
     private string? StyleString => CssBuilder.Default()
-        .AddStyle($"--bb-row-label-width", $"{LabelWidth}px", LabelWidth.HasValue)
+        .AddClass($"--bb-row-label-width: {LabelWidth}px;", LabelWidth.HasValue)
+        .AddStyleFromAttributes(AdditionalAttributes)
         .Build();
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override void OnParametersSet()
     {
         base.OnParametersSet();

@@ -1,11 +1,11 @@
-﻿export { getResponsive } from '../../modules/responsive.js'
+export { getResponsive } from '../../modules/responsive.js'
 import { copy, drag, getDescribedElement, getOuterHeight, getWidth, isVisible } from '../../modules/utility.js'
-import '../../modules/browser.js'
+import browser from '../../modules/browser.min.mjs'
 import Data from '../../modules/data.js'
 import EventHandler from '../../modules/event-handler.js'
 import Popover from "../../modules/base-popover.js"
 
-export function init(id, invoke, options) {
+export async function init(id, invoke, options) {
     const el = document.getElementById(id)
     if (el === null) {
         return
@@ -17,26 +17,10 @@ export function init(id, invoke, options) {
         handlers: {}
     }
     Data.set(id, table)
-
-    reset(id)
+    await reset(id)
 }
 
-export function reloadColumnWidth(tableName) {
-    const key = `bb-table-column-width-${tableName}`
-    return localStorage.getItem(key);
-}
-
-export function reloadColumnOrder(tableName) {
-    const key = `bb-table-column-order-${tableName}`
-    return JSON.parse(localStorage.getItem(key)) ?? [];
-}
-
-export function saveColumnOrder(options) {
-    const key = `bb-table-column-order-${options.tableName}`
-    localStorage.setItem(key, JSON.stringify(options.columns));
-}
-
-export function reset(id) {
+export async function reset(id) {
     const table = Data.get(id)
     if (table === null) {
         return;
@@ -55,25 +39,23 @@ export function reset(id) {
         table.thead = [...shim.children].find(i => i.classList.contains('table-fixed-header'))
         table.isResizeColumn = shim.classList.contains('table-resize')
         if (table.thead) {
-            table.isExcel = table.thead.firstChild.classList.contains('table-excel')
+            table.isExcel = table.thead.firstElementChild.classList.contains('table-excel')
             table.body = [...shim.children].find(i => i.classList.contains('table-fixed-body'))
-            table.isDraggable = table.thead.firstChild.classList.contains('table-draggable')
-            table.tables.push(table.thead.firstChild)
-            table.tables.push(table.body.firstChild)
+            table.isDraggable = table.thead.firstElementChild.classList.contains('table-draggable')
+            table.tables.push(table.thead.firstElementChild)
+            table.tables.push(table.body.firstElementChild)
             table.scrollWidth = parseFloat(table.body.style.getPropertyValue('--bb-scroll-width'));
-            fixHeader(table)
+            await fixHeader(table);
 
             EventHandler.on(table.body, 'scroll', () => {
                 const left = table.body.scrollLeft
                 table.thead.scrollTo(left, 0)
             });
-
-            setTableDefaultWidth(table);
         }
         else {
-            table.isExcel = shim.firstChild.classList.contains('table-excel')
-            table.isDraggable = shim.firstChild.classList.contains('table-draggable')
-            table.tables.push(shim.firstChild)
+            table.isExcel = shim.firstElementChild.classList.contains('table-excel')
+            table.isDraggable = shim.firstElementChild.classList.contains('table-draggable')
+            table.tables.push(shim.firstElementChild)
         }
 
         if (table.options.enableKeyboardNavigationCell === true && table.isExcel) {
@@ -103,15 +85,12 @@ export function reset(id) {
 
     table.pages = [...table.el.children].find(i => i.classList.contains('nav-pages'));
 
-
     setColumnToolboxListener(table);
 
     if (isVisible(table.el) === false) {
         table.loopCheckHeightHandler = requestAnimationFrame(() => check(table));
         return;
     }
-
-    observeHeight(table)
 }
 
 const observeHeight = table => {
@@ -213,11 +192,17 @@ export function scrollTo(id) {
     }
 }
 
-export function toggleView(id) {
+export async function switchCardView(id) {
     const table = Data.get(id);
-    destroyTable(table);
 
-    reset(id);
+    if (table) {
+        destroyTable(table);
+    }
+}
+
+export async function toggleView(id) {
+    await switchCardView(id);
+    await reset(id);
 }
 
 export function dispose(id) {
@@ -253,11 +238,6 @@ const destroyTable = table => {
         if (table.handlers.setColumnToolboxHandler) {
             EventHandler.off(document, 'click', table.handlers.setColumnToolboxHandler);
         }
-        if (table.observer) {
-            table.observer.disconnect();
-            table.observer = null;
-        }
-
         if (table.popovers) {
             table.popovers.forEach(p => {
                 Popover.dispose(p)
@@ -346,7 +326,7 @@ const setBodyHeight = table => {
     }
 }
 
-const fixHeader = table => {
+const fixHeader = async table => {
     const el = table.el
     const fs = el.querySelector('.fixed-scroll')
 
@@ -356,8 +336,8 @@ const fixHeader = table => {
             if (prev.classList.contains('fixed-right') && !prev.classList.contains('modified')) {
                 let margin = prev.style.right
                 margin = margin.replace('px', '')
-                const b = window.browser()
-                if (b.device !== 'PC') {
+                const b = await browser.getInfo();
+                if (b.device !== 'Desktop') {
                     margin = (parseFloat(margin) - table.scrollWidth) + 'px'
                 }
                 prev.classList.add('modified')
@@ -494,19 +474,6 @@ const setExcelKeyboardListener = table => {
     })
 }
 
-const resetTableWidth = table => {
-    table.tables.forEach(t => {
-        const group = [...t.children].find(i => i.nodeName === 'COLGROUP')
-        if (group) {
-            let width = 0;
-            [...group.children].forEach(col => {
-                width += parseInt(col.style.width)
-            })
-            t.style.width = `${width}px`
-        }
-    })
-}
-
 const setResizeListener = table => {
     if (table.options.showColumnWidthTooltip) {
         table.handlers.setResizeHandler = e => {
@@ -596,9 +563,9 @@ const setResizeListener = table => {
                     colWidth = parseInt(width)
                 }
                 else {
-                    colWidth = getWidth(col.closest('th'))
+                    colWidth = getWidth(col.closest('th'));
                 }
-                tableWidth = getWidth(col.closest('table'))
+                tableWidth = getWidth(col.closest('table'));
                 originalX = e.clientX ?? e.touches[0].clientX
             },
             e => {
@@ -606,7 +573,10 @@ const setResizeListener = table => {
                 const marginX = eventX - originalX
                 table.tables.forEach(t => {
                     const group = [...t.children].find(i => i.nodeName === 'COLGROUP')
-                    const calcColWidth = colWidth + marginX;
+                    let calcColWidth = colWidth + marginX;
+                    if (calcColWidth < 5) {
+                        calcColWidth = 5;
+                    }
                     if (group) {
                         const curCol = group.children.item(colIndex)
                         curCol.style.setProperty('width', `${calcColWidth}px`);
@@ -617,16 +587,7 @@ const setResizeListener = table => {
                         }
                         tableEl.setAttribute('style', `width: ${width}px;`)
 
-                        if (table.options.showColumnWidthTooltip) {
-                            const tip = bootstrap.Tooltip.getInstance(col);
-                            if (tip && tip._isShown()) {
-                                const inner = tip.tip.querySelector('.tooltip-inner');
-                                const tipText = getColumnTooltipTitle(table.options, colWidth + marginX);
-                                inner.innerHTML = tipText;
-                                tip._config.title = tipText;
-                                tip.update();
-                            }
-                        }
+                        resetColumnWidthTips(table, col);
 
                         const header = col.parentElement;
                         if (header.classList.contains('fixed')) {
@@ -639,7 +600,7 @@ const setResizeListener = table => {
                         const rows = [...tbody.children].filter(i => i.nodeName === 'TR');
                         rows.forEach(row => {
                             const header = row.children.item(colIndex);
-                            if (header.classList.contains('fixed')) {
+                            if (header !== null && header.classList.contains('fixed')) {
                                 resizeNextFixedColumnWidth(header, calcColWidth);
                             }
                         });
@@ -648,14 +609,12 @@ const setResizeListener = table => {
             },
             () => {
                 eff(col, false)
-                if (table.options.resizeColumnCallback) {
-                    const th = col.closest('th')
-                    const width = getWidth(th);
-                    const currentIndex = [...table.tables[0].querySelectorAll('thead > tr > th > .col-resizer')].indexOf(col)
-                    table.invoke.invokeMethodAsync(table.options.resizeColumnCallback, currentIndex, width)
-                }
 
-                saveColumnWidth(table)
+                const state = getColumnStateObject(table);
+                saveColumnStateToLocalstorage(table, state);
+
+                const field = col.getAttribute('data-bb-field');
+                table.invoke.invokeMethodAsync(table.options.resizeColumnCallback, field, state);
             }
         )
     })
@@ -667,7 +626,7 @@ const resizeNextFixedColumnWidth = (col, width) => {
         if (nextColumn.classList.contains('fixed')) {
             const right = parseFloat(col.style.getPropertyValue('right'));
             nextColumn.style.setProperty('right', `${right + width}px`);
-            resizeNextFixedColumnWidth(nextColumn, nextColumn.offsetWidth);
+            resizeNextFixedColumnWidth(nextColumn, getWidth(nextColumn));
         }
     }
     else if (col.classList.contains('fixed')) {
@@ -675,7 +634,20 @@ const resizeNextFixedColumnWidth = (col, width) => {
         if (nextColumn.classList.contains('fixed')) {
             const left = parseFloat(col.style.getPropertyValue('left'));
             nextColumn.style.setProperty('left', `${left + width}px`);
-            resizeNextFixedColumnWidth(nextColumn, nextColumn.offsetWidth);
+            resizeNextFixedColumnWidth(nextColumn, getWidth(nextColumn));
+        }
+    }
+}
+
+const resetColumnWidthTips = (table, col) => {
+    if (table.options.showColumnWidthTooltip) {
+        const tip = bootstrap.Tooltip.getInstance(col);
+        if (tip && tip._isShown()) {
+            const inner = tip.tip.querySelector('.tooltip-inner');
+            const tipText = getColumnTooltipTitle(table.options, col.closest('th'));
+            inner.innerHTML = tipText;
+            tip._config.title = tipText;
+            tip.update();
         }
     }
 }
@@ -686,7 +658,7 @@ const setColumnResizingListen = (table, col) => {
             closeAllTips(table.columns, e.target);
             const th = col.closest('th');
             const tip = bootstrap.Tooltip.getOrCreateInstance(e.target, {
-                title: getColumnTooltipTitle(table.options, th.offsetWidth),
+                title: getColumnTooltipTitle(table.options, th),
                 trigger: 'manual',
                 placement: 'top',
                 customClass: 'table-resizer-tips'
@@ -698,8 +670,8 @@ const setColumnResizingListen = (table, col) => {
     }
 }
 
-const getColumnTooltipTitle = (options, width) => {
-    return `${options.columnWidthTooltipPrefix}${width}px`;
+const getColumnTooltipTitle = (options, th) => {
+    return `${options.columnWidthTooltipPrefix}${getWidth(th) | 0}px`;
 }
 
 const indexOfCol = col => {
@@ -710,22 +682,28 @@ const indexOfCol = col => {
 
 const autoFitColumnWidth = async (table, col) => {
     const field = col.getAttribute('data-bb-field');
-    const widthValue = await table.invoke.invokeMethodAsync(table.options.autoFitContentCallback, field);
-
     const index = indexOfCol(col);
     let rows = null;
     if (table.thead) {
-        rows = table.body.querySelectorAll('table > tbody > tr');
+        rows = [...table.tables[1].tBodies[0].rows].filter(x => !x.classList.contains('is-detail'));
     }
     else {
-        rows = table.tables[0].querySelectorAll('table > tbody > tr');
+        rows = [...table.tables[0].tBodies[0].rows].filter(x => !x.classList.contains('is-detail'));
     }
 
     let maxWidth = 0;
-    [...rows].forEach(row => {
+    rows.forEach(row => {
         const cell = row.cells[index];
         maxWidth = Math.max(maxWidth, calcCellWidth(cell));
     });
+
+    if (table.options.fitColumnWidthIncludeHeader) {
+        const th = col.closest('th');
+        const span = th.querySelector('.table-cell');
+        const thStyle = getComputedStyle(th);
+        const margin = parseFloat(thStyle.getPropertyValue('padding-left')) + parseFloat(thStyle.getPropertyValue('padding-right'))
+        maxWidth = Math.max(maxWidth, calcCellWidth(span) + margin);
+    }
 
     if (maxWidth > 0) {
         table.tables.forEach(table => {
@@ -739,10 +717,65 @@ const autoFitColumnWidth = async (table, col) => {
                 const span = th.querySelector('.table-text');
                 span.style.removeProperty('width');
             }
+
+            const tableWidth = getTableWidth(table);
+            table.style.setProperty('width', `${tableWidth}px`);
         });
 
-        setTableDefaultWidth(table);
+        resetColumnWidthTips(table, col);
+
+        const state = getColumnStateObject(table);
+        saveColumnStateToLocalstorage(table, state);
+
+        await table.invoke.invokeMethodAsync(table.options.resizeColumnCallback, field, state);
     }
+}
+
+const formControlSelector = 'input.form-control:not([type="hidden"]), textarea.form-control';
+
+const getHorizontalWidth = style => {
+    return (parseFloat(style.getPropertyValue('padding-left')) || 0)
+        + (parseFloat(style.getPropertyValue('padding-right')) || 0)
+        + (parseFloat(style.getPropertyValue('border-left-width')) || 0)
+        + (parseFloat(style.getPropertyValue('border-right-width')) || 0);
+}
+
+const getFormControlTextWidth = control => {
+    const style = getComputedStyle(control);
+    const span = document.createElement('span');
+    span.textContent = control.value || control.getAttribute('placeholder') || ' ';
+    span.style.setProperty('visibility', 'hidden');
+    span.style.setProperty('white-space', 'pre');
+    span.style.setProperty('display', 'inline-block');
+    span.style.setProperty('position', 'absolute');
+    span.style.setProperty('top', '0');
+    span.style.setProperty('font-family', style.getPropertyValue('font-family'));
+    span.style.setProperty('font-size', style.getPropertyValue('font-size'));
+    span.style.setProperty('font-style', style.getPropertyValue('font-style'));
+    span.style.setProperty('font-weight', style.getPropertyValue('font-weight'));
+    span.style.setProperty('letter-spacing', style.getPropertyValue('letter-spacing'));
+    span.style.setProperty('text-transform', style.getPropertyValue('text-transform'));
+    document.body.appendChild(span);
+
+    const width = getWidth(span) + getHorizontalWidth(style);
+    span.remove();
+
+    return width;
+}
+
+const resetFormControlWidth = (sourceCell, cloneCell) => {
+    const controls = [...sourceCell.querySelectorAll(formControlSelector)];
+    const cloneControls = [...cloneCell.querySelectorAll(formControlSelector)];
+    controls.forEach((control, index) => {
+        const cloneControl = cloneControls[index];
+        if (cloneControl) {
+            const width = getFormControlTextWidth(control);
+            cloneControl.value = control.value;
+            cloneControl.style.setProperty('width', `${width}px`, 'important');
+            cloneControl.style.setProperty('min-width', '0', 'important');
+            cloneControl.style.setProperty('flex', '0 0 auto', 'important');
+        }
+    });
 }
 
 const calcCellWidth = cell => {
@@ -756,10 +789,12 @@ const calcCellWidth = cell => {
     div.style.setProperty('position', 'absolute');
     div.style.setProperty('top', '0');
     document.body.appendChild(div);
+    resetFormControlWidth(cell, div);
 
     const cellStyle = getComputedStyle(cell);
-    const width = div.offsetWidth + parseFloat(cellStyle.getPropertyValue('padding-left')) + parseFloat(cellStyle.getPropertyValue('padding-right'));
+    const width = getWidth(div) + getHorizontalWidth(cellStyle) + 1 | 0;
     div.remove();
+
     return width;
 }
 
@@ -811,10 +846,10 @@ const setCopyColumn = table => {
             rows = table.body.querySelectorAll('table > tbody > tr')
         }
         else if (el.querySelector('.table-fixed-column')) {
-            rows = el.querySelectorAll('.table-scroll > .overflow-auto > table > tbody > tr')
+            rows = el.querySelectorAll('.table-scroll > .overflow-auto > table > tbody > tr:not(.is-detail)')
         }
         else {
-            rows = el.querySelectorAll('.table-scroll > table > tbody > tr')
+            rows = el.querySelectorAll('.table-scroll > table > tbody > tr:not(.is-detail)')
         }
 
         let content = ''
@@ -865,6 +900,7 @@ const setDraggable = table => {
     let dragItem = null;
     let index = 0
     table.dragColumns = [...table.tables[0].querySelectorAll('thead > tr > th')].filter(i => i.draggable)
+    disposeDragColumns(table.dragColumns);
     table.dragColumns.forEach(col => {
         EventHandler.on(col, 'dragstart', e => {
             col.parentNode.classList.add('table-dragging')
@@ -882,11 +918,13 @@ const setDraggable = table => {
             })
             dragItem = null
         })
-        EventHandler.on(col, 'drop', e => {
+        EventHandler.on(col, 'drop', async e => {
             e.stopPropagation()
             e.preventDefault()
             if (table.options.dragColumnCallback) {
-                table.invoke.invokeMethodAsync(table.options.dragColumnCallback, index, table.dragColumns.indexOf(col))
+                const orginIndex = index;
+                const currentIndex = table.dragColumns.indexOf(col);
+                table.invoke.invokeMethodAsync(table.options.dragColumnCallback, orginIndex, currentIndex);
             }
             return false
         })
@@ -936,40 +974,264 @@ const setToolbarDropdown = (table, toolbar) => {
     })
 }
 
-const saveColumnWidth = table => {
-    const cols = table.columns
-    const tableWidth = table.tables[0].offsetWidth
-    const tableName = table.tables[0].getAttribute('data-bb-name')
-    const key = `bb-table-column-width-${tableName}`
-    localStorage.setItem(key, JSON.stringify({
-        "cols": cols.map(col => {
-            return { "width": col.closest('th').offsetWidth, "name": col.getAttribute('data-bb-field') }
-        }),
-        "table": tableWidth
-    }));
+export function getColumnStates(tableName) {
+    const state = getColumnStateFromLocalstorage(tableName);
+    if (state) {
+        return state;
+    }
+
+    const columnWidthState = getColumnWidthState(tableName);
+    if (columnWidthState) {
+        removeColumnVisibleState(tableName);
+
+        const columnVisibleStates = getColumnVisibleState(tableName);
+        if (columnVisibleStates) {
+            removeColumnWidthState(tableName);
+
+            for (const item of columnWidthState.cols) {
+                const { name } = item;
+                const column = columnVisibleStates.find(i => i.name === name);
+                if (column) {
+                    item.visible = column.visible;
+                }
+                else {
+                    item.visible = true;
+                }
+            }
+        }
+
+        return columnWidthState;
+    }
 }
 
-const setTableDefaultWidth = table => {
-    if (table.tables.length > 0 && isVisible(table.tables[0])) {
-        const { scrollWidth, columnMinWidth } = table.options;
-        const tableWidth = [...table.tables[0].querySelectorAll('col')]
-            .map(i => {
-                const colWidth = parseFloat(i.style.width);
-                return isNaN(colWidth) ? columnMinWidth : colWidth;
-            })
-            .reduce((accumulator, val) => accumulator + val, 0);
+const getColumnVisibleState = tableName => {
+    const columnVisibleKey = `bb-table-column-visible-${tableName}`
+    return getLocalStorageValue(columnVisibleKey);
+}
 
-        if (tableWidth > table.el.offsetWidth) {
-            table.tables[0].style.setProperty('width', `${tableWidth}px`);
-            if (table.thead) {
-                table.tables[1].style.setProperty('width', `${tableWidth - scrollWidth}px`);
+const removeColumnVisibleState = tableName => {
+    const columnVisibleKey = `bb-table-column-visible-${tableName}`
+    localStorage.removeItem(columnVisibleKey);
+}
+
+const getColumnWidthState = tableName => {
+    const columnWidthKey = `bb-table-column-width-${tableName}`
+    return getLocalStorageValue(columnWidthKey);
+}
+
+const removeColumnWidthState = tableName => {
+    const columnWidthKey = `bb-table-column-width-${tableName}`
+    localStorage.removeItem(columnWidthKey);
+}
+
+export function clearColumnStates(tableName) {
+    const columnStateKey = `bb-table-${tableName}`;
+    localStorage.removeItem(columnStateKey);
+}
+
+const getColumnStateFromLocalstorage = tableName => {
+    const columnStateKey = `bb-table-${tableName}`;
+    return getLocalStorageValue(columnStateKey);
+}
+
+const saveColumnStateToLocalstorage = (table, state) => {
+    const { options: { tableName } } = table;
+    if (tableName) {
+        const columnStateKey = `bb-table-${tableName}`;
+        const columnState = state ?? getColumnStateObject(table);
+        localStorage.setItem(columnStateKey, JSON.stringify(columnState));
+    }
+}
+
+const getLocalStorageValue = key => {
+    let result = null;
+    const json = localStorage.getItem(key);
+    if (json) {
+        try {
+            result = JSON.parse(json);
+        }
+        catch { }
+    }
+
+    return result;
+}
+
+const getColumnStateObject = table => {
+    const cols = table.options.columnStates;
+    return {
+        cols: cols.map(col => {
+            return {
+                name: col.name,
+                width: getColumnWidth(col, table.columns),
+                visible: col.visible
             }
+        }),
+        table: getTableWidth(table.tables[0])
+    };
+}
+
+const getColumnWidth = (col, columns) => {
+    const column = columns.find(i => i.getAttribute('data-bb-field') === col.name);
+    if (column) {
+        const width = getWidth(column.closest('th')) | 0;
+        return width > 0 ? width : null;
+    }
+    else if (col.width) {
+        return col.width;
+    }
+    else {
+        return null;
+    }
+}
+
+const getTableWidth = table => {
+    let tableWidth = 0;
+    const colgroup = [...table.children].find(i => i.nodeName === 'COLGROUP');
+    for (const col of colgroup.children) {
+        const width = parseInt(col.style.width);
+        if (isNaN(width)) {
+            tableWidth = null;
+            break;
         }
         else {
-            table.tables[0].style.removeProperty('width');
-            if (table.thead) {
-                table.tables[1].style.setProperty('width', `${table.tables[0].offsetWidth - scrollWidth}px`);
+            tableWidth += width;
+        }
+    }
+    return (tableWidth ?? getWidth(table)) | 0;
+}
+
+const getColumnWidthStateObject = table => {
+    const cols = table.columns
+    const tableWidth = getWidth(table.tables[0]);
+    return {
+        cols: cols.map(col => {
+            return { "width": getWidth(col.closest('th')) | 0, "name": col.getAttribute('data-bb-field') }
+        }),
+        table: tableWidth | 0
+    }
+}
+
+export function toggleLoadMask(id, method) {
+    const table = Data.get(id)
+    if (table) {
+        const loader = [...table.el.children].find(el => el.classList.contains('table-loader'));
+        if (method === 'show') {
+            loader.classList.add('show')
+        }
+        else {
+            loader.classList.remove('show')
+        }
+    }
+}
+
+export async function updateTableState(id, options) {
+    const table = Data.get(id)
+    if (table) {
+        table.options.tableName = options.tableName;
+
+        if (options.resetTable) {
+            await reset(id);
+            return;
+        }
+
+        if (options.resetColumns) {
+            resetColumns(table, options);
+        }
+
+        if (options.resetColumnListPopover) {
+            resetColumnListPopover(table);
+        }
+
+        if (options.updateSortTooltip) {
+            updateSortTooltip(table);
+        }
+
+        if (options.autoScrollLastSelectedRowToView) {
+            scrollToRow(table, options.autoScrollVerticalAlign, options.scrollIntoViewBehavior);
+        }
+        else if (options.scrollToTop) {
+            scrollToTop(table, options.scrollIntoViewBehavior);
+        }
+    }
+}
+
+const resetColumnListPopover = table => {
+    const { toolbar } = table;
+    if (toolbar) {
+        const dropdown = toolbar.querySelector('.dropdown-column');
+        if (dropdown) {
+            const button = dropdown.querySelector('.dropdown-toggle');
+            const dropdownToggle = bootstrap.Dropdown.getInstance(button);
+            if (dropdownToggle) {
+                dropdownToggle.dispose();
+            }
+            const p = table.popovers.find(i => i.el === dropdown);
+            if (p) {
+                table.popovers = table.popovers.filter(i => i !== p);
+                Popover.dispose(p);
+            }
+            if (button.getAttribute('data-bs-toggle') === 'bb.dropdown') {
+                table.popovers.push(Popover.init(dropdown, {
+                    isDisabled: () => false
+                }));
             }
         }
+    }
+}
+
+const resetColumns = (table, options) => {
+    setResizeListener(table);
+
+    const { columnStates, allowDragColumn } = options;
+    const { options: { tableName } } = table;
+    if (tableName) {
+        table.options.columnStates = columnStates;
+        saveColumnStateToLocalstorage(table);
+    }
+
+    if (allowDragColumn) {
+        setDraggable(table);
+    }
+}
+
+const updateSortTooltip = table => {
+    const el = table.el
+    const span = el.querySelector('.sortable .table-text[aria-describedby]')
+    if (span) {
+        const tooltip = getDescribedElement(span)
+        if (tooltip) {
+            tooltip.querySelector('.tooltip-inner').innerHTML = span.getAttribute('data-bs-original-title')
+        }
+    }
+}
+
+const scrollToRow = (table, align, options = { behavior: 'smooth' }) => {
+    const el = table.el;
+    if (el) {
+        const selectedRow = getSelectedRow(el);
+        if (selectedRow) {
+            const row = selectedRow.closest('tr');
+            if (row) {
+                options.block = align;
+                row.scrollIntoView(options);
+            }
+        }
+    }
+}
+
+const getSelectedRow = element => {
+    const rows = [...element.querySelectorAll('tr.active')];
+    return rows.pop();
+}
+
+const scrollToTop = (table, behavior) => {
+    const el = table.el;
+    const scroll = el.querySelector('.scroll');
+    if (scroll) {
+        scroll.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: behavior
+        });
     }
 }

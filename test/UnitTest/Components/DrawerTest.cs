@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -10,37 +10,38 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void Width_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder => builder.Add(a => a.Width, "100px"));
-        Assert.Contains("width: 100px", cut.Markup);
+        var cut = Context.Render<Drawer>(builder => builder.Add(a => a.Width, "100px"));
+        Assert.Contains("--bb-drawer-width: 100px;", cut.Markup);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Width, "");
         });
-        Assert.DoesNotContain("width:", cut.Markup);
+        Assert.DoesNotContain("--bb-drawer-width", cut.Markup);
+        Assert.DoesNotContain("tabindex", cut.Markup);
     }
 
     [Fact]
     public void Height_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.Height, "100px");
             builder.Add(a => a.Placement, Placement.Top);
         });
-        Assert.Contains("height: 100px", cut.Markup);
+        Assert.Contains("--bb-drawer-height: 100px", cut.Markup);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Height, "");
         });
-        Assert.DoesNotContain("height:", cut.Markup);
+        Assert.DoesNotContain("--bb-drawer-height:", cut.Markup);
     }
 
     [Fact]
     public void IsOpen_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.IsOpen, true);
             builder.Add(a => a.Placement, Placement.Top);
@@ -50,7 +51,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void AllowResize_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.AllowResize, true);
         });
@@ -61,7 +62,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     public void IsOpenChanged_Ok()
     {
         var isOpen = true;
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.IsBackdrop, true);
             builder.Add(a => a.IsOpen, true);
@@ -79,7 +80,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     public void OnClickBackdrop_Ok()
     {
         var isOpen = true;
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.IsBackdrop, true);
             builder.Add(a => a.IsOpen, true);
@@ -93,7 +94,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void ChildContent_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.ChildContent, s =>
             {
@@ -109,7 +110,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void BodyContext_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.BodyContext, "test-body-context");
             builder.Add(a => a.ChildContent, s =>
@@ -128,7 +129,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void ShowBackdrop_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.ShowBackdrop, true);
             builder.Add(a => a.ChildContent, s =>
@@ -139,7 +140,7 @@ public class DrawerTest : BootstrapBlazorTestBase
         });
         cut.Contains("drawer-backdrop");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowBackdrop, false);
         });
@@ -149,7 +150,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void Position_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.Position, "absolute");
             builder.Add(a => a.ChildContent, s =>
@@ -164,7 +165,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void ZIndex_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.ZIndex, 1055);
         });
@@ -174,7 +175,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void IsKeyboard_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.IsKeyboard, true);
             builder.Add(a => a.ChildContent, s =>
@@ -185,7 +186,7 @@ public class DrawerTest : BootstrapBlazorTestBase
         });
         cut.Contains("data-bb-keyboard=\"true\"");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsKeyboard, false);
         });
@@ -195,7 +196,7 @@ public class DrawerTest : BootstrapBlazorTestBase
     [Fact]
     public void BodyScroll_Ok()
     {
-        var cut = Context.RenderComponent<Drawer>(builder =>
+        var cut = Context.Render<Drawer>(builder =>
         {
             builder.Add(a => a.BodyScroll, true);
             builder.Add(a => a.ChildContent, s =>
@@ -205,14 +206,6 @@ public class DrawerTest : BootstrapBlazorTestBase
             });
         });
         cut.Contains("data-bb-scroll=\"true\"");
-    }
-
-    [Fact]
-    public async Task Close_Ok()
-    {
-        Context.JSInterop.Setup<bool>("execute", matcher => true).SetResult(true);
-        var cut = Context.RenderComponent<Drawer>();
-        await cut.InvokeAsync(() => cut.Instance.Close());
     }
 
     class MockContent : ComponentBase

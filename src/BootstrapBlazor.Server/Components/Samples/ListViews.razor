@@ -1,5 +1,5 @@
-﻿@page "/list-view"
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@page "/list-view"
+@inject IOptions<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<ListViews> Localizer
 
 <h3>@Localizer["ListViewsTitle"]</h3>
@@ -104,6 +104,4 @@
     </ListView>
 </DemoBlock>
 
-<AttributeTable Items="GetAttributes()"></AttributeTable>
-
-<MethodTable Items="GetMethods()"></MethodTable>
+<AttributeTable Type="typeof(ListView<>)"></AttributeTable>

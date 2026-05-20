@@ -1,7 +1,9 @@
-﻿@page "/editor"
+@page "/editor"
+
 @inject SwalService SwalService
 @inject PackageVersionService VersionManager
 @inject IStringLocalizer<Editors> Localizer
+@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["EditorsTitle"]</h3>
 
@@ -12,6 +14,10 @@
 <Pre class="no-highlight mb-3">&lt;script src="_content/BootstrapBlazor.SummerNote/js/jquery-3.6.0.min.js"&gt;&lt;/script&gt;</Pre>
 
 <Pre class="no-highlight mb-3">builder.Services.Configure&lt;HubOptions&gt;(option => option.MaximumReceiveMessageSize = null);</Pre>
+
+<p class="code-label">@Localizer["EditorsUploadDesc"]</p>
+<Pre>public Func&lt;EditorUploadFile, Task&lt;string&gt;&gt;? OnFileUpload { get; set; }</Pre>
+<p>@((MarkupString)Localizer["EditorsUploadDesc2"].Value)</p>
 
 <PackageTips Name="BootstrapBlazor.SummerNote" />
 
@@ -38,7 +44,7 @@
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["EditorIsEditorTitle"]" Introduction="@Localizer["EditorIsEditorIntro"]" Name="IsEditor">
-    <Editor IsEditor="true" />
+    <Editor IsEditor="true" OnFileUpload="OnFileUpload" />
 </DemoBlock>
 
 <DemoBlock Title="@Localizer["EditorHeightTitle"]" Introduction="@Localizer["EditorHeightIntro"]" Name="Height">
@@ -81,4 +87,4 @@
     </section>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<AttributeTable Type="typeof(Editor)" />

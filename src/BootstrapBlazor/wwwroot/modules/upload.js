@@ -1,6 +1,5 @@
-﻿import Data from "./data.js"
+import Data from "./data.js"
 import EventHandler from "./event-handler.js"
-import { readFileAsync } from "./utility.js"
 
 export function init(id) {
     const el = document.getElementById(id)
@@ -63,39 +62,38 @@ export function init(id) {
         const event = new Event('change', { bubbles: true })
         inputFile.dispatchEvent(event)
     })
-
     const getIndex = target => {
         let index = 0;
-        let button = target;
-        if (button.tagName === 'IMG') {
-            button = button.closest('.upload-item').querySelector('.btn-zoom');
-        }
-        if (button) {
-            const buttons = [...el.querySelectorAll('.btn-zoom')]
-            index = buttons.indexOf(button);
-        }
+        let item = target.closest('.upload-item');
+        const items = [...el.querySelectorAll('.upload-item')]
+        index = items.indexOf(item);
         return index;
     };
 
     EventHandler.on(el, 'click', '.btn-zoom, .upload-item-body-image', e => {
-        const prev = Data.get(el.getAttribute('data-bb-previewer-id'));
-        prev.viewer.updatePrevList([...el.querySelectorAll('.upload-body img')].map(v => v.src));
-        prev.viewer.show(getIndex(e.delegateTarget));
+        const zoom = e.delegateTarget.closest('.upload-item').classList.contains('is-preview');
+        if (zoom) {
+            const prev = Data.get(el.getAttribute('data-bb-previewer-id'));
+            prev.viewer.updatePrevList([...el.querySelectorAll('.upload-body img')].map(v => v.src));
+            prev.viewer.show(getIndex(e.delegateTarget));
+        }
     })
 }
 
-export async function getPreviewUrl(id, fileName) {
+export function preview(previewerId, index) {
+    const prev = Data.get(previewerId);
+    if (prev) {
+        prev.viewer.show(index);
+    }
+}
+
+export function getPreviewUrl(id, fileName) {
     let url = '';
     const upload = Data.get(id);
-    const { files } = upload;
-    if (files) {
-        const file = [...files].find(v => v.name === fileName);
-        if (file) {
-            const data = await readFileAsync(file);
-            if (data) {
-                url = URL.createObjectURL(data);
-            }
-        }
+    const { files, inputFile } = upload;
+    const file = [...(files || inputFile.files)].find(v => v.name === fileName);
+    if (file) {
+        url = URL.createObjectURL(file);
     }
     return url;
 }

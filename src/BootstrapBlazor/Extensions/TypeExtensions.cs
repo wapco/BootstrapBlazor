@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -57,11 +57,27 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// 获得唯一类型名称方法
+    /// <para lang="zh">获得唯一类型名称方法</para>
+    /// <para lang="en">Gets唯一type名称方法</para>
     /// </summary>
     /// <param name="type"></param>
-    /// <returns></returns>
     public static string GetUniqueTypeName(this Type type) => type.IsCollectible
         ? $"{type.FullName}-{type.TypeHandle.Value}"
         : $"{type.FullName}";
+
+
+    /// <summary>
+    /// <para lang="zh">通过 typeName 参数安全获取 Type 实例</para>
+    /// <para lang="en">通过 typeName 参数安全获取 Type instance</para>
+    /// </summary>
+    /// <param name="typeName"></param>
+    public static Type? GetSafeType(string? typeName)
+    {
+        Type? type = null;
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            type = Type.GetType(typeName, throwOnError: false);
+        }
+        return type;
+    }
 }

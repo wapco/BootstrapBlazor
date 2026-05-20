@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -18,22 +18,19 @@ static class ServiceCollectionExtensions
         // 增加中文编码支持网页源码显示汉字
         services.AddSingleton(HtmlEncoder.Create(UnicodeRanges.All));
 
-        // 增加错误日志
-        services.AddLogging(logging => logging.AddFileLogger());
+        // 增加错误日志，并过滤已知的防伪 Token 解密噪音日志
+        services.AddLogging(logging =>
+        {
+            logging.AddFileLogger();
+            logging.AddFilter("Microsoft.AspNetCore.Antiforgery", LogLevel.None);
+        });
 
         // 增加多语言支持配置信息
-        services.AddRequestLocalization<IOptionsMonitor<BootstrapBlazorOptions>>((localizerOption, blazorOption) =>
+        services.AddRequestLocalization<IOptions<BootstrapBlazorOptions>>((localizerOption, blazorOption) =>
         {
-            blazorOption.OnChange(Invoke);
-            Invoke(blazorOption.CurrentValue);
-            return;
-
-            void Invoke(BootstrapBlazorOptions option)
-            {
-                var supportedCultures = option.GetSupportedCultures();
-                localizerOption.SupportedCultures = supportedCultures;
-                localizerOption.SupportedUICultures = supportedCultures;
-            }
+            var supportedCultures = blazorOption.Value.GetSupportedCultures();
+            localizerOption.SupportedCultures = supportedCultures;
+            localizerOption.SupportedUICultures = supportedCultures;
         });
 
         services.AddControllers();
@@ -44,9 +41,26 @@ static class ServiceCollectionExtensions
         // 增加后台任务服务
         services.AddTaskServices();
         services.AddHostedService<ClearTempFilesService>();
-        services.AddHostedService<MockOnlineContributor>();
         services.AddHostedService<MockReceiveSocketServerService>();
+        services.AddHostedService<MockSendReceiveSocketServerService>();
         services.AddHostedService<MockCustomProtocolSocketServerService>();
+        services.AddHostedService<MockDisconnectServerService>();
+
+        if (OperatingSystem.IsWindows())
+        {
+            services.AddOpcDaServer();
+        }
+        else
+        {
+            // 增加 OpcDa 模拟服务（给 Linux 平台使用）
+            services.AddMockOpcDaServer();
+        }
+
+        // 增加 ITcpSocketFactory 服务
+        services.AddTcpSocketFactory();
+
+        // 增加 IModbusFactory 服务
+        services.AddModbusFactory();
 
         // 增加通用服务
         services.AddBootstrapBlazorServices();

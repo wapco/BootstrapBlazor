@@ -48,6 +48,7 @@
     "AutoScrollText": "AutoScroll"
   },
   "BootstrapBlazor.Components.DateTimePicker": {
+    "PickerButtonText": "Picker ...",
     "DatePlaceHolder": "Select date",
     "TimePlaceHolder": "Select time",
     "DateTimePlaceHolderText": "Please select ...",
@@ -69,7 +70,7 @@
     "Months": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     "MonthLists": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     "WeekLists": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
-    "GenericTypeErroMessage": "DateTimePicker only supports DateTime DateTime? DateTimeOffset DateTimeOffset?",
+    "GenericTypeErrorMessage": "DateTimePicker only supports DateTime DateTime? DateTimeOffset DateTimeOffset?",
     "Today": "Today",
     "Yesterday": "Yesterday",
     "Week": "A week ago",
@@ -116,7 +117,7 @@
   "BootstrapBlazor.Components.EqualToValidator": {
     "ErrorMessage": "Please enter the same value again"
   },
-  "BootstrapBlazor.Components.ErrorLogger": {
+  "BootstrapBlazor.Components.BootstrapBlazorErrorBoundary": {
     "ToastTitle": "Application Error"
   },
   "BootstrapBlazor.Components.GoTop": {
@@ -275,11 +276,16 @@
     "AlignCenterText": "Center",
     "AlignCenterTooltipText": "Click to align text in this column to the center",
     "AlignRightText": "Right",
-    "AlignRightTooltipText": "Click to align text in this column to the right"
+    "AlignRightTooltipText": "Click to align text in this column to the right",
+    "ColumnListSelectAllText": "All",
+    "ColumnListSelectInvertText": "Invert",
+    "MoreButtonText": "More"
   },
   "BootstrapBlazor.Components.EditDialog": {
     "CloseButtonText": "Close",
-    "SaveButtonText": "Save"
+    "SaveButtonText": "Save",
+    "CloseConfirmTitle": "Warning",
+    "CloseConfirmContent": "The form has been changed. Are you sure you continue to close it?"
   },
   "BootstrapBlazor.Components.TableColumnFilter": {
     "ClearButtonText": "Clear",
@@ -410,6 +416,27 @@
     "LightModeText": "Light"
   },
   "BootstrapBlazor.Components.ValidateBase": {
-    "DefaultRequiredErrorMessage": "{0} is required."
+    "DefaultRequiredErrorMessage": "{0} is required.",
+    "CustomOptionTextIsRequired": "Please enter custom option text"
+  },
+  "BootstrapBlazor.Components.NetworkMonitorIndicator": {
+    "Title": "Network",
+    "NetworkType": "NetworkType",
+    "Downlink": "Downlink",
+    "RTT": "RTT"
+  },
+  "BootstrapBlazor.Components.LoadMore": {
+    "NoMoreText": "No More Data"
+  },
+  "BootstrapBlazor.Components.CardUpload": {
+    "DeleteConfirmContent": "Are you sure you want to delete the current data?"
+  },
+  "BootstrapBlazor.Components.SearchFormLocalizerOptions": {
+    "SelectAllText": "All",
+    "BooleanAllText": "All",
+    "BooleanTrueText": "True",
+    "BooleanFalseText": "False",
+    "NumberStartValueLabelText": "Start",
+    "NumberEndValueLabelText": "End"
   }
 }

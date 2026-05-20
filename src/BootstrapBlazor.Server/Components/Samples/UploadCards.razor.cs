@@ -1,9 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
-
-using Newtonsoft.Json.Linq;
 
 namespace BootstrapBlazor.Server.Components.Samples;
 
@@ -19,6 +17,7 @@ public partial class UploadCards : IDisposable
     private bool _showProgress = true;
     private bool _showZoomButton = true;
     private bool _showDeleteButton = true;
+    private bool _showDeleteConfirmButton = true;
     private bool _showDownloadButton = true;
 
     private List<UploadFile> DefaultFormatFileList { get; } =
@@ -50,7 +49,7 @@ public partial class UploadCards : IDisposable
             // 服务器端验证当文件大于 5MB 时提示文件太大信息
             if (file.Size > MaxFileLength)
             {
-                await ToastService.Information(Localizer["UploadsFileMsg"], Localizer["UploadsFileError"]);
+                await ToastService.Information(Localizer["UploadsFileTitle"], Localizer["UploadsFileError"]);
                 file.Code = 1;
                 file.Error = Localizer["UploadsFileError"];
             }
@@ -59,19 +58,23 @@ public partial class UploadCards : IDisposable
                 // 模拟保存成功
                 await Task.Delay(100);
                 await SaveToFile(file);
-                await ToastService.Success(Localizer["UploadsFileMsg"], $"{file.File!.Name} {Localizer["UploadsSuccess"]}");
+                await ToastService.Success(Localizer["UploadsFileTitle"], $"{file.File!.Name} {Localizer["UploadsSuccess"]}");
             }
         }
     }
+
+    private Task OnTest1Click(UploadFile file) => ToastService.Information("Action Button", $"{file.GetFileName()}");
+
+    private Task OnTest2Click(UploadFile file) => ToastService.Information("Action Button", $"{file.GetFileName()}");
 
     private async Task SaveToFile(UploadFile file)
     {
         // Server Side 使用
         // Web Assembly 模式下必须使用 WebApi 方式去保存文件到服务器或者数据库中
         // 生成写入文件名称
-        if (!string.IsNullOrEmpty(WebsiteOption.CurrentValue.WebRootPath))
+        if (!string.IsNullOrEmpty(WebsiteOption.Value.WebRootPath))
         {
-            var uploaderFolder = Path.Combine(WebsiteOption.CurrentValue.WebRootPath, "images", "uploader");
+            var uploaderFolder = Path.Combine(WebsiteOption.Value.WebRootPath, "images", "uploader");
             file.FileName = $"{Path.GetFileNameWithoutExtension(file.OriginFileName)}-{DateTimeOffset.Now:yyyyMMddHHmmss}{Path.GetExtension(file.OriginFileName)}";
             var fileName = Path.Combine(uploaderFolder, file.FileName);
 
@@ -83,14 +86,14 @@ public partial class UploadCards : IDisposable
                 if (ret)
                 {
                     // 保存成功
-                    file.PrevUrl = $"{WebsiteOption.CurrentValue.AssetRootPath}images/uploader/{file.FileName}";
+                    file.PrevUrl = $"{WebsiteOption.Value.AssetRootPath}images/uploader/{file.FileName}";
                 }
                 else
                 {
-                    var errorMessage = $"{Localizer["UploadsSaveFileError"]} {file.OriginFileName}";
+                    var errorMessage = Localizer["UploadsSaveFileError"];
                     file.Code = 1;
                     file.Error = errorMessage;
-                    await ToastService.Error(Localizer["UploadFile"], errorMessage);
+                    await ToastService.Error(Localizer["UploadsFileTitle"], errorMessage);
                 }
             }
             catch (OperationCanceledException)
@@ -102,7 +105,7 @@ public partial class UploadCards : IDisposable
         {
             file.Code = 1;
             file.Error = Localizer["UploadsWasmError"];
-            await ToastService.Information(Localizer["UploadsSaveFile"], Localizer["UploadsSaveFileMsg"]);
+            await ToastService.Error(Localizer["UploadsFileTitle"], Localizer["UploadsWasmError"]);
         }
     }
 
@@ -111,9 +114,12 @@ public partial class UploadCards : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _token?.Cancel();
-        _token?.Dispose();
-        _token = null;
+        if (_token != null)
+        {
+            _token.Cancel();
+            _token.Dispose();
+            _token = null;
+        }
         GC.SuppressFinalize(this);
     }
 }

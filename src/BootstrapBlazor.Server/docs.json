@@ -1,4 +1,4 @@
-﻿{
+{
   "src": {
     "ajax": "Ajaxs",
     "alert": "Alerts",
@@ -90,6 +90,7 @@
     "html-renderer": "HtmlRenderers",
     "html2image": "Html2Images",
     "html2pdf": "Html2Pdfs",
+    "dom2image": "Dom2Images",
     "label": "Labels",
     "layout": "Layouts",
     "light": "Lights",
@@ -241,10 +242,26 @@
     "fullscreen-button": "FullScreenButtons",
     "meet": "Meets",
     "vditor": "Vditors",
-    "socket-factory": "SocketFactories",
     "office-viewer": "OfficeViewers",
-    "socket/receive": "Sockets\\Receives",
-    "socket/adapter": "Sockets\\Adapters"
+    "socket-factory": "Sockets\\SocketFactories",
+    "socket/manual-receive": "Sockets\\ManualReceives",
+    "socket/auto-receive": "Sockets\\AutoReceives",
+    "socket/adapter": "Sockets\\Adapters",
+    "socket/auto-connect": "Sockets\\AutoReconnects",
+    "socket/data-entity": "Sockets\\DataEntities",
+    "network-monitor": "NetworkMonitors",
+    "toolbar": "Toolbars",
+    "opc-da": "OpcDa",
+    "navbar": "Navbars",
+    "task-board": "TaskBoard",
+    "modbus-factory": "Modbus\\ModbusFactories",
+    "serial-port-factory": "SerialPorts\\SerialPortFactories",
+    "select-region": "SelectRegions",
+    "select-city": "SelectCities",
+    "select-province": "SelectProvinces",
+    "hik-vision": "HikVisions",
+    "embed-pdf": "EmbedPDFs",
+    "term": "Terms"
   },
   "video": {
     "table": "BV1ap4y1x7Qn?p=1",
@@ -308,12 +325,13 @@
     "dockview2/layout": "BV1sW421d74o",
     "icon": "BV1jx4y1s73i",
     "mask": "BV16E421w7vD",
-    "global-option": "BV17T421k7U1"
+    "global-option": "BV17T421k7U1",
+    "hosting": "BV1BD4y1Y7fg"
   },
   "link": {
-    "AntDesign": "http://www.antblazor.com/",
-    "Pear Admin": "http://www.pearadmin.com/",
-    "SAPHP": "https://www.swiftadmin.net/",
-    "Veterinary Hospital": "http://animal.jucun.zone/"
+    "AntDesign": "http://www.antblazor.com/?from=blazor.zone",
+    "AtomUI": "https://qinware.com/?from=blazor.zone",
+    "SAPHP": "https://www.swiftadmin.net/?from=blazor.zone",
+    "Veterinary Hospital": "http://animal.jucun.zone/?from=blazor.zone"
   }
 }

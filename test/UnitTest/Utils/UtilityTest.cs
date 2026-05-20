@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
-using System.Net;
 using System.Reflection;
 using UnitTest.Components;
 
@@ -389,18 +388,18 @@ public class UtilityTest : BootstrapBlazorTestBase
         // improve code coverage
         var option = Context.Services.GetRequiredService<IOptions<JsonLocalizationOptions>>().Value;
         option.UseKeyWhenValueIsNull = true;
-        var items = Utility.GetJsonStringByTypeName(option, this.GetType().Assembly, "UnitTest.Utils.UtilityTest", "en-US", true);
+        var items = Utility.GetJsonStringByTypeName(option, GetType().Assembly, "UnitTest.Utils.UtilityTest", "en-US", true);
 
         var test1 = items.FirstOrDefault(i => i.Name == "Test-Null");
         Assert.NotNull(test1);
-        Assert.Equal("", test1.Value);
+        Assert.Equal("Test-Null", test1.Value);
 
         var test2 = items.FirstOrDefault(i => i.Name == "Test-Key");
         Assert.NotNull(test2);
-        Assert.Equal("Test-Key", test2.Value);
+        Assert.Equal("", test2.Value);
 
         option.UseKeyWhenValueIsNull = false;
-        items = Utility.GetJsonStringByTypeName(option, this.GetType().Assembly, "UnitTest.Utils.UtilityTest", "en-US", true);
+        items = Utility.GetJsonStringByTypeName(option, GetType().Assembly, "UnitTest.Utils.UtilityTest", "en-US", true);
 
         test1 = items.FirstOrDefault(i => i.Name == "Test-Null");
         Assert.NotNull(test1);
@@ -741,27 +740,6 @@ public class UtilityTest : BootstrapBlazorTestBase
     {
         var result = "192.168.1.192".MaskIpString();
         Assert.Equal("192.168.1.###", result);
-    }
-
-    [Fact]
-    public void ConvertToIPAddress_Ok()
-    {
-        var ex = Assert.Throws<ArgumentNullException>(() => Utility.ConvertToIPAddress(""));
-        Assert.NotNull(ex);
-
-        var address = Utility.ConvertToIPAddress("any");
-        Assert.Equal(IPAddress.Any, address);
-    }
-
-    [Fact]
-    public void ConvertToIpEndPoint_Ok()
-    {
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => Utility.ConvertToIpEndPoint("localhost", 88990));
-        Assert.NotNull(ex);
-
-        ex = null;
-        ex = Assert.Throws<ArgumentOutOfRangeException>(() => Utility.ConvertToIpEndPoint("localhost", -1000));
-        Assert.NotNull(ex);
     }
 
     [AutoGenerateClass(Align = Alignment.Center)]

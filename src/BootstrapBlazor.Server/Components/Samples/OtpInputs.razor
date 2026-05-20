@@ -1,4 +1,4 @@
-﻿@page "/otp-input"
+@page "/otp-input"
 @inject IStringLocalizer<OtpInputs> Localizer
 
 <HeadContent>
@@ -11,10 +11,12 @@
             text-align: center;
         }
 
+        @@media(max-width: 768px) {
             .otp-input-demo .bb-otp-input {
                 --bb-otp-item-width: 32px;
                 --bb-otp-font-size: 1.2em;
             }
+        }
     </style>
 </HeadContent>
 
@@ -29,7 +31,7 @@
 <DemoBlock Title="@Localizer["OtpInputsNormalTitle"]"
            Introduction="@Localizer["OtpInputsNormalIntro"]"
            Name="Normal">
-    <div class="row g-3 mb-3">
+    <section ignore class="row g-3 mb-3">
         <div class="col-12 col-sm-6">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="Type"></BootstrapInputGroupLabel>
@@ -54,7 +56,7 @@
                 <Switch @bind-Value="@_disabled"></Switch>
             </BootstrapInputGroup>
         </div>
-    </div>
+    </section>
     <OtpInput Value="@_value" Type="_otpInputType" PlaceHolder="@_placeHolder" IsReadonly="_readonly" IsDisabled="_disabled"></OtpInput>
 </DemoBlock>
 
@@ -77,3 +79,5 @@
         </div>
     </ValidateForm>
 </DemoBlock>
+
+<AttributeTable Type="typeof(OtpInput)" />

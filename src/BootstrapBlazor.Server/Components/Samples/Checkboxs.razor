@@ -1,4 +1,4 @@
-﻿@page "/checkbox"
+@page "/checkbox"
 @inject IStringLocalizer<Checkboxs> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -159,6 +159,4 @@
     </ValidateForm>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
-
-<EventTable Items="@GetEvents()" />
+<AttributeTable Type="typeof(Checkbox<>)" />

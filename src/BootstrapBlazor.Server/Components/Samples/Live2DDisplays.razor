@@ -1,6 +1,6 @@
-﻿@page "/live2d-display"
+@page "/live2d-display"
 @inject IStringLocalizer<Live2DDisplays> Localizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <HeadContent>
     <style>
@@ -99,4 +99,4 @@ app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });</P
 
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<AttributeTable Type="typeof(Live2DDisplay)" />

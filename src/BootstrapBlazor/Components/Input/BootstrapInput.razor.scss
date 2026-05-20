@@ -27,3 +27,9 @@
         display: block;
     }
 }
+
+.form-control {
+    &.no-border:not(.is-valid):not(.is-invalid) {
+        border-color: transparent;
+    }
+}

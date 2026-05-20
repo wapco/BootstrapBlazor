@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -9,24 +9,27 @@ using Microsoft.AspNetCore.Components.Web;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// ContextMenuTrigger 组件
+/// <para lang="zh">ContextMenuTrigger 组件</para>
+/// <para lang="en">A component that defines a trigger that shows a <see cref="ContextMenu"/></para>
 /// </summary>
 public class ContextMenuTrigger : BootstrapComponentBase
 {
     /// <summary>
-    /// 获得/设置 子组件
+	/// <inheritdoc cref="ContextMenu.ChildContent" />
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// 获得/设置 包裹组件 TagName 默认为 div
+    /// <para lang="zh">获得/设置 包裹组件 TagName 默认为 div</para>
+    /// <para lang="en">The HTML tag name to use for the trigger. Default is &lt;div&gt;</para>
     /// </summary>
     [Parameter]
     public string WrapperTag { get; set; } = "div";
 
     /// <summary>
-    /// 获得/设置 上下文数据
+    /// <para lang="zh">获得/设置 上下文数据</para>
+    /// <para lang="en">Gets or sets the context data</para>
     /// </summary>
     [Parameter]
     public object? ContextItem { get; set; }
@@ -35,14 +38,40 @@ public class ContextMenuTrigger : BootstrapComponentBase
     [NotNull]
     private ContextMenuZone? ContextMenuZone { get; set; }
 
+    /// <summary>
+    /// <para lang="zh">触摸事件触发菜单的超时时间（毫秒）。默认值为 <see cref="ContextMenuOptions.OnTouchDelay"/> 毫秒。必须大于 0</para>
+    /// <para lang="en">The timeout duration for touch events to trigger the context menu (in milliseconds). Default is <see cref="ContextMenuOptions.OnTouchDelay"/> milliseconds. Must be greater than 0</para>
+    /// </summary>
+    [Parameter]
+    public int? OnTouchDelay { get; set; }
+
+    /// <summary>
+    /// <para lang="zh">标记滚动时上下文菜单是否应不可见。默认值为 false。</para>
+    /// <para lang="en">Flags whether the context menu should be invisible while scrolling. Default is false.</para>
+    /// </summary>
+    [Parameter]
+    public bool IsInvisibleWhenTouchMove { get; set; }
+
+    [Inject, NotNull]
+    private IOptionsMonitor<BootstrapBlazorOptions>? Options { get; set; }
+
     private string? ClassString => CssBuilder.Default()
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
     /// <summary>
     /// <inheritdoc/>
+    /// </summary>	
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        OnTouchDelay ??= Options.CurrentValue.ContextMenuOptions.OnTouchDelay;
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
     /// </summary>
-    /// <param name="builder"></param>
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, WrapperTag);
@@ -51,37 +80,50 @@ public class ContextMenuTrigger : BootstrapComponentBase
         builder.AddAttribute(30, "oncontextmenu", EventCallback.Factory.Create<MouseEventArgs>(this, OnContextMenu));
         builder.AddAttribute(35, "ontouchstart", EventCallback.Factory.Create<TouchEventArgs>(this, OnTouchStart));
         builder.AddAttribute(36, "ontouchend", EventCallback.Factory.Create<TouchEventArgs>(this, OnTouchEnd));
+        if (IsInvisibleWhenTouchMove)
+        {
+            builder.AddAttribute(37, "ontouchmove", EventCallback.Factory.Create<TouchEventArgs>(this, OnTouchMove));
+        }
         builder.AddEventPreventDefaultAttribute(40, "oncontextmenu", true);
         builder.AddContent(50, ChildContent);
         builder.CloseElement();
     }
 
     /// <summary>
-    /// 点击 ContextMenu 菜单项时触发
+    /// <para lang="zh">点击 ContextMenu 菜单项时触发</para>
+    /// <para lang="en">Triggered when a context menu item is clicked</para>
     /// </summary>
-    /// <returns></returns>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(MouseEventArgs))]
     public Task OnContextMenu(MouseEventArgs args) => ContextMenuZone.OnContextMenu(args, ContextItem);
 
     /// <summary>
-    /// 是否触摸
+    /// <para lang="zh">是否触摸</para>
+    /// <para lang="en">Indicates whether a touch event is started</para>
     /// </summary>
-    private bool TouchStart { get; set; }
+    public bool IsTouchStarted { get; private set; }
 
     /// <summary>
-    /// 触摸定时器工作指示
+    /// <para lang="zh">触摸定时器工作指示</para>
+    /// <para lang="en">Indicates whether the touch timer is working</para>
     /// </summary>
     private bool IsBusy { get; set; }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(TouchEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(TouchPoint))]
     private async Task OnTouchStart(TouchEventArgs e)
     {
         if (!IsBusy)
         {
             IsBusy = true;
-            TouchStart = true;
+            IsTouchStarted = true;
 
             // 延时保持 TouchStart 状态
-            await Task.Delay(200);
-            if (TouchStart)
+            // Delay to maintain TouchStart state
+            if (OnTouchDelay.HasValue)
+            {
+                await Task.Delay(OnTouchDelay.Value);
+            }
+            if (IsTouchStarted)
             {
                 var args = new MouseEventArgs()
                 {
@@ -90,18 +132,30 @@ public class ContextMenuTrigger : BootstrapComponentBase
                     ScreenX = e.Touches[0].ScreenX,
                     ScreenY = e.Touches[0].ScreenY,
                 };
-                // 弹出关联菜单
+
                 await OnContextMenu(args);
 
-                //延时防止重复激活菜单功能
-                await Task.Delay(200);
+                // 延时防止重复激活菜单功能
+                // Delay to prevent repeated activation of menu functions
+                if (OnTouchDelay.HasValue)
+                {
+                    await Task.Delay(OnTouchDelay.Value);
+                }
             }
             IsBusy = false;
         }
     }
 
+    private void OnTouchMove()
+    {
+        if (IsInvisibleWhenTouchMove)
+        {
+            IsTouchStarted = false;
+        }
+    }
+
     private void OnTouchEnd()
     {
-        TouchStart = false;
+        IsTouchStarted = false;
     }
 }

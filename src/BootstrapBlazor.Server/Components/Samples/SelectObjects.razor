@@ -1,6 +1,6 @@
-﻿@page "/select-object"
+@page "/select-object"
 @inject IStringLocalizer<SelectObjects> Localizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["Title"]</h3>
 
@@ -72,3 +72,4 @@
     </div>
 </DemoBlock>
 
+<AttributeTable Type="typeof(SelectObject<>)" />

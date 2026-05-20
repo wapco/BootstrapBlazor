@@ -1,5 +1,5 @@
-﻿@page "/upload-button"
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@page "/upload-button"
+@inject IOptions<WebsiteOptions> WebsiteOption
 @inject IStringLocalizer<UploadButtons> Localizer
 @inject ToastService ToastService
 
@@ -15,7 +15,7 @@
            Introduction="@Localizer["ButtonUploadIntro"]"
            Name="Normal">
     <section ignore>
-        <div class="row g-3">
+        <div class="row g-3" style="--bb-input-group-label-width: 186px;">
             <div class="col-12 col-sm-4">
                 <BootstrapInputGroup>
                     <BootstrapInputGroupLabel DisplayText="IsDisabled"></BootstrapInputGroupLabel>
@@ -59,3 +59,5 @@
                   ShowUploadFileList="@_showUploadFileList" ShowDownloadButton="@_showDownloadButton"
                   OnChange="@OnClickToUpload" OnDownload="OnDownload" OnDelete="OnDelete"></ButtonUpload>
 </DemoBlock>
+
+<AttributeTable Type="typeof(ButtonUpload<>)"></AttributeTable>

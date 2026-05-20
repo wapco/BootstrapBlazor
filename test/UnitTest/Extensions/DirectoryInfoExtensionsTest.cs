@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -32,8 +32,13 @@ public class DirectoryInfoExtensionsTest
         }
 
         var sourceDirInfo = new DirectoryInfo(sourceDir);
-        sourceDirInfo.Copy(destDir);
+        sourceDirInfo.Copy(destDir, true);
         Assert.True(Directory.Exists(destDir));
+
+        // 测试源文件夹不存在的情况
+        var sourceDirNotExists = new DirectoryInfo(Path.Combine(rootDir, "notexists"));
+        var ex = Assert.Throws<DirectoryNotFoundException>(() => sourceDirNotExists.Copy(destDir, true));
+        Assert.NotNull(ex);
     }
 
     private static string CreateDir(string dirName)

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -62,9 +62,9 @@ public sealed partial class Rows
     {
         base.OnInitialized();
 
-        Hobbies1 = Foo.GenerateHobbies(LocalizerFoo);
-        Hobbies2 = Foo.GenerateHobbies(LocalizerFoo);
-        Hobbies3 = Foo.GenerateHobbies(LocalizerFoo);
+        Hobbies1 = Foo.GenerateHobbies(FooLocalizer);
+        Hobbies2 = Foo.GenerateHobbies(FooLocalizer);
+        Hobbies3 = Foo.GenerateHobbies(FooLocalizer);
     }
 
     private class RowFoo : Foo
@@ -74,40 +74,4 @@ public sealed partial class Rows
         [AutoGenerateColumn(Order = 60)]
         public List<EnumEducation>? Educations { get; set; }
     }
-
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ItemsPerRow",
-            Description = Localizer["RowsItemsPerRow"],
-            Type = "enum",
-            ValueList = " One,Two,Three,Four,Six,Twelve ",
-            DefaultValue = " One "
-        },
-        new()
-        {
-            Name = "RowType",
-            Description = Localizer["RowsRowType"],
-            Type = "enum?",
-            ValueList = "Normal, Inline",
-            DefaultValue = "null"
-        },
-        new()
-        {
-            Name = "ColSpan",
-            Description = Localizer["RowsColSpan"],
-            Type = "int?",
-            ValueList = "-",
-            DefaultValue = "null"
-        },
-        new()
-        {
-            Name = "MaxCount",
-            Description = Localizer["RowsMaxCount"],
-            Type = "int?",
-            ValueList = "-",
-            DefaultValue = "null"
-        }
-    ];
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,7 +6,8 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// BootstrapInputTextBase 组件
+/// <para lang="zh">IpAddress 组件</para>
+/// <para lang="en">IpAddress component</para>
 /// </summary>
 public partial class IpAddress
 {
@@ -19,9 +20,10 @@ public partial class IpAddress
     private string? Value4 { get; set; } = "0";
 
     /// <summary>
-    /// 获得 class 样式集合
+    /// <para lang="zh">获得 class 样式集合</para>
+    /// <para lang="en">Get class style collection</para>
     /// </summary>
-    protected string? ClassName => CssBuilder.Default("ipaddress form-control")
+    protected string? ClassName => CssBuilder.Default("bb-ip form-control")
         .AddClass("disabled", IsDisabled)
         .AddClass(CssClass).AddClass(ValidCss)
         .Build();
@@ -62,7 +64,6 @@ public partial class IpAddress
         {
             Value1 = Value1[0..3];
         }
-
         UpdateValue();
     }
 
@@ -111,5 +112,24 @@ public partial class IpAddress
     private void UpdateValue()
     {
         CurrentValueAsString = $"{Value1}.{Value2}.{Value3}.{Value4}";
+    }
+
+    /// <summary>
+    /// <para lang="zh">更新 值方法供 JS 调用</para>
+    /// <para lang="en">Update value method for JS invocation</para>
+    /// </summary>
+    /// <param name="v1"></param>
+    /// <param name="v2"></param>
+    /// <param name="v3"></param>
+    /// <param name="v4"></param>
+    [JSInvokable]
+    public void TriggerUpdate(int v1, int v2, int v3, int v4)
+    {
+        Value1 = v1.ToString();
+        Value2 = v2.ToString();
+        Value3 = v3.ToString();
+        Value4 = v4.ToString();
+
+        UpdateValue();
     }
 }

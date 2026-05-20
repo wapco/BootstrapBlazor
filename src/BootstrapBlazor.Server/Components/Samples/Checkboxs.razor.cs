@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -64,78 +64,4 @@ public sealed partial class Checkboxs
         Title = Localizer["OnBeforeStateChangedSwalTitle"],
         Content = Localizer["OnBeforeStateChangedSwalContent"]
     });
-
-    /// <summary>
-    /// GetAttributes
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["Att1"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowAfterLabel",
-            Description = Localizer["Att2"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["Att3"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["Att4"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "State",
-            Description = Localizer["Att5"],
-            Type = "CheckboxState",
-            ValueList = "Mixed / Checked / UnChecked",
-            DefaultValue = "UnChecked"
-        }
-    ];
-
-    /// <summary>
-    /// 获得事件方法
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new()
-        {
-            Name = "OnBeforeStateChanged",
-            Description = Localizer["OnBeforeStateChanged"],
-            Type ="Action<CheckboxState, TItem>"
-        },
-        new()
-        {
-            Name = "OnStateChanged",
-            Description = Localizer["OnStateChanged"],
-            Type ="Action<CheckboxState, TItem>"
-        },
-        new()
-        {
-            Name = "StateChanged",
-            Description = Localizer["StateChanged"],
-            Type ="EventCallback<CheckboxState>"
-        }
-    ];
 }

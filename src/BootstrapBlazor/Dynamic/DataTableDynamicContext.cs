@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -10,74 +10,83 @@ using System.Reflection.Emit;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// DataTable 动态数据上下文实现类 <see cref="DynamicObjectContext" />
+/// <para lang="zh">DataTable 动态数据上下文实现类 <see cref="DynamicObjectContext"/></para>
+/// <para lang="en">DataTable dynamic data context implementation class <see cref="DynamicObjectContext"/></para>
 /// </summary>
 public class DataTableDynamicContext : DynamicObjectContext
 {
     /// <summary>
-    /// 获得/设置 相关联的 DataTable 实例
+    /// <para lang="zh">获得 相关联的 DataTable 实例</para>
+    /// <para lang="en">Gets the associated DataTable instance</para>
     /// </summary>
-    [NotNull]
-    public DataTable? DataTable { get; set; }
-
-    private Type DynamicObjectType { get; }
-
-    private IEnumerable<ITableColumn> Columns { get; }
-
-    private List<IDynamicObject>? Items { get; set; }
-
-    private Action<DataTableDynamicContext, ITableColumn>? AddAttributesCallback { get; set; }
+    public DataTable DataTable { get; }
 
     /// <summary>
-    /// 获得/设置 是否启用内部缓存 默认 true 启用
+    /// <para lang="zh">获得/设置 是否启用内部缓存 默认 true 启用</para>
+    /// <para lang="en">Gets or sets whether to enable internal caching. Default is true.</para>
     /// </summary>
     public bool UseCache { get; set; } = true;
 
     /// <summary>
-    /// 负责将 DataRow 与 Items 关联起来方便查找提高效率
-    /// </summary>
-    private ConcurrentDictionary<Guid, (IDynamicObject DynamicObject, DataRow Row)> Caches { get; } = new();
-
-    /// <summary>
-    /// 添加行回调委托
+    /// <para lang="zh">添加行回调委托</para>
+    /// <para lang="en">Add row callback delegate</para>
     /// </summary>
     public Func<IEnumerable<IDynamicObject>, Task>? OnAddAsync { get; set; }
 
     /// <summary>
-    /// 删除行回调委托
+    /// <para lang="zh">删除行回调委托</para>
+    /// <para lang="en">Delete row callback delegate</para>
     /// </summary>
     public Func<IEnumerable<IDynamicObject>, Task<bool>>? OnDeleteAsync { get; set; }
 
     /// <summary>
-    /// 构造函数
+    /// <para lang="zh">负责将 DataRow 与 Items 关联起来方便查找提高效率</para>
+    /// <para lang="en">Responsible for associating DataRow with Items to facilitate lookup and improve efficiency</para>
+    /// </summary>
+    private readonly ConcurrentDictionary<Guid, DataTableDynamicObject> _dataCache = new();
+
+    private readonly List<ITableColumn> _columns;
+    private readonly Action<DataTableDynamicContext, ITableColumn>? _addAttributesCallback;
+    private List<IDynamicObject>? _items;
+    private Type _dynamicObjectType;
+
+    internal const string DynamicAssemblyName = "BootstrapBlazor_DynamicAssembly";
+
+    /// <summary>
+    /// <para lang="zh">构造函数</para>
+    /// <para lang="en">Constructor</para>
     /// </summary>
     /// <param name="table"></param>
     /// <param name="addAttributesCallback"></param>
-    /// <param name="invisibleColumns">永远不显示的列集合 默认为 null 全部显示</param>
-    /// <param name="shownColumns">显示列集合 默认为 null 全部显示</param>
-    /// <param name="hiddenColumns">隐藏列集合 默认为 null 无隐藏列</param>
+    /// <param name="invisibleColumns">
+    ///   <para lang="zh">永远不显示的列集合 默认为 null 全部显示</para>
+    ///   <para lang="en">Collection of columns that are never displayed. Default is null, meaning all columns are displayed.</para>
+    /// </param>
+    /// <param name="shownColumns">
+    ///   <para lang="zh">显示列集合 默认为 null 全部显示</para>
+    ///   <para lang="en">Collection of columns that are always displayed. Default is null, meaning all columns are displayed.</para></param>
+    /// <param name="hiddenColumns">
+    ///   <para lang="zh">隐藏列集合 默认为 null 无隐藏列</para>
+    ///   <para lang="en">Collection of columns that are hidden. Default is null, meaning no columns are hidden.</para>
+    /// </param>
     public DataTableDynamicContext(DataTable table, Action<DataTableDynamicContext, ITableColumn>? addAttributesCallback = null, IEnumerable<string>? invisibleColumns = null, IEnumerable<string>? shownColumns = null, IEnumerable<string>? hiddenColumns = null)
     {
         DataTable = table;
-        AddAttributesCallback = addAttributesCallback;
+        table.AcceptChanges();
 
-        // 获得 DataTable 列信息转换为 ITableColumn 集合
-        var cols = InternalGetColumns();
-
-        // Emit 生成动态类
-        DynamicObjectType = CreateType();
-
-        // 获得显示列
-        Columns = Utility.GetTableColumns(DynamicObjectType, cols).Where(col => GetShownColumns(col, invisibleColumns, shownColumns, hiddenColumns));
-
+        _addAttributesCallback = addAttributesCallback;
         OnValueChanged = OnCellValueChanged;
 
-        [ExcludeFromCodeCoverage]
-        Type CreateType()
-        {
-            var dynamicType = EmitHelper.CreateTypeByName($"BootstrapBlazor_{nameof(DataTableDynamicContext)}_{GetHashCode()}", cols, typeof(DataTableDynamicObject), OnColumnCreating);
-            return dynamicType ?? throw new InvalidOperationException();
-        }
+        var cols = InternalGetColumns();
+
+        // 生成动态类型 DataTableDynamicObjectType 继承 DataTableDynamicObject 并添加属性
+        _dynamicObjectType = EmitHelper.CreateTypeByName($"BootstrapBlazor_{nameof(DataTableDynamicContext)}_{GetHashCode()}", cols, typeof(DataTableDynamicObject), OnColumnCreating, DynamicAssemblyName);
+
+        // 获得显示列
+        _columns = Utility.GetTableColumns(_dynamicObjectType, cols).Where(col => GetShownColumns(col, invisibleColumns, shownColumns, hiddenColumns)).ToList();
+
+        // 运行组件变更检测清理方法
+        ChangeDetectionCleanTask.Run();
     }
 
     private static bool GetShownColumns(ITableColumn col, IEnumerable<string>? invisibleColumns, IEnumerable<string>? shownColumns, IEnumerable<string>? hiddenColumns)
@@ -89,14 +98,14 @@ public class DataTableDynamicContext : DynamicObjectContext
             ret = false;
         }
 
-        // 隐藏列优先 移除隐藏列
+        // 隐藏列存在时隐藏列
         if (ret && hiddenColumns != null && hiddenColumns.Any(c => c.Equals(columnName, StringComparison.OrdinalIgnoreCase)))
         {
             col.Visible = false;
         }
 
-        // 显示列不存在时 不显示
-        if (ret && shownColumns != null && !shownColumns.Any(c => c.Equals(columnName, StringComparison.OrdinalIgnoreCase)))
+        // 显示列存在时显示列
+        if (ret && shownColumns != null && shownColumns.Any(c => c.Equals(columnName, StringComparison.OrdinalIgnoreCase)))
         {
             col.Visible = true;
         }
@@ -104,44 +113,44 @@ public class DataTableDynamicContext : DynamicObjectContext
     }
 
     /// <summary>
-    /// GetItems 方法
+    /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     public override IEnumerable<IDynamicObject> GetItems()
     {
         if (UseCache)
         {
-            Items ??= BuildItems();
+            _items ??= BuildItems();
         }
         else
         {
-            Items = BuildItems();
+            _items = BuildItems();
         }
-        return Items;
+        return _items;
     }
 
     private List<IDynamicObject> BuildItems()
     {
-        Caches.Clear();
+        // 同步 DataRow 值到 DataTableDynamicObject 实例中并建立缓存
+        _dataCache.Clear();
         var ret = new List<IDynamicObject>();
         foreach (DataRow row in DataTable.Rows)
         {
-            if (row.RowState != DataRowState.Deleted)
+            if (!row.IsDeletedOrDetached())
             {
-                var dynamicObject = Activator.CreateInstance(DynamicObjectType);
+                var dynamicObject = Activator.CreateInstance(_dynamicObjectType);
                 if (dynamicObject is DataTableDynamicObject d)
                 {
+                    d.Row = row;
                     foreach (DataColumn col in DataTable.Columns)
                     {
                         if (!row.IsNull(col))
                         {
+                            // 值不为 DBNull 时才设置属性值
                             Utility.SetPropertyValue<object, object?>(d, col.ColumnName, row[col]);
                         }
                     }
 
-                    d.Row = row;
-                    d.DynamicObjectPrimaryKey = Guid.NewGuid();
-                    Caches.TryAdd(d.DynamicObjectPrimaryKey, (d, row));
+                    _dataCache.TryAdd(d.DynamicObjectPrimaryKey, d);
                     ret.Add(d);
                 }
             }
@@ -150,146 +159,150 @@ public class DataTableDynamicContext : DynamicObjectContext
     }
 
     /// <summary>
-    /// GetItems 方法
+    /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
-    public override IEnumerable<ITableColumn> GetColumns() => Columns;
+    public override IEnumerable<ITableColumn> GetColumns() => _columns;
 
-    /// <summary>
-    /// 获得列信息方法
-    /// </summary>
-    /// <returns></returns>
     private List<ITableColumn> InternalGetColumns()
     {
         var ret = new List<ITableColumn>();
         foreach (DataColumn col in DataTable.Columns)
         {
-            ret.Add(new InternalTableColumn(col.ColumnName, col.DataType, col.Caption));
+            ret.Add(new InternalTableColumn(col.ColumnName, col.DataType));
         }
         return ret;
     }
 
     /// <summary>
-    /// 
+    /// <inheritdoc/>
     /// </summary>
-    /// <param name="col"></param>
-    /// <returns></returns>
     protected internal override IEnumerable<CustomAttributeBuilder> OnColumnCreating(ITableColumn col)
     {
-        AddAttributesCallback?.Invoke(this, col);
+        _addAttributesCallback?.Invoke(this, col);
         return base.OnColumnCreating(col);
     }
 
     #region Add Save Delete
     /// <summary>
-    /// 新建方法
+    /// <inheritdoc/>
     /// </summary>
-    /// <param name="selectedItems">当前选中行</param>
-    /// <returns></returns>
     public override async Task AddAsync(IEnumerable<IDynamicObject> selectedItems)
     {
         if (OnAddAsync != null)
         {
             await OnAddAsync(selectedItems);
         }
-        else if (Activator.CreateInstance(DynamicObjectType) is DataTableDynamicObject dynamicObject)
+        else if (Activator.CreateInstance(_dynamicObjectType) is DataTableDynamicObject dynamicObject)
         {
-            var row = DataTable.NewRow();
             var indexOfRow = 0;
             var item = selectedItems.FirstOrDefault();
-
-            if (item != null && Caches.TryGetValue(item.DynamicObjectPrimaryKey, out var c))
+            if (item != null && _dataCache.TryGetValue(item.DynamicObjectPrimaryKey, out var c))
             {
                 indexOfRow = DataTable.Rows.IndexOf(c.Row);
+            }
+
+            // 原始表格增加新数据
+            var row = DataTable.NewRow();
+            foreach (DataColumn col in DataTable.Columns)
+            {
+                // 自增长主键跳过
+                if (col.AutoIncrement)
+                {
+                    continue;
+                }
+
+                var v = Utility.GetPropertyValue<object, object?>(dynamicObject, col.ColumnName);
+                if (v != null)
+                {
+                    row[col] = v;
+                }
             }
 
             // DataTable 数据源增加数据
             DataTable.Rows.InsertAt(row, indexOfRow);
 
             // 新建动态类型属性赋值
-            dynamicObject.DynamicObjectPrimaryKey = Guid.NewGuid();
-            foreach (DataColumn col in DataTable.Columns)
-            {
-                if (col.DefaultValue != DBNull.Value)
-                {
-                    Utility.SetPropertyValue<object, object?>(dynamicObject, col.ColumnName, col.DefaultValue);
-                }
-            }
             dynamicObject.Row = row;
 
             // 触发 Changed 回调
             if (OnChanged != null)
             {
-                await OnChanged(new(new[] { dynamicObject }, DynamicItemChangedType.Add));
+                await OnChanged(new DynamicObjectContextArgs([dynamicObject]));
             }
 
-            // Table 组件数据源更新数据
-            Items?.Insert(indexOfRow, dynamicObject);
-
             // 缓存更新数据
-            Caches.TryAdd(dynamicObject.DynamicObjectPrimaryKey, (dynamicObject, row));
+            _dataCache.TryAdd(dynamicObject.DynamicObjectPrimaryKey, dynamicObject);
+
+            // 更新 UI 数据
+            if (_items != null)
+            {
+                _items.Insert(indexOfRow, dynamicObject);
+            }
         }
     }
 
     /// <summary>
-    /// 删除方法
+    /// <inheritdoc/>
     /// </summary>
-    /// <param name="items"></param>
-    /// <returns></returns>
     public override async Task<bool> DeleteAsync(IEnumerable<IDynamicObject> items)
     {
         var ret = false;
         if (OnDeleteAsync != null)
         {
             ret = await OnDeleteAsync(items);
-            Items?.RemoveAll(i => items.Any(item => item == i));
         }
         else
         {
             var changed = false;
             foreach (var item in items)
             {
-                if (Caches.TryGetValue(item.DynamicObjectPrimaryKey, out var row))
+                if (_dataCache.TryRemove(item.DynamicObjectPrimaryKey, out var row))
                 {
                     changed = true;
 
                     // 删除数据源
-                    DataTable.Rows.Remove(row.Row);
-
-                    // 清理缓存
-                    Caches.TryRemove(item.DynamicObjectPrimaryKey, out _);
-
-                    // 清理 Table 组件数据源
-                    Items?.Remove(item);
+                    if (row.Row != null)
+                    {
+                        DataTable.Rows.Remove(row.Row);
+                    }
                 }
             }
+
+            // 检查是否有数据更新
             if (changed)
             {
                 DataTable.AcceptChanges();
                 if (OnChanged != null)
                 {
-                    await OnChanged(new(items, DynamicItemChangedType.Delete));
+                    await OnChanged(new DynamicObjectContextArgs(items, DynamicItemChangedType.Delete));
                 }
             }
             ret = true;
         }
+        _items = null;
         return ret;
     }
 
     /// <summary>
-    /// 动态类型变更回调方法
+    /// <para lang="zh">单元格变更回调方法</para>
+    /// <para lang="en">Cell value changed callback method</para>
     /// </summary>
     /// <param name="item"></param>
     /// <param name="column"></param>
     /// <param name="val"></param>
-    /// <returns></returns>
     private Task OnCellValueChanged(IDynamicObject item, ITableColumn column, object? val)
     {
         // 更新内部 DataRow
-        if (Caches.TryGetValue(item.DynamicObjectPrimaryKey, out var cacheItem))
+        if (_dataCache.TryGetValue(item.DynamicObjectPrimaryKey, out var cacheItem))
         {
-            cacheItem.Row[column.GetFieldName()] = val;
-            Items = null;
+            // 更新动态类型数据
+            Utility.SetPropertyValue<object, object?>(cacheItem, column.GetFieldName(), val);
+
+            // 更新原始 DataTable
+            if (cacheItem.Row != null)
+            {
+                cacheItem.Row[column.GetFieldName()] = val;
+            }
         }
         return Task.CompletedTask;
     }

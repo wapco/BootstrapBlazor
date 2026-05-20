@@ -1,6 +1,6 @@
-﻿@page "/notification"
+@page "/notification"
 @inject IStringLocalizer<Notifications> Localizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["NotificationsTitle"]</h3>
 
@@ -49,4 +49,4 @@ public void ShowNotificationCallback(bool result)
     <ConsoleLogger @ref="Logger" />
 </DemoBlock>
 
-<AttributeTable Items="GetNotificationItem()" Title="@nameof(NotificationItem)" />
+<AttributeTable Type="typeof(NotificationItem)" />

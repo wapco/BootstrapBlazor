@@ -1,8 +1,8 @@
-﻿@page "/table/column"
+@page "/table/column"
 @inject IStringLocalizer<NavMenu> NavMenuLocalizer
 @inject IStringLocalizer<TablesColumn> Localizer
 @inject IStringLocalizer<Foo> FooLocalizer
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["TablesColumnTitle"] - @NavMenuLocalizer["TableColumn"]</h3>
 
@@ -218,6 +218,36 @@
     </Table>
 </DemoBlock>
 
+<DemoBlock Title="@Localizer["ShowMoreButtonTitle"]" Introduction="@Localizer["ShowMoreButtonIntro"]" Name="ShowMoreButton">
+    <section ignore>
+        <p>@((MarkupString)Localizer["ShowMoreButtonDesc"].Value)</p>
+        <p>@((MarkupString)Localizer["MoreButtonTextDesc"].Value)</p>
+        <p>@((MarkupString)Localizer["MoreButtonColorDesc"].Value)</p>
+        <Pre>&lt;MoreButtonDropdownTemplate&gt;
+    &lt;DropdownItem Text="Action1" Icon="fa-solid fa-flag" OnClick="@@(() =&gt; OnAction(context, "Action1"))"&gt;&lt;/DropdownItem&gt;
+    &lt;Divider&gt;&lt;/Divider&gt;
+    &lt;DropdownItem Text="Action2" Icon="fa-solid fa-home" OnClick="@@(() =&gt; OnAction(context, "Action2"))"&gt;&lt;/DropdownItem&gt;
+&lt;/MoreButtonDropdownTemplate&gt;</Pre>
+    </section>
+    <Table TItem="Foo"
+           IsPagination="true" PageItemsSource="new int[] {10, 20}"
+           IsStriped="true" IsBordered="true" ShowMoreButton="true"
+           ShowToolbar="true" ShowCardView="true" IsMultipleSelect="true" ShowExtendButtons="true"
+           ShowEmpty="true" OnQueryAsync="@OnQueryAsync">
+        <TableColumns>
+            <TableColumn @bind-Field="@context.DateTime" Width="180" />
+            <TableColumn @bind-Field="@context.Name" />
+            <TableColumn @bind-Field="@context.Address" />
+            <TableColumn @bind-Field="@context.Education" />
+        </TableColumns>
+        <MoreButtonDropdownTemplate>
+            <DropdownItem Text="Action1" Icon="fa-solid fa-flag" OnClick="@(() => OnAction(context, "Action1"))"></DropdownItem>
+            <Divider></Divider>
+            <DropdownItem Text="Action2" Icon="fa-solid fa-home" OnClick="@(() => OnAction(context, "Action2"))"></DropdownItem>
+        </MoreButtonDropdownTemplate>
+    </Table>
+</DemoBlock>
+
 <DemoBlock Title="@Localizer["AdvanceTitle"]" Introduction="@Localizer["AdvanceIntro"]" Name="Advance">
     <Table TItem="Foo" IsPagination="true" PageItemsSource="@PageItemsSource" RenderMode="TableRenderMode.Table"
            IsStriped="true" IsBordered="true" OnQueryAsync="OnQueryAsync">
@@ -226,7 +256,7 @@
                 <Template Context="value">
                     <div class="d-flex">
                         <div>
-                            <img src="@WebsiteOption.CurrentValue.GetAvatarUrl(value.Row.Id)" class="bb-avatar" />
+                            <img src="@WebsiteOption.Value.GetAvatarUrl(value.Row.Id)" class="bb-avatar" />
                         </div>
                         <div class="ps-2">
                             <div>@value.Value</div>

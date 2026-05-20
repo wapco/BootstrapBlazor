@@ -1,4 +1,4 @@
-﻿@page "/editor-form"
+@page "/editor-form"
 @inject IStringLocalizer<EditorForms> Localizer
 
 <h3>@Localizer["Title"]</h3>
@@ -130,6 +130,49 @@
     </ValidateForm>
 </DemoBlock>
 
-<AttributeTable Items="@GetAttributes()" />
+<DemoBlock Title="@Localizer["IsDisplayTitle"]" Introduction="@Localizer["IsDisplayIntro"]" Name="IsDisplay">
+    <EditorForm Model="@Model" ItemsPerRow="3" IsDisplay="true">
+        <FieldItems>
+            <EditorItem @bind-Field="@Model.Hobby" Items="@Hobbies" />
+        </FieldItems>
+    </EditorForm>
+</DemoBlock>
 
-<AttributeTable Title="@Localizer["EditorFormAttributeTitle"]" Items="@GetEditorItemAttributes()"></AttributeTable>
+<DemoBlock Title="@Localizer["IgnoreItemsTitle"]" Introduction="@Localizer["IgnoreItemsIntro"]" Name="IgnoreItems">
+    <section ignore>
+        <div>@((MarkupString)Localizer["IgnoreItemsDescription"].Value)</div>
+        <Button OnClick="OnSwitchIgnoreItems" Text="@Localizer["IgnoreItemsSwitchButtonText"]" class="mt-3"></Button>
+    </section>
+    <GroupBox Title="@Localizer["GroupBoxTitle"]" style="margin-top: 1.5rem;">
+        <EditorForm Model="@Model" AutoGenerateAllItem="true" IgnoreItems="@_ignoreItems">
+        </EditorForm>
+    </GroupBox>
+</DemoBlock>
+
+<DemoBlock Title="@Localizer["GroupTitle"]" Introduction="@Localizer["GroupIntro"]" Name="Group">
+    <section ignore>
+        <p>@((MarkupString)Localizer["GroupDescription"].Value)</p>
+        <BootstrapInputGroup>
+            <BootstrapInputGroupLabel DisplayText="GroupType"></BootstrapInputGroupLabel>
+            <Segmented @bind-Value="_groupType">
+                <SegmentedItem Text="GroupBox" Value="EditorFormGroupType.GroupBox" />
+                <SegmentedItem Text="RowHeader" Value="EditorFormGroupType.RowHeader" />
+            </Segmented>
+        </BootstrapInputGroup>
+    </section>
+    <EditorForm Model="@Model" GroupType="_groupType">
+        <FieldItems>
+            <EditorItem @bind-Field="@context.Name" GroupOrder="1" GroupName="Group 1"></EditorItem>
+            <EditorItem @bind-Field="@context.Address" GroupOrder="1" GroupName="Group 1"></EditorItem>
+            <EditorItem @bind-Field="@context.DateTime" GroupOrder="2" GroupName="Group 1"></EditorItem>
+            <EditorItem @bind-Field="@context.Count" GroupOrder="2" GroupName="Group 1"></EditorItem>
+            <EditorItem @bind-Field="@context.Education" GroupOrder="3" GroupName="Group 2"></EditorItem>
+            <EditorItem @bind-Field="@context.Complete" GroupOrder="3" GroupName="Group 2"></EditorItem>
+            <EditorItem @bind-Field="@context.Hobby" Items="@Hobbies" GroupOrder="4" GroupName="Group 3"></EditorItem>
+        </FieldItems>
+    </EditorForm>
+</DemoBlock>
+
+<AttributeTable Type="typeof(EditorForm<>)" />
+
+<AttributeTable Type="typeof(EditorItem<,>)"></AttributeTable>

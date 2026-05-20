@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -17,6 +17,7 @@ public partial class TablesColumnDrag
     /// </summary>
     [NotNull]
     private List<Foo>? Items { get; set; }
+
     private static IEnumerable<int> PageItemsSource => new int[]
     {
         5,
@@ -27,6 +28,8 @@ public partial class TablesColumnDrag
     [NotNull]
     private ConsoleLogger? Logger { get; set; }
 
+    private Table<Foo> _table = default!;
+
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
@@ -36,7 +39,7 @@ public partial class TablesColumnDrag
         Items = Foo.GenerateFoo(FooLocalizer);
     }
 
-    private Task OnDragColumnEndAsync(string? columnName, IEnumerable<ITableColumn> columns)
+    private Task OnTableColumnClientStatusChanged(string? columnName, TableColumnClientStatus status)
     {
         Logger.Log($"Column: {columnName}");
         return Task.CompletedTask;
@@ -45,9 +48,10 @@ public partial class TablesColumnDrag
     private Task<QueryData<Foo>> OnQueryAsync(QueryPageOptions options)
     {
         IEnumerable<Foo> items = Items;
+
         // 过滤
         var isFiltered = false;
-        if (options.Filters.Any())
+        if (options.Filters.Count != 0)
         {
             items = items.Where(options.Filters.GetFilterFunc<Foo>());
             isFiltered = true;
@@ -67,5 +71,10 @@ public partial class TablesColumnDrag
         // 内存分页
         items = items.Skip((options.PageIndex - 1) * options.PageItems).Take(options.PageItems).ToList();
         return Task.FromResult(new QueryData<Foo>() { Items = items, TotalCount = total, IsSorted = isSorted, IsFiltered = isFiltered, IsSearch = true });
+    }
+
+    private Task Reset()
+    {
+        return _table.ClearTableColumnClientStatus();
     }
 }

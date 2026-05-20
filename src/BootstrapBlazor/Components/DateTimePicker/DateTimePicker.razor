@@ -1,4 +1,4 @@
-﻿@namespace BootstrapBlazor.Components
+@namespace BootstrapBlazor.Components
 @typeparam TValue
 @inherits PopoverDropdownBase<TValue>
 @attribute [BootstrapModuleAutoLoader("DateTimePicker/DateTimePicker.razor.js", JSObjectReference = true)]
@@ -8,10 +8,21 @@
     <BootstrapLabel required="@Required" for="@Id" ShowLabelTooltip="ShowLabelTooltip" Value="@DisplayText" />
 }
 <div @attributes="@AdditionalAttributes" tabindex="@TabIndexString" id="@Id" class="@ClassString" data-bb-dropdown=".picker-panel">
-    <input readonly="@ReadonlyString" class="@InputClassName" value="@DisplayValue" placeholder="@PlaceholderString" disabled="@Disabled" data-bs-toggle="@Constants.DropdownToggleString" data-bs-placement="@PlacementString" data-bs-custom-class="@CustomClassString" @onblur="OnBlur" />
-    @if (ShowIcon)
+    @if (IsButton)
     {
-        <i class="@DateTimePickerIconClassString"></i>
+        <button type="button" class="@ButtonClassString" disabled="@Disabled"
+                data-bs-toggle="@Constants.DropdownToggleString" data-bs-placement="@PlacementString"
+                data-bs-custom-class="@CustomClassString">@PickerButtonText</button>
+    }
+    else
+    {
+        <input readonly="@ReadonlyString" class="@InputClassName" value="@DisplayValue" placeholder="@PlaceholderString"
+               disabled="@Disabled" data-bs-toggle="@Constants.DropdownToggleString" data-bs-placement="@PlacementString"
+               data-bs-custom-class="@CustomClassString" @onblur="OnBlur" />
+        @if (ShowIcon)
+        {
+            <i class="@DateTimePickerIconClassString"></i>
+        }
     }
     <DatePickerBody @bind-Value="SelectedValue" @ref="_pickerBody" FirstDayOfWeek="FirstDayOfWeek"
                     ShowClearButton="AllowNull" ShowSidebar="ShowSidebar" SidebarTemplate="SidebarTemplate"
@@ -19,7 +30,7 @@
                     ShowLunar="ShowLunar" ShowSolarTerm="ShowSolarTerm" ShowFestivals="ShowFestivals" ShowHolidays="ShowHolidays"
                     OnConfirm="OnConfirm" OnClear="OnClear" MinValue="MinValue" MaxValue="MaxValue"
                     AutoClose="AutoClose" ViewMode="ViewMode" DayTemplate="DayTemplate!" DayDisabledTemplate="DayDisabledTemplate!"
-                    OnGetDisabledDaysCallback="OnGetDisabledDaysCallback!" Timezone="Timezone"
+                    PickTimeMode="PickTimeMode" OnGetDisabledDaysCallback="OnGetDisabledDaysCallback!" Timezone="Timezone"
                     EnableDisabledDaysCache="EnableDisabledDaysCache">
         @ChildContent
     </DatePickerBody>

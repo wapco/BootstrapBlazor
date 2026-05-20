@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -10,7 +10,7 @@ public class DialogTest : BootstrapBlazorTestBase
     [Fact]
     public async Task ShowModal_Ok()
     {
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<MockDialogTest>();
@@ -29,7 +29,7 @@ public class DialogTest : BootstrapBlazorTestBase
     public async Task Show_Ok()
     {
         #region Show
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.Add(a => a.EnableErrorLogger, false);
             pb.AddChildContent<MockDialogTest>();
@@ -248,8 +248,8 @@ public class DialogTest : BootstrapBlazorTestBase
         editOption.Model = model;
         await cut.InvokeAsync(() => dialog.ShowEditDialog(editOption));
         var form = cut.Find("form");
-        form.Submit();
-        Assert.True(saved);
+        await cut.InvokeAsync(() => form.Submit());
+        cut.WaitForAssertion(() => Assert.True(saved));
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
 
         // edit dialog is tracking true
@@ -580,9 +580,25 @@ public class DialogTest : BootstrapBlazorTestBase
         #endregion
 
         #region ShowExceptionDialog Method
-        await cut.InvokeAsync(() => dialog.ShowExceptionDialog(new Exception("Test")));
+        await cut.InvokeAsync(() => dialog.ShowExceptionDialog(null, new Exception("Test")));
         await cut.InvokeAsync(() => modal.Instance.CloseCallback());
         #endregion
+
+        // OnClosing
+        var closing = false;
+        await cut.InvokeAsync(() => dialog.Show(new DialogOption()
+        {
+            OnClosingAsync = () =>
+            {
+                closing = true;
+                return Task.FromResult(false);
+            }
+        }));
+
+        // 由于返回 false 所以关窗方法被阻止
+        await cut.InvokeAsync(() => modal.Instance.Close());
+        Assert.True(closing);
+        await cut.InvokeAsync(() => modal.Instance.CloseCallback());
     }
 
     private class MockValidateFormDialog : ComponentBase

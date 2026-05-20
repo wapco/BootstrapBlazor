@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -12,6 +12,30 @@ namespace UnitTest.Extensions;
 
 public class LambadaExtensionsTest : BootstrapBlazorTestBase
 {
+    [Fact]
+    public void GetFilterFunc_Comparison()
+    {
+        var filter = new FilterKeyValueAction()
+        {
+            FieldKey = "Name",
+            FilterAction = FilterAction.Contains,
+            FieldValue = "T"
+        };
+
+        var foos = new Foo[]
+        {
+            new() { Name = "Test1" },
+            new() { Name = "test2" },
+        };
+
+        var items = foos.Where(filter.GetFilterFunc<Foo>());
+        Assert.Single(items);
+
+        // 忽略大小写
+        items = foos.Where(filter.GetFilterFunc<Foo>(StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(2, items.Count());
+    }
+
     [Fact]
     public void GetFilterFunc_Null()
     {
@@ -244,6 +268,10 @@ public class LambadaExtensionsTest : BootstrapBlazorTestBase
         var filter = new FilterKeyValueAction() { FieldKey = "Name", FieldValue = "test", FilterAction = FilterAction.Contains };
         var invoker = filter.GetFilterLambda<Foo>().Compile();
         Assert.True(invoker.Invoke(new Foo() { Name = "1test1" }));
+        Assert.False(invoker.Invoke(new Foo() { Name = "1Test1" }));
+        Assert.False(invoker.Invoke(new Foo() { Name = "1Test123" }));
+        Assert.False(invoker.Invoke(new Foo() { Name = "Test" }));
+        Assert.False(invoker.Invoke(new Foo() { Name = "Test2" }));
     }
 
     [Fact]
@@ -506,7 +534,7 @@ public class LambadaExtensionsTest : BootstrapBlazorTestBase
     [Fact]
     public void GetPropertyValueLambda_Ok()
     {
-        var foo = new Foo() { Name = "Test1" };
+        var foo = new Foo() { Name = "Test1", Count = 10 };
         var invoker = LambdaExtensions.GetPropertyValueLambda<Foo, string>(foo, "Name").Compile();
         Assert.Equal("Test1", invoker(foo));
         Assert.Throws<InvalidOperationException>(() => LambdaExtensions.GetPropertyValueLambda<Foo, string>(foo, "Test1"));
@@ -514,6 +542,13 @@ public class LambadaExtensionsTest : BootstrapBlazorTestBase
         var dummy = new Dummy() { Foo = foo };
         var invoker1 = LambdaExtensions.GetPropertyValueLambda<Dummy, string>(dummy, "Foo.Name").Compile();
         Assert.Equal("Test1", invoker1(dummy));
+
+        var invoker2 = LambdaExtensions.GetPropertyValueLambda<Dummy, int>(dummy, "Foo.Count").Compile();
+        Assert.Equal(10, invoker2(dummy));
+
+        dummy.Foo = null;
+        Assert.Null(invoker1(dummy));
+
         Assert.Throws<InvalidOperationException>(() => LambdaExtensions.GetPropertyValueLambda<Dummy, string>(dummy, "Foo.Test1"));
     }
 
@@ -683,11 +718,6 @@ public class LambadaExtensionsTest : BootstrapBlazorTestBase
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="fix"></param>
-    /// <param name="data"></param>
     private class CustomDynamicData(Dictionary<string, string> data) : System.Dynamic.DynamicObject
     {
         /// <summary>
@@ -708,9 +738,9 @@ public class LambadaExtensionsTest : BootstrapBlazorTestBase
         /// <returns></returns>
         public override bool TryGetMember(GetMemberBinder binder, out object? result)
         {
-            if (Dynamic.ContainsKey(binder.Name))
+            if (Dynamic.TryGetValue(binder.Name, out string? value))
             {
-                result = Dynamic[binder.Name];
+                result = value;
             }
             else
             {

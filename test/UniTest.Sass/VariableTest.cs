@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -9,13 +9,6 @@ namespace UniTest.Sass;
 
 public partial class VariableTest
 {
-    private ITestOutputHelper _outputHelper;
-
-    public VariableTest(ITestOutputHelper testOutputHelper)
-    {
-        _outputHelper = testOutputHelper;
-    }
-
     [Fact]
     public void Variable_Ok()
     {
@@ -24,7 +17,7 @@ public partial class VariableTest
         var sassFilePath = Path.Combine(rootPath, "Components");
         Assert.True(Directory.Exists(sassFilePath));
 
-        var variableFile = Path.Combine(rootPath, "wwwroot/scss/theme/bootstrapblazor.scss");
+        var variableFile = Path.Combine(rootPath, "wwwroot/scss/variables.scss");
         Assert.True(File.Exists(variableFile));
 
         // 获取所有 Sass 文件所有变量
@@ -53,7 +46,7 @@ public partial class VariableTest
 
                     // #{$alert-icon-margin-right}
                     var matches = regex.Matches(item);
-                    if (matches.Any())
+                    if (matches.Count != 0)
                     {
                         var v = matches.Where(i => !variables.Contains(i.Groups[1].Value)).Select(i => i.Groups[1].Value);
                         if (v.Any())
@@ -72,7 +65,7 @@ public partial class VariableTest
                 var matches = mixRegex.Matches(item);
                 if (item.Contains("@mixin "))
                 {
-                    if (matches.Any())
+                    if (matches.Count != 0)
                     {
                         var groups = matches[0];
                         for (int index = 1; index < groups.Groups.Count; index++)

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -8,10 +8,18 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// ContextMenuDivider 组件
+/// <para lang="zh">ContextMenuDivider 组件</para>
+/// <para lang="en">A component that defines a menu item as a divider in a context menu</para>
 /// </summary>
 public class ContextMenuDivider : Divider, IContextMenuItem, IDisposable
 {
+    /// <summary>
+    /// <inheritdoc cref="IContextMenuItem.IsShow"/>
+    /// </summary>
+    /// <remarks>一般是通过业务逻辑判断是否显示</remarks>
+    [Parameter]
+    public bool IsShow { get; set; } = true;
+
     [CascadingParameter]
     [NotNull]
     private ContextMenu? ContextMenu { get; set; }
@@ -29,13 +37,13 @@ public class ContextMenuDivider : Divider, IContextMenuItem, IDisposable
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <param name="builder"></param>
     protected override void BuildRenderTree(RenderTreeBuilder builder) { }
 
     private bool disposedValue;
 
     /// <summary>
-    /// 释放资源方法
+    /// <para lang="zh">释放资源方法</para>
+    /// <para lang="en">Method to release resources</para>
     /// </summary>
     /// <param name="disposing"></param>
     protected virtual void Dispose(bool disposing)

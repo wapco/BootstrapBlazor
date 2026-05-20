@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -12,7 +12,7 @@ public partial class MultiSelects
 {
     [Inject]
     [NotNull]
-    private IStringLocalizer<Foo>? LocalizerFoo { get; set; }
+    private IStringLocalizer<Foo>? FooLocalizer { get; set; }
 
     /// <summary>
     /// Foo 类为Demo测试用，如有需要请自行下载源码查阅
@@ -193,7 +193,7 @@ public partial class MultiSelects
         Items8 = GenerateItems();
         TemplateItems = GenerateItems();
         EditableItems = GenerateItems();
-        FooItems = [.. Foo.GenerateFoo(LocalizerFoo).Select(i => new SelectedItem<Foo>(i, i.Name!))];
+        FooItems = [.. Foo.GenerateFoo(FooLocalizer).Select(i => new SelectedItem<Foo>(i, i.Name!))];
 
         // 初始化数据
         DataSource =
@@ -219,7 +219,7 @@ public partial class MultiSelects
         LongItems = GenerateDataSource(LongDataSource);
 
         Items = GenerateDataSource(DataSource);
-        Foos = Foo.GenerateFoo(LocalizerFoo);
+        Foos = Foo.GenerateFoo(FooLocalizer);
         _virtualItemValue1 = $"{Foos[79].Id}, {Foos[78].Id}";
         _virtualItemValue2 = $"{Foos[45].Id}, {Foos[46].Id}";
         _virtualItemText1 = $"{Foos[79].Name}, {Foos[78].Name}";
@@ -335,170 +335,4 @@ public partial class MultiSelects
         }
         StateHasChanged();
     }
-
-    /// <summary>
-    /// 获得事件方法
-    /// GetEvents
-    /// </summary>
-    /// <returns></returns>
-    private EventItem[] GetEvents() =>
-    [
-        new EventItem()
-        {
-            Name = "OnSelectedItemsChanged",
-            Description = Localizer["MultiSelectsEvent_OnSelectedItemsChanged"],
-            Type = "Func<SelectedItem, Task>"
-        },
-        new EventItem()
-        {
-            Name = "OnSearchTextChanged",
-            Description = Localizer["MultiSelectsEvent_OnSearchTextChanged"],
-            Type = "Func<string, IEnumerable<SelectedItem>>"
-        }
-    ];
-
-    /// <summary>
-    /// 获得属性方法
-    /// GetAttributes
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ShowLabel",
-            Description = Localizer["MultiSelectsAttribute_ShowLabel"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowCloseButton",
-            Description = Localizer["MultiSelectsAttribute_ShowCloseButton"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "ShowSearch",
-            Description = Localizer["MultiSelectsAttribute_ShowSearch"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowToolbar",
-            Description = Localizer["MultiSelectsAttribute_ShowToolbar"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowDefaultButtons",
-            Description = Localizer["MultiSelectsAttribute_ShowDefaultButtons"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "DisplayText",
-            Description = Localizer["MultiSelectsAttribute_DisplayText"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "PlaceHolder",
-            Description = Localizer["MultiSelectsAttribute_PlaceHolder"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = Localizer["MultiSelectsAttribute_PlaceHolder_DefaultValue"]!
-        },
-        new()
-        {
-            Name = "Class",
-            Description = Localizer["MultiSelectsAttribute_Class"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "Color",
-            Description = Localizer["MultiSelectsAttribute_Color"],
-            Type = "Color",
-            ValueList = "Primary / Secondary / Success / Danger / Warning / Info / Dark",
-            DefaultValue = "Primary"
-        },
-        new()
-        {
-            Name = "IsDisabled",
-            Description = Localizer["MultiSelectsAttribute_IsDisabled"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(MultiSelect<string>.IsSingleLine),
-            Description = Localizer["MultiSelectsAttribute_IsSingleLine"],
-            Type = "boolean",
-            ValueList = "true / false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "Items",
-            Description = Localizer["MultiSelectsAttribute_Items"],
-            Type = "IEnumerable<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ButtonTemplate",
-            Description = Localizer["MultiSelectsAttribute_ButtonTemplate"],
-            Type = "RenderFragment<IEnumerable<SelectedItem>>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Description = Localizer["MultiSelectsAttribute_ItemTemplate"],
-            Type = "RenderFragment<SelectedItem>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "IsFixedHeight",
-            Description = Localizer["MultiSelectsAttribute_IsFixedHeight"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(MultiSelect<string>.IsVirtualize),
-            Description = Localizer["MultiSelectsAttribute_IsVirtualize"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = nameof(MultiSelect<string>.DefaultVirtualizeItemText),
-            Description = Localizer["MultiSelectsAttribute_DefaultVirtualizeItemText"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

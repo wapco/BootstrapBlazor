@@ -1,3 +1,5 @@
+@use "../../wwwroot/scss/variables" as *;
+
 .checkbox-list {
     --bb-checkbox-item-width: #{$bb-checkbox-item-width};
     min-height: var(--bb-height);
@@ -10,10 +12,6 @@
 
     &.is-vertical {
         flex-direction: column;
-    }
-
-    &.form-control.no-border:not(.is-valid):not(.is-invalid) {
-        border-color: transparent;
     }
 
     &.form-control:not(.is-invalid):focus {
@@ -38,7 +36,6 @@
     }
 
     .btn-group {
-        border: var(--bs-border-width) solid var(--bs-border-color);
         display: inline-flex;
         flex: 0 !important;
         flex-wrap: nowrap;
@@ -46,6 +43,14 @@
 
         > .btn {
             white-space: nowrap;
+
+            &:not(:first-child) {
+                border-left-color: transparent !important;
+            }
+
+            &:not(:last-child) {
+                border-right-color: transparent !important;
+            }
         }
 
         .active {

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -9,7 +9,8 @@ using Microsoft.Extensions.Localization;
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Select component
+/// <para lang="zh">Select 组件</para>
+/// <para lang="en">Select component</para>
 /// </summary>
 /// <typeparam name="TValue"></typeparam>
 public partial class Select<TValue> : ISelect, ILookup
@@ -27,113 +28,138 @@ public partial class Select<TValue> : ISelect, ILookup
     private ILookupService? InjectLookupService { get; set; }
 
     /// <summary>
-    /// 获得/设置 值为 null 时是否使用第一个选项作为默认值
-    /// <para>Gets or sets a value indicating whether the "active" state should be used when the associated value is null.</para>
+    /// <para lang="zh">获得/设置 值为 null 时是否使用第一个选项或者标记为 active 的候选项作为默认值</para>
+    /// <para lang="en">Gets or sets whether to use the first option or the candidate marked as active as the default value when the value is null</para>
     /// </summary>
     [Parameter]
-    public bool IsUseActiveWhenValueIsNull { get; set; }
+    [Obsolete("已弃用，请使用 IsUseDefaultItemWhenValueIsNull 参数代替；Deprecated, use the IsUseDefaultItemWhenValueIsNull parameter instead")]
+    [ExcludeFromCodeCoverage]
+    public bool IsUseActiveWhenValueIsNull
+    {
+        get => IsUseDefaultItemWhenValueIsNull;
+        set => IsUseDefaultItemWhenValueIsNull = value;
+    }
 
     /// <summary>
-    /// Gets or sets the display template. Default is null.
+    /// <para lang="zh">获得/设置 值为 null 时是否使用第一个选项或者标记为 active 的候选项作为默认值</para>
+    /// <para lang="en">Gets or sets whether to use the first option or the candidate marked as active as the default value when the value is null</para>
+    /// </summary>
+    [Parameter]
+    public bool IsUseDefaultItemWhenValueIsNull { get; set; }
+
+    /// <summary>
+    /// <para lang="zh">获得/设置 显示模板，默认为 null</para>
+    /// <para lang="en">Gets or sets the display template. Default is null</para>
     /// </summary>
     [Parameter]
     public RenderFragment<SelectedItem?>? DisplayTemplate { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback method when the input value changes. Default is null.
+    /// <para lang="zh">获得/设置 输入值改变时的回调方法，默认为 null</para>
+    /// <para lang="en">Gets or sets the callback method when the input value changes. Default is null</para>
     /// </summary>
     /// <remarks>Effective when <see cref="SimpleSelectBase{TValue}.IsEditable"/> is set.</remarks>
     [Parameter]
     public Func<string, Task>? OnInputChangedCallback { get; set; }
 
     /// <summary>
-    /// Gets or sets the options template for static data.
+    /// <para lang="zh">获得/设置 静态数据的选项模板</para>
+    /// <para lang="en">Gets or sets the options template for static data</para>
     /// </summary>
     [Parameter]
     public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to disable the OnSelectedItemChanged callback method on first render. Default is false.
+    /// <para lang="zh">获得/设置 是否在首次渲染时禁用 OnSelectedItemChanged 回调方法，默认为 false</para>
+    /// <para lang="en">Gets or sets whether to disable the OnSelectedItemChanged callback method on first render. Default is false</para>
     /// </summary>
     [Parameter]
     public bool DisableItemChangedWhenFirstRender { get; set; }
 
     /// <summary>
-    /// 获取/设置 选中项改变前的回调方法。返回 true 则改变选中项的值；否则选中项的值不变。
-    /// <para>Gets or sets the callback method before the selected item changes. Returns true to change the selected item value; otherwise, the selected item value does not change.</para>
+    /// <para lang="zh">获得/设置 选中项改变前的回调方法。返回 true 则改变选中项的值；否则选中项的值不变</para>
+    /// <para lang="en">Gets or sets the callback method before the selected item changes. Returns true to change the selected item value; otherwise, the selected item value does not change</para>
     /// </summary>
     [Parameter]
     public Func<SelectedItem, Task<bool>>? OnBeforeSelectedItemChange { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to show the Swal confirmation popup. Default is false.
-    /// 获得/设置 是否显示 Swal 确认弹窗 默认值 为 false
+    /// <para lang="zh">获得/设置 是否显示 Swal 确认弹窗，默认为 false</para>
+    /// <para lang="en">Gets or sets whether to show the Swal confirmation popup. Default is false</para>
     /// </summary>
     [Parameter]
     public bool ShowSwal { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback method when the selected item changes.
+    /// <para lang="zh">获得/设置 选中项改变时的回调方法</para>
+    /// <para lang="en">Gets or sets the callback method when the selected item changes</para>
     /// </summary>
     [Parameter]
     public Func<SelectedItem, Task>? OnSelectedItemChanged { get; set; }
 
     /// <summary>
-    /// Gets or sets the Swal category. Default is Question.
+    /// <para lang="zh">获得/设置 Swal 类别，默认为 Question</para>
+    /// <para lang="en">Gets or sets the Swal category. Default is Question</para>
     /// </summary>
     [Parameter]
     public SwalCategory SwalCategory { get; set; } = SwalCategory.Question;
 
     /// <summary>
-    /// Gets or sets the Swal title. Default is null.
+    /// <para lang="zh">获得/设置 Swal 标题，默认为 null</para>
+    /// <para lang="en">Gets or sets the Swal title. Default is null</para>
     /// </summary>
     [Parameter]
     public string? SwalTitle { get; set; }
 
     /// <summary>
-    /// Gets or sets the Swal content. Default is null.
+    /// <para lang="zh">获得/设置 Swal 内容，默认为 null</para>
+    /// <para lang="en">Gets or sets the Swal content. Default is null</para>
     /// </summary>
     [Parameter]
     public string? SwalContent { get; set; }
 
     /// <summary>
-    /// Gets or sets the Swal footer. Default is null.
+    /// <para lang="zh">获得/设置 Swal 底部内容，默认为 null</para>
+    /// <para lang="en">Gets or sets the Swal footer. Default is null</para>
     /// </summary>
     [Parameter]
     public string? SwalFooter { get; set; }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILookup.LookupService"/>
     /// </summary>
     [Parameter]
     public ILookupService? LookupService { get; set; }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILookup.LookupServiceKey"/>
     /// </summary>
     [Parameter]
     public string? LookupServiceKey { get; set; }
 
     /// <summary>
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILookup.LookupServiceData"/>
     /// </summary>
     [Parameter]
     public object? LookupServiceData { get; set; }
 
     /// <summary>
-    /// Gets or sets the default text for virtualized items. Default is null.
+    /// <para lang="zh">获得/设置 虚拟化项目的默认文本，默认为 null</para>
+    /// <para lang="en">Gets or sets the default text for virtualized items. Default is null</para>
     /// </summary>
     [Parameter]
     public string? DefaultVirtualizeItemText { get; set; }
 
     /// <summary>
-    /// Gets or sets whether auto clear the search text when dropdown closed.
+    /// <para lang="zh">获得/设置 下拉框关闭时是否自动清空搜索文本</para>
+    /// <para lang="en">Gets or sets whether auto clear the search text when dropdown closed</para>
     /// </summary>
     [Parameter]
     public bool IsAutoClearSearchTextWhenCollapsed { get; set; }
 
     /// <summary>
-    /// Gets or sets the dropdown collapsed callback method.
+    /// <para lang="zh">获得/设置 下拉框关闭时的回调方法</para>
+    /// <para lang="en">Gets or sets the dropdown collapsed callback method</para>
     /// </summary>
     [Parameter]
     public Func<Task>? OnCollapsed { get; set; }
@@ -240,7 +266,6 @@ public partial class Select<TValue> : ISelect, ILookup
 
         Items ??= await this.GetItemsAsync(InjectLookupService, LookupServiceKey, LookupServiceData) ?? [];
 
-        // 内置对枚举类型的支持
         if (!Items.Any() && ValueType.IsEnum())
         {
             var item = NullableUnderlyingType == null ? "" : PlaceHolder;
@@ -257,18 +282,13 @@ public partial class Select<TValue> : ISelect, ILookup
 
     private async ValueTask<ItemsProviderResult<SelectedItem>> LoadItems(ItemsProviderRequest request)
     {
-        // 有搜索条件时使用原生请求数量
-        // 有总数时请求剩余数量
-        var count = !string.IsNullOrEmpty(SearchText) ? request.Count : GetCountByTotal();
-        var data = await OnQueryAsync(new() { StartIndex = request.StartIndex, Count = count, SearchText = SearchText });
+        var data = await OnQueryAsync(new() { StartIndex = request.StartIndex, Count = request.Count, SearchText = SearchText });
 
         _itemsCache = null;
         _totalCount = data.TotalCount;
         var items = data.Items ?? [];
         _result = new ItemsProviderResult<SelectedItem>(items, _totalCount);
         return _result;
-
-        int GetCountByTotal() => _totalCount == 0 ? request.Count : Math.Min(request.Count, _totalCount - request.StartIndex);
     }
 
     /// <summary>
@@ -277,7 +297,6 @@ public partial class Select<TValue> : ISelect, ILookup
     /// <param name="value"></param>
     /// <param name="result"></param>
     /// <param name="validationErrorMessage"></param>
-    /// <returns></returns>
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out TValue result, out string? validationErrorMessage) =>
         ValueType == typeof(SelectedItem)
             ? TryParseSelectItem(value, out result, out validationErrorMessage)
@@ -290,7 +309,7 @@ public partial class Select<TValue> : ISelect, ILookup
 
         // support SelectedItem? type
         result = SelectedItem != null ? (TValue)(object)SelectedItem : default;
-        validationErrorMessage = "";
+        validationErrorMessage = null;
         return SelectedItem != null;
     }
 
@@ -316,9 +335,9 @@ public partial class Select<TValue> : ISelect, ILookup
     });
 
     /// <summary>
-    /// Trigger <see cref="OnCollapsed"/> event callback method. called by JavaScript.
+    /// <para lang="zh">Trigger <see cref="OnCollapsed"/> event 回调方法. called by JavaScript</para>
+    /// <para lang="en">Trigger <see cref="OnCollapsed"/> event callback method. called by JavaScript</para>
     /// </summary>
-    /// <returns></returns>
     [JSInvokable]
     public async Task TriggerCollapsed()
     {
@@ -338,7 +357,6 @@ public partial class Select<TValue> : ISelect, ILookup
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override List<SelectedItem> GetRowsByItems()
     {
         var items = new List<SelectedItem>();
@@ -357,10 +375,10 @@ public partial class Select<TValue> : ISelect, ILookup
     }
 
     /// <summary>
-    /// Confirms the selected item.
+    /// <para lang="zh">Confirms the selected item</para>
+    /// <para lang="en">Confirms the selected item</para>
     /// </summary>
     /// <param name="index">The index of the selected item.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     [JSInvokable]
     public async Task ConfirmSelectedItem(int index)
     {
@@ -371,22 +389,14 @@ public partial class Select<TValue> : ISelect, ILookup
         }
     }
 
-    /// <summary>
-    /// Handles the click event for a dropdown item.
-    /// </summary>
-    /// <param name="item">The selected item.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnClickItem(SelectedItem item)
     {
         var ret = true;
-
-        // 自定义回调方法 OnBeforeSelectedItemChange 返回 false 时不修改选中项
         if (OnBeforeSelectedItemChange != null)
         {
             ret = await OnBeforeSelectedItemChange(item);
         }
 
-        // 如果 ShowSwal 为 true 且 则显示 Swal 确认弹窗，通过确认弹窗返回值决定是否修改选中项
         if (ret && ShowSwal)
         {
                 var option = new SwalOption() { Category = SwalCategory, Title = SwalTitle, Content = SwalContent };
@@ -431,7 +441,6 @@ public partial class Select<TValue> : ISelect, ILookup
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    /// <returns></returns>
     protected override async Task OnClearValue()
     {
         await base.OnClearValue();
@@ -449,7 +458,6 @@ public partial class Select<TValue> : ISelect, ILookup
     {
         if (args.Value is string v)
         {
-            // Items 中没有时插入一个 SelectedItem
             var item = Items.FirstOrDefault(i => i.Text == v);
 
             if (item == null)
@@ -483,7 +491,7 @@ public partial class Select<TValue> : ISelect, ILookup
         {
             _init = false;
 
-            return IsUseActiveWhenValueIsNull && !IsVirtualize
+            return IsUseDefaultItemWhenValueIsNull && !IsVirtualize
                 ? SetSelectedItemState(GetItemByRows())
                 : null;
         }
@@ -515,10 +523,14 @@ public partial class Select<TValue> : ISelect, ILookup
 
     private SelectedItem? GetItemByRows()
     {
+        // 修复：使用完整的未过滤列表来查找当前选中项
+        // 避免在用户搜索时被外部 StateHasChanged 影响导致值被错误修改
+        var allItems = GetRowsByItems();
+
         var item = GetItemWithEnumValue()
-            ?? Rows.Find(i => i.Value == CurrentValueAsString)
-            ?? Rows.Find(i => i.Active)
-            ?? Rows.FirstOrDefault(i => !i.IsDisabled);
+            ?? allItems.Find(i => i.Value == CurrentValueAsString)
+            ?? allItems.Find(i => i.Active)
+            ?? allItems.Find(i => !i.IsDisabled);
         return item;
     }
 }

@@ -20,7 +20,7 @@ public sealed partial class Navigation
         var link = new NavLink();
         var parameters = new Dictionary<string, object?>()
         {
-            ["href"] = WebsiteOption.CurrentValue.AdminUrl,
+            ["href"] = WebsiteOption.Value.AdminUrl,
             ["class"] = "nav-link nav-item",
             ["target"] = "_blank",
             ["ChildContent"] = new RenderFragment(builder =>
@@ -32,55 +32,4 @@ public sealed partial class Navigation
         ret.Add(link);
         return ret;
     }
-
-    /// <summary>
-    /// 获得属性方法
-    /// </summary>
-    /// <returns></returns>
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "ChildContent",
-            Description = Localizer["NavsChildContent"],
-            Type = "RenderFragment",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new() {
-            Name = "Alignment",
-            Description = Localizer["NavsAlignment"],
-            Type = "Alignment",
-            ValueList = "Left|Center|Right",
-            DefaultValue = " — "
-        },
-        new() {
-            Name = "IsVertical",
-            Description = Localizer["NavsIsVertical"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "IsPills",
-            Description = Localizer["NavsIsPills"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "IsFill",
-            Description = Localizer["NavsIsFill"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new() {
-            Name = "IsJustified",
-            Description = Localizer["NavsIsJustified"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        }
-    ];
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -15,7 +15,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     public async Task ButtonUpload_Ok()
     {
         UploadFile? uploadFile = null;
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.BrowserButtonClass, "browser-class");
             pb.Add(a => a.BrowserButtonIcon, "fa-solid fa-chrome");
@@ -27,7 +27,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         cut.DoesNotContain("form-label");
 
         // DefaultFileList
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowProgress, true);
             pb.Add(a => a.OnChange, file =>
@@ -43,7 +43,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         })));
         cut.DoesNotContain("cancel-icon");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.Size, Size.ExtraSmall);
         });
@@ -53,7 +53,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     [Fact]
     public void ButtonUpload_ChildContent()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.ChildContent, builder => builder.AddContent(0, new MarkupString("<div>test-child-content</div>")));
         });
@@ -63,21 +63,21 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     [Fact]
     public void ButtonUpload_IsDisabled_Ok()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.IsDisabled, true);
         });
         var button = cut.Find(".btn-browser");
         Assert.Contains("disabled=\"disabled\"", button.ToMarkup());
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsDisabled, false);
             pb.Add(a => a.IsMultiple, true);
         });
         Assert.DoesNotContain("disabled=\"disabled\"", button.ToMarkup());
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsDisabled, false);
             pb.Add(a => a.IsMultiple, false);
@@ -86,9 +86,9 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void InputUpload_IsMultiple()
+    public async Task InputUpload_IsMultiple()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.IsMultiple, false);
         });
@@ -97,7 +97,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         cut.DoesNotContain("multiple=\"multiple\"");
 
         // 给定已上传文件后上传按钮应该被禁用
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DefaultFileList,
             [
@@ -108,8 +108,15 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         var button = cut.Find(".btn-browser");
         Assert.True(button.IsDisabled());
 
+        // 调用 Reset 方法
+        await cut.InvokeAsync(() => cut.Instance.Reset());
+
+        // 重置后上传按钮应该被启用
+        button = cut.Find(".btn-browser");
+        Assert.False(button.IsDisabled());
+
         // 开启多选功能
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.IsMultiple, true);
         });
@@ -124,7 +131,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     public async Task ButtonUpload_ValidateForm_Ok()
     {
         var foo = new Foo();
-        var cut = Context.RenderComponent<ValidateForm>(pb =>
+        var cut = Context.Render<ValidateForm>(pb =>
         {
             pb.Add(a => a.Model, foo);
             pb.AddChildContent<ButtonUpload<string>>(pb =>
@@ -157,7 +164,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     public async Task ButtonUpload_ShowDownload()
     {
         var clicked = false;
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.ShowDownloadButton, true);
             pb.Add(a => a.OnDownload, file =>
@@ -184,7 +191,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         {
             Name = "abc"
         };
-        var cut = Context.RenderComponent<ValidateForm>(pb =>
+        var cut = Context.Render<ValidateForm>(pb =>
         {
             pb.Add(a => a.Model, foo);
             pb.AddChildContent<ButtonUpload<string>>(pb =>
@@ -210,14 +217,14 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     [Fact]
     public void ShowUploadList_Ok()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.Accept, "Image");
         });
 
         cut.Contains("upload-body is-list");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.ShowUploadFileList, false);
         });
@@ -229,7 +236,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     public async Task ButtonUpload_OnDeleteFile_Ok()
     {
         UploadFile? deleteFile = null;
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.IsMultiple, true);
             pb.Add(a => a.DefaultFileList,
@@ -246,7 +253,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         Assert.NotNull(deleteFile);
         Assert.Null(deleteFile!.Error);
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DefaultFileList, null);
         });
@@ -257,7 +264,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
 
         deleteFile = null;
         // 上传失败测试
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DefaultFileList,
             [
@@ -272,7 +279,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     public async Task ButtonUpload_ShowProgress_Ok()
     {
         var cancel = false;
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.ShowProgress, true);
             pb.Add(a => a.OnChange, async file =>
@@ -307,7 +314,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         var fileCount = 0;
         var fileNames = new List<string>();
         List<UploadFile> fileList = [];
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.IsDirectory, true);
             pb.Add(a => a.OnChange, file =>
@@ -336,17 +343,32 @@ public class UploadButtonTest : BootstrapBlazorTestBase
     [Fact]
     public void ButtonUpload_Accept_Ok()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.Accept, ".jpg");
         });
         cut.Contains("accept=\".jpg\"");
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void ShowDeleteButton_Ok(bool showDeleteButton, bool result)
+    {
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
+        {
+            pb.Add(a => a.DefaultFileList, [new() { FileName = "1.csv" }]);
+            pb.Add(a => a.ShowUploadFileList, true);
+            pb.Add(a => a.ShowDeleteButton, showDeleteButton);
+        });
+        var exists = cut.Markup.Contains("delete-icon");
+        Assert.Equal(result, exists);
+    }
+
     [Fact]
     public void ButtonUpload_OnGetFileFormat_Ok()
     {
-        var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
+        var cut = Context.Render<ButtonUpload<string>>(pb =>
         {
             pb.Add(a => a.LoadingIcon, "fa-loading");
             pb.Add(a => a.DeleteIcon, "fa-delte");
@@ -400,7 +422,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         cut.Contains("fa-file-image");
         cut.Contains("fa-file");
 
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.OnGetFileFormat, extensions =>
             {
@@ -410,7 +432,7 @@ public class UploadButtonTest : BootstrapBlazorTestBase
         cut.Contains("fa-format-test");
 
         // Empty Items
-        cut.SetParametersAndRender(pb =>
+        cut.Render(pb =>
         {
             pb.Add(a => a.DefaultFileList, null);
         });

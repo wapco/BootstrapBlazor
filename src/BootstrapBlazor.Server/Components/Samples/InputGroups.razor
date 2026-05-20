@@ -1,7 +1,7 @@
-﻿@page "/input-group"
+@page "/input-group"
 @inject IStringLocalizer<InputGroups> Localizer
-@inject IStringLocalizer<Foo> LocalizerFoo
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IStringLocalizer<Foo> FooLocalizer
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["InputGroupsTitle"]</h3>
 
@@ -92,7 +92,7 @@
                     <ItemTemplate>
                         <div class="d-flex">
                             <div>
-                                <img src="@WebsiteOption.CurrentValue.GetAvatarUrl(context.Id)" class="bb-avatar" />
+                                <img src="@WebsiteOption.Value.GetAvatarUrl(context.Id)" class="bb-avatar" />
                             </div>
                             <div class="ps-2">
                                 <div>@context.Name</div>
@@ -157,7 +157,7 @@
         <div class="col-12 col-sm-6">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="CheckboxList" />
-                <CheckboxList TValue="string" Items="Foo.GenerateHobbies(LocalizerFoo)" />
+                <CheckboxList TValue="string" Items="Foo.GenerateHobbies(FooLocalizer)" />
             </BootstrapInputGroup>
         </div>
     </div>
@@ -168,13 +168,13 @@
         <div class="col-12">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="RadioList" />
-                <RadioList TValue="string" Items="Foo.GenerateHobbies(LocalizerFoo)"></RadioList>
+                <RadioList TValue="string" Items="Foo.GenerateHobbies(FooLocalizer)"></RadioList>
             </BootstrapInputGroup>
         </div>
         <div class="col-12">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="RadioList" />
-                <RadioList TValue="string" Items="Foo.GenerateHobbies(LocalizerFoo)" IsButton="true"></RadioList>
+                <RadioList TValue="string" Items="Foo.GenerateHobbies(FooLocalizer)" IsButton="true"></RadioList>
             </BootstrapInputGroup>
         </div>
     </div>
@@ -219,7 +219,7 @@
         <div class="col-12 col-sm-6">
             <BootstrapInputGroup>
                 <BootstrapInputGroupLabel DisplayText="Dropdown" />
-                <Dropdown TValue="string" Items="Foo.GenerateHobbies(LocalizerFoo)" Color="Color.Success" />
+                <Dropdown TValue="string" Items="Foo.GenerateHobbies(FooLocalizer)" Color="Color.Success" />
             </BootstrapInputGroup>
         </div>
     </div>
@@ -235,3 +235,5 @@
         </div>
     </div>
 </DemoBlock>
+
+<AttributeTable Type="typeof(BootstrapInputGroup)"></AttributeTable>

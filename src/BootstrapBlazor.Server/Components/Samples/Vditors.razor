@@ -1,5 +1,5 @@
-﻿@page "/vditor"
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@page "/vditor"
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["VditorTitle"]</h3>
 
@@ -51,4 +51,10 @@
     </section>
 </DemoBlock>
 
-<AttributeTable Items="GetAttributes()" />
+<AttributeTable Type="typeof(Vditor)"></AttributeTable>
+
+<AttributeTable Type="typeof(VditorOptions)"></AttributeTable>
+
+<AttributeTable Type="typeof(VditorMode)"></AttributeTable>
+
+<AttributeTable Type="typeof(VditorIconStyle)"></AttributeTable>

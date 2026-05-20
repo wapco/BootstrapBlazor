@@ -1,4 +1,4 @@
-﻿import "./browser.js"
+import browser from "./browser.min.mjs"
 import { execute } from "./ajax.js"
 
 export async function ping(url, invoke, method) {
@@ -7,9 +7,9 @@ export async function ping(url, invoke, method) {
 }
 
 export async function getClientInfo(url) {
-    const info = browser()
+    const info = await browser.getInfo(['browser', 'system', 'device', 'language']);
     let data = {
-        browser: info.browser + ' ' + info.version,
+        browser: info.browser + ' ' + info.browserVersion,
         device: info.device,
         language: info.language,
         engine: info.engine,
@@ -24,6 +24,6 @@ export async function getClientInfo(url) {
     if (result) {
         data.ip = result.Ip;
     }
-    data.id = localStorage.getItem('bb_hub_connection_id') ?? result.Id;
+    data.id = localStorage.getItem('bb_hub_connection_id') || result.Id;
     return data;
 }

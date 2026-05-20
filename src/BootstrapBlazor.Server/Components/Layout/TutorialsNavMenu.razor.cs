@@ -1,9 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
 
-using BootstrapBlazor.Server.Components.Pages;
 using Microsoft.AspNetCore.Components.Web;
 using System.Text;
 
@@ -20,7 +19,7 @@ public partial class TutorialsNavMenu
 
     [Inject]
     [NotNull]
-    private IStringLocalizer<Tutorials>? Localizer { get; set; }
+    private IStringLocalizer<TutorialsNavMenu>? Localizer { get; set; }
 
     [Inject]
     [NotNull]
@@ -224,6 +223,8 @@ public partial class TutorialsNavMenu
     private readonly string[] _template5 =
 [
         "Tutorials/LoginAndRegister/Template5.razor",
+        "Tutorials/LoginAndRegister/Template5.razor.cs",
+        "Tutorials/LoginAndRegister/Template5.razor.js",
         "Tutorials/LoginAndRegister/Template5.razor.css",
         "../Layout/TutorialsLayout.razor",
         "../Layout/TutorialsLayout.razor.css"

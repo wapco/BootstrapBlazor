@@ -1,4 +1,4 @@
-﻿@namespace BootstrapBlazor.Components
+@namespace BootstrapBlazor.Components
 @typeparam TValue
 @inherits FileListUploadBase<TValue>
 
@@ -14,24 +14,34 @@
         }
         @foreach (var item in Files)
         {
-            <div @key="@item" class="@GetItemClassString(item)">
+            <div @key="@item" id="@item.ValidateId" class="@GetItemClassString(item)">
                 <div class="upload-item-body">
-                    @if (item.IsImage(AllowExtensions, CanPreviewCallback))
-                    {
-                        <img class="upload-item-body-image" alt="prevUrl" src="@item.PrevUrl" @onclick="() => OnClickZoom(item)" />
-                    }
-                    else if (IconTemplate != null)
+                    @if (IconTemplate != null)
                     {
                         @IconTemplate(item)
+                    }
+                    else if (item.IsImage(AllowExtensions, CanPreviewCallback))
+                    {
+                        <img class="upload-item-body-image" alt="prevUrl" src="@item.PrevUrl" @onclick="() => OnClickZoom(item)" />
                     }
                     else
                     {
                         <FileIcon Extension="@item.GetExtension()"></FileIcon>
                     }
                 </div>
-                <div class="upload-item-size"><span>@item.GetFileName()</span> (@item.Size.ToFileSizeString())</div>
+                <div class="upload-item-file">
+                    <span class="upload-item-file-name">@item.GetFileName()</span>
+                    @if (ShowFileSize)
+                    {
+                        <span class="upload-item-file-size">(@item.Size.ToFileSizeString())</span>
+                    }
+                </div>
                 <div class="upload-item-actions">
                     <div class="btn-group">
+                        @if (BeforeActionButtonTemplate != null)
+                        {
+                            @BeforeActionButtonTemplate(item)
+                        }
                         @if (ShowZoomButton)
                         {
                             <button type="button" class="btn btn-sm btn-secondary btn-zoom" disabled="@GetDisabledString(item)" @onclick="() => OnClickZoom(item)" aria-label="zoom">
@@ -50,14 +60,34 @@
                                 <i class="@CancelIcon"></i>
                             </button>
                         }
+                        @if (ActionButtonTemplate != null)
+                        {
+                            @ActionButtonTemplate(item)
+                        }
                     </div>
                     @if (ShowDeleteButton)
                     {
-                        <DynamicElement TagName="button" type="button" class="btn btn-sm btn-outline-danger"
-                                        disabled="@GetDeleteButtonDisabledString(item)" aria-label="delete"
-                                        TriggerClick="@(!IsDisabled)" OnClick="@(() => OnCardFileDelete(item))">
-                            <i class="@RemoveIcon"></i>
-                        </DynamicElement>
+                        @if (ShowDeleteConfirmButton)
+                        {
+                            <PopConfirmButton Placement="Placement.Top" class="btn btn-sm btn-outline-danger"
+                                              ConfirmIcon="@DeleteConfirmButtonIcon"
+                                              ConfirmButtonColor="DeleteConfirmButtonColor"
+                                              ConfirmButtonText="@DeleteConfirmButtonText"
+                                              CloseButtonText="@DeleteCloseButtonText"
+                                              Content="@DeleteConfirmContent"
+                                              Icon="@RemoveIcon"
+                                              IsAsync="true"
+                                              OnConfirm="@(async ()=> await OnCardFileDelete(item))" />
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    disabled="@GetDeleteButtonDisabledString(item)" aria-label="delete"
+                                    @onclick="() => OnCardFileDelete(item)">
+                                <i class="@RemoveIcon"></i>
+                            </button>
+                        }
+
                     }
                 </div>
                 @if (GetShowProgress(item))
@@ -84,7 +114,7 @@
 
 @code {
     RenderFragment RenderAdd =>
-    @<div class="@CardItemClass">
-        <i class="@AddIcon"></i>
+    @<div id="@AddId" class="@CardItemClass">
+            <i class="@AddIcon"></i>
     </div>;
 }

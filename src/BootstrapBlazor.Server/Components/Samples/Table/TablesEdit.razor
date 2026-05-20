@@ -1,17 +1,27 @@
-﻿@page "/table/edit"
+@page "/table/edit"
 @inject IStringLocalizer<NavMenu> NavMenuLocalizer
 @inject IStringLocalizer<TablesEdit> Localizer
-@inject IStringLocalizer<Foo> LocalizerFoo
+@inject IStringLocalizer<Foo> FooLocalizer
 @inject ToastService ToastService
-@inject IOptionsMonitor<WebsiteOptions> WebsiteOption
+@inject IOptions<WebsiteOptions> WebsiteOption
 
 <h3>@Localizer["TablesEditTitle"] - @NavMenuLocalizer["TableEdit"]</h3>
 <h4>@((MarkupString)Localizer["TablesEditDescription"].Value)</h4>
 
 <DemoBlock Title="@Localizer["TablesEditItemsTitle"]" Introduction="@Localizer["TablesEditItemsIntro"]" Name="EditItems">
-    <section ignore>@((MarkupString)Localizer["TablesEditItemsDescription"].Value)</section>
+    <section ignore class="row form-inline g-3">
+        <div class="col-12">
+            <div>@((MarkupString)Localizer["TablesEditItemsDescription"].Value)</div>
+        </div>
+        <div class="col-12 col-sm-6">
+            <BootstrapInputGroup>
+                <BootstrapInputGroupLabel DisplayText="IsGroupExtendButtons"></BootstrapInputGroupLabel>
+                <Switch @bind-Value="_useGroup"></Switch>
+            </BootstrapInputGroup>
+        </div>
+    </section>
     <Table TItem="Foo" @bind-Items="EditItems"
-           IsStriped="true" IsBordered="true" IsMultipleSelect="true"
+           IsStriped="true" IsBordered="true" IsMultipleSelect="true" IsGroupExtendButtons="_useGroup"
            ShowToolbar="true" ShowExtendButtons="true" ShowSkeleton="true"
            OnAddAsync="@OnAddAsync">
         <TableColumns>
@@ -47,13 +57,21 @@
            ShowToolbar="true" ShowExtendButtons="true" ShowSkeleton="true">
         <TableColumns>
             <TableColumn @bind-Field="@context.Complete" Align="Alignment.Center"></TableColumn>
+            <TableColumn @bind-Field="@context.Education">
+                <EditTemplate Context="v">
+                    <div class="col-12 col-sm-6">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <Select @bind-Value="@v.Education"></Select>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <Display Value="@GetEducationDesc(v.Education)" ShowLabel="true" DisplayText="@Localizer["TablesEditTemplateDisplayLabel"]"></Display>
+                    </div>
+                </EditTemplate>
+            </TableColumn>
             <TableColumn @bind-Field="@context.Count" Align="Alignment.Right"></TableColumn>
             <TableColumn @bind-Field="@context.Hobby"></TableColumn>
         </TableColumns>
-        <EditTemplate>
-            <!--本例中使用了联动功能，必须封装成组件-->
-            <DemoTableEditTemplate Model="context" />
-        </EditTemplate>
         <EditFooterTemplate>
             <Button Text="Popup" Color="Color.Danger" Icon="fa-regular fa-comment-dots" OnClick="() => OnClick(context)"></Button>
             <DialogCloseButton></DialogCloseButton>
@@ -74,7 +92,7 @@
     </section>
     <Table TItem="Foo"
            IsPagination="true" PageItemsSource="@PageItemsSource"
-           IsStriped="true" IsBordered="true" IsMultipleSelect="true" EditDialogIsDraggable="true"
+           IsStriped="true" IsBordered="true" IsMultipleSelect="true" EditDialogIsDraggable="true" EditDialogShowMaximizeButton="false"
            ShowToolbar="true" ShowExtendButtons="true" ShowSkeleton="true" IsExtendButtonsInRowHeader="true"
            OnQueryAsync="@OnQueryAsync"
            OnAddAsync="@OnAddAsync" OnSaveAsync="@OnSaveAsync" OnDeleteAsync="@OnDeleteAsync">
@@ -101,7 +119,13 @@
            OnQueryAsync="@OnQueryAsync"
            OnAddAsync="@OnAddAsync" OnSaveAsync="@OnSaveAsync" OnDeleteAsync="@OnDeleteAsync">
         <TableColumns>
-            <TableColumn @bind-Field="@context.DateTime" Width="180" />
+            <TableColumn @bind-Field="@context.DateTime" Width="180">
+                <EditTemplate Context="v">
+                    <div class="col-12 col-sm-6">
+                        <DateTimePicker @bind-Value="v.DateTime" ViewMode="DatePickerViewMode.DateTime" />
+                    </div>
+                </EditTemplate>
+            </TableColumn>
             <TableColumn @bind-Field="@context.Name">
                 <EditTemplate Context="v">
                     <div class="col-12 col-sm-6">
@@ -285,7 +309,7 @@
            ShowToolbar="true" ShowExtendButtons="true" ShowSkeleton="true">
         <TableColumns>
             <TableColumn @bind-Field="@context.Hobby" Items="@Hobbies" Ignore="true" />
-            <TableColumn Field="@context.ReadonlyColumn" FieldName="@nameof(context.ReadonlyColumn)" Text="@LocalizerFoo[nameof(context.ReadonlyColumn)]" />
+            <TableColumn Field="@context.ReadonlyColumn" FieldName="@nameof(context.ReadonlyColumn)" Text="@FooLocalizer[nameof(context.ReadonlyColumn)]" />
         </TableColumns>
     </Table>
 </DemoBlock>
@@ -302,7 +326,7 @@
             <TableColumn @bind-Field="@context.Hobby" Items="@Hobbies" Ignore="true" />
             <TableTemplateColumn Text="@Localizer["TableTemplateColumnText"]">
                 <Template Context="v">
-                    Test
+                    @v.Row.ReadonlyColumn
                 </Template>
             </TableTemplateColumn>
         </TableColumns>

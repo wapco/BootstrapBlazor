@@ -111,62 +111,21 @@ public sealed partial class Editors
         await Editor.DoMethodAsync("pasteHTML", $"<h1>{Localizer["DoMethodAsyncPasteHTML"]}</h1>");
     }
 
+    private async Task<string> OnFileUpload(EditorUploadFile uploadFile)
+    {
+        var url = Path.Combine("images", "uploader", $"{Path.GetFileNameWithoutExtension(uploadFile.FileName)}-{DateTimeOffset.Now:yyyyMMddHHmmss}{Path.GetExtension(uploadFile.FileName)}");
+        var fileName = Path.Combine(WebsiteOption.CurrentValue.WebRootPath, url);
+        await uploadFile.SaveToFileAsync(fileName);
+
+        // 此处返回空字符串底层使用 URL.createObjectURL 方法创建 Blob 对象地址
+        // 实战中可以返回 SSO 地址或者 base64 字符串等
+        return "";
+    }
+
     private string? _editorCode;
 
     private async Task OnGetCode()
     {
         _editorCode = await Editor.GetCode();
     }
-
-    private AttributeItem[] GetAttributes() =>
-    [
-        new()
-        {
-            Name = "Placeholder",
-            Description = Localizer["Att1"],
-            Type = "string",
-            ValueList = " — ",
-            DefaultValue = Localizer["Att1DefaultValue"]!
-        },
-        new()
-        {
-            Name = "IsEditor",
-            Description = Localizer["Att2"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "false"
-        },
-        new()
-        {
-            Name = "ShowSubmit",
-            Description = Localizer["AttrShowSubmit"],
-            Type = "bool",
-            ValueList = "true|false",
-            DefaultValue = "true"
-        },
-        new()
-        {
-            Name = "Height",
-            Description = Localizer["Att3"],
-            Type = "int",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "ToolbarItems",
-            Description = Localizer["Att4"],
-            Type = "IEnumerable<object>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        },
-        new()
-        {
-            Name = "CustomerToolbarButtons",
-            Description = Localizer["Att5"],
-            Type = "IEnumerable<EditorToolbarButton>",
-            ValueList = " — ",
-            DefaultValue = " — "
-        }
-    ];
 }

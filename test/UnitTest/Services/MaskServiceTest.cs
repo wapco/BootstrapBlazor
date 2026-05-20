@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -14,7 +14,7 @@ public class MaskServiceTest : BootstrapBlazorTestBase
     public async Task Mask_Ok()
     {
         var maskService = Context.Services.GetRequiredService<MaskService>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Button>(pb =>
             {
@@ -25,7 +25,8 @@ public class MaskServiceTest : BootstrapBlazorTestBase
                         BackgroundColor = "#000",
                         Opacity = 0.5f,
                         ZIndex = 1050,
-                        ChildContent = builder => builder.AddContent(0, "test-mask-content")
+                        ChildContent = builder => builder.AddContent(0, "test-mask-content"),
+                        AppendToBody = true
                     });
                 });
             });
@@ -46,7 +47,7 @@ public class MaskServiceTest : BootstrapBlazorTestBase
     public async Task Container_Ok()
     {
         var maskService = Context.Services.GetRequiredService<MaskService>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Button>(pb =>
             {
@@ -80,7 +81,7 @@ public class MaskServiceTest : BootstrapBlazorTestBase
     public async Task Show_Component()
     {
         var maskService = Context.Services.GetRequiredService<MaskService>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Button>(pb =>
             {
@@ -92,13 +93,17 @@ public class MaskServiceTest : BootstrapBlazorTestBase
         });
         var button = cut.Find("button");
         await cut.InvokeAsync(() => button.Click());
+
+        var com = cut.FindComponent<MockComponent>();
+        var result = await cut.InvokeAsync(com.Instance.Test);
+        Assert.True(result);
     }
 
     [Fact]
     public async Task Show_Type()
     {
         var maskService = Context.Services.GetRequiredService<MaskService>();
-        var cut = Context.RenderComponent<BootstrapBlazorRoot>(pb =>
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
         {
             pb.AddChildContent<Button>(pb =>
             {
@@ -112,8 +117,39 @@ public class MaskServiceTest : BootstrapBlazorTestBase
         await cut.InvokeAsync(() => button.Click());
     }
 
+    [Fact]
+    public async Task Show_Ok()
+    {
+        var maskService = Context.Services.GetRequiredService<MaskService>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Button>(pb =>
+            {
+                pb.Add(a => a.OnClickWithoutRender, async () =>
+                {
+                    await maskService.Show((MaskOption)null!);
+                });
+            });
+        });
+        var button = cut.Find("button");
+        await cut.InvokeAsync(() => button.Click());
+
+        // 遮罩参数 MaskOption 强制为 null 不报错
+    }
+
     class MockComponent : ComponentBase
     {
+        [CascadingParameter]
+        private Func<Task>? OnCloseAsync { get; set; }
 
+        public async Task<bool> Test()
+        {
+            if (OnCloseAsync != null)
+            {
+                await OnCloseAsync();
+            }
+
+            return OnCloseAsync != null;
+        }
     }
 }

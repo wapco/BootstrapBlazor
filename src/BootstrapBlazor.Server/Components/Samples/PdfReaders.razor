@@ -1,95 +1,68 @@
-﻿@page "/pdf-reader"
+@page "/pdf-reader"
 @inject IStringLocalizer<PdfReaders> Localizer
 
-<h3>@Localizer["Title"]</h3>
+<h3>@Localizer["PdfTitle"]</h3>
+<h4>@Localizer["PdfDescription"]</h4>
 
 <PackageTips Name="BootstrapBlazor.PdfReader" />
 
 <DemoBlock Title="@Localizer["PdfReaderNormalText"]" Introduction="@Localizer["PdfReaderNormalIntro"]" Name="Normal">
-    <PdfReader FileName=@Filename Height="500px" />
-</DemoBlock>
-
-<DemoBlock Title="@Localizer["PdfReaderStreamModeText"]" Introduction="@Localizer["PdfReaderStreamModeIntro"]" Name="StreamMode">
-    <div>
-        <div class="row g-3">
-            <div class="col-12">
+    <section ignore style="--bb-input-group-label-width: 176px;">
+        <p>@((MarkupString)Localizer["PdfReaderFAIconDesc"].Value)</p>
+        <Pre>&lt;link rel="stylesheet" href="@@Assets["_content/BootstrapBlazor.FontAwesome/css/font-awesome.min.css"]" /&gt;</Pre>
+        <ul class="ul-demo">
+            <li>@((MarkupString)Localizer["PdfReaderSetPdfStreamDesc"].Value)</li>
+            <li>@((MarkupString)Localizer["PdfReaderDownloadFileNameDesc"].Value)</li>
+        </ul>
+        <div class="row form-inline g-3">
+            <div class="col-12 col-sm-6">
                 <BootstrapInputGroup>
-                    <BootstrapInput @bind-Value="@FilenameStream" />
-                    <Button Color="Color.Primary" OnClick="ApplyFilenameStream">Go!</Button>
+                    <BootstrapInputGroupLabel>ShowToolbar</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showToolbar"></Switch>
                 </BootstrapInputGroup>
             </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel>ShowFileName</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showFileName"></Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel>ShowDownload</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showDownload"></Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel>EnableThumbnails</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_enableThumbnails"></Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel>ShowPrint</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showPrint"></Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInputGroup>
+                    <BootstrapInputGroupLabel>ShowTwoPagesOneView</BootstrapInputGroupLabel>
+                    <Switch @bind-Value="_showTwoPagesOneView"></Switch>
+                </BootstrapInputGroup>
+            </div>
+            <div class="col-12">
+                <Button Color="Color.Primary" OnClick="@(() => _url = "./samples/sample.pdf")" class="me-2">sample-Url</Button>
+                <Button Color="Color.Primary" OnClick="@(() => _url = "./samples/ebook.pdf")" class="me-2">ebook-Url</Button>
+                <Button Color="Color.Danger" OnClick="GetSampleStream" class="me-2">Sample-Stream</Button>
+                <Button Color="Color.Danger" OnClick="GetTestStream">Sample2-Stream</Button>
+            </div>
         </div>
-        <PdfReader @ref="PdfReader" FileName="@FilenameStream" StreamMode="true" Height="500px" />
-    </div>
+    </section>
+    <PdfReader Url="@_url" EnableThumbnails="_enableThumbnails"
+               ShowTwoPagesOneView="_showTwoPagesOneView" ShowDownload="_showDownload"
+               ShowToolbar="_showToolbar" ShowPrint="_showPrint" ShowFileName="_showFileName"
+               ViewHeight="600px" OnGetStreamAsync="OnGetStreamAsync"></PdfReader>
 </DemoBlock>
 
-<DemoBlock Title="@Localizer["PdfReaderCompatibilityModeText"]" Introduction="@Localizer["PdfReaderCompatibilityModeIntro"]" Name="CompatibilityMode">
-    <Tips>
-        <div>@((MarkupString)Localizer["PdfReaderCompatibilityModeTips"].Value)</div>
-    </Tips>
-
-    <h6>CompatibilityMode</h6>
-    <h6>CompatibilityMode</h6>
-    <PdfReader FileName=@FileName CompatibilityMode Height="300px" />
-
-     <h6>CompatibilityNoneES5</h6>
-     <PdfReader FileName=@FileName CompatibilityNoneES5 Height="300px" />
- </DemoBlock>
-
- <DemoBlock Title="@Localizer["PdfReaderAdvancedText"]" Introduction="@Localizer["PdfReaderAdvancedIntro"]" Name="Advanced">
-     <div>
-         <div class="row mb-3">
-             <div class="col-12">
-                 <BootstrapInputGroup>
-                     <Button Color="Color.Primary" OnClick="ApplyZoom">@Localizer["PdfReaderAdvancedViewMode"]</Button>
-                     <Button Color="Color.Primary" OnClick="ApplyPageMode">@Localizer["PdfReaderAdvancedPageMode"]</Button>
-                     <Button Color="Color.Primary" OnClick="ApplyPagePrevious">@Localizer["PdfReaderAdvancedPagePrevious"]</Button>
-                     <Button Color="Color.Primary" OnClick="ApplyPageNext">@Localizer["PdfReaderAdvancedPageNext"]</Button>
-                     <BootstrapInput @bind-Value="@Page" />
-                     <Button OnClick="ApplyPage">@Localizer["PdfReaderAdvancedGoToPage"]</Button>
-                 </BootstrapInputGroup>
-             </div>
-         </div>
-         <div class="row mb-3">
-             <div class="col-12">
-                 <BootstrapInputGroup>
-                     <BootstrapInputGroupLabel @bind-Value="@Search" DisplayText="@Localizer["PdfReaderAdvancedSearchLabel"]" />
-                     <BootstrapInput @bind-Value="@Search" OnEnterAsync="_ => ApplySearch()" OnEscAsync="_ => Clear()" />
-                     <Button Icon="fa-solid fa-magnifying-glass" OnClick="ApplySearch"></Button>
-                 </BootstrapInputGroup>
-             </div>
-         </div>
-         <div class="row mb-3">
-             <div class="col-12">
-                 <BootstrapInputGroup>
-                     <BootstrapInputGroupLabel @bind-Value="@Filename" DisplayText="@Localizer["PdfReaderAdvancedFilenameLabel"]" />
-                     <BootstrapInput @bind-Value="@Filename" />
-                     <Button Color="Color.Primary" OnClick="ApplySearch">@Localizer["PdfReaderAdvancedRefreshPage"]</Button>
-                 </BootstrapInputGroup>
-             </div>
-         </div>
-         <div class="row mb-3 form-inline">
-             <div class="col-6 col-sm-4 col-md-3 col-lg-auto">
-                 <Switch @bind-Value="@StreamMode" ShowLabel="true" DisplayText="@Localizer["PdfReaderAdvancedStreamModeLabel"]" />
-             </div>
-             <div class="col-6 col-sm-4 col-md-3 col-lg-auto">
-                 <Switch @bind-Value="@ReadOnly" ShowLabel="true" DisplayText="@Localizer["PdfReaderAdvancedReadOnlyLabel"]" ShowLabelTooltip="true" OnValueChanged="_ => ApplySearch()" />
-             </div>
-             <BootstrapInput @bind-Value="@Watermark" DisplayText="@Localizer["PdfReaderAdvancedWatermarkLabel"]" />
-         </div>
-
-         <PdfReader @ref="AdvancedPdfReader"
-                    FileName="@(StreamMode?FilenameStream:Filename)"
-                    StreamMode="StreamMode"
-                    Page=@Page
-                    Zoom=@Zoom
-                    Pagemode=@PageMode
-                    Search=@Search
-                    Width="80%"
-                    Height="500px" />
-     </div>
- </DemoBlock>
-
- <AttributeTable Items="@GetAttributes()" />
-
- <a href="https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I66LXV">@Localizer["PdfReaderIssue"]</a>
+<AttributeTable Type="typeof(PdfReader)" />

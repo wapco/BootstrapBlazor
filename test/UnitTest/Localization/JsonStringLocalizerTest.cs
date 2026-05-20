@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -215,7 +215,8 @@ public class JsonStringLocalizerTest : BootstrapBlazorTestBase
         Assert.NotEmpty(items);
         Assert.Equal("test-name", items.First(i => i.Name == "Name").Value);
 
-        var name = Utility.GetDisplayName(typeof(Dummy), "DummyName");
+        var type = typeof(Dummy);
+        var name = Utility.GetDisplayName(type, "DummyName");
         Assert.Equal("test-name", name);
     }
 
@@ -313,7 +314,7 @@ public class JsonStringLocalizerTest : BootstrapBlazorTestBase
     public void GetResourcePrefix_Ok()
     {
         // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I5SRA1
-        var builder = new TestContext();
+        var builder = new BunitContext();
         builder.Services.AddConfiguration();
 
         // 注入其他 Localization
@@ -329,12 +330,26 @@ public class JsonStringLocalizerTest : BootstrapBlazorTestBase
         Assert.Equal("test", result.Value);
     }
 
+    [Fact]
+    public void CreateResourceManagerStringLocalizer_UseBaseNameWhenTypeNameIsNull()
+    {
+        var factory = Context.Services.GetRequiredService<IStringLocalizerFactory>();
+        var mi = factory.GetType().GetMethod("CreateResourceManagerStringLocalizer", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        var baseName = typeof(Foo).FullName!;
+        var localizer = Assert.IsType<IStringLocalizer>(mi.Invoke(factory, [typeof(Foo).Assembly, baseName]), exactMatch: false);
+        var result = localizer["not-found-key"];
+
+        Assert.True(result.ResourceNotFound);
+        Assert.Equal(baseName, result.SearchedLocation);
+    }
+
     private static readonly string[] localizationConfigure = ["zh-CN.json"];
 
     [Fact]
     public void Validate_ResourceManagerStringLocalizerType()
     {
-        var context = new TestContext();
+        var context = new BunitContext();
         context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         context.Services.AddConfiguration();
@@ -346,7 +361,7 @@ public class JsonStringLocalizerTest : BootstrapBlazorTestBase
         context.Services.GetRequiredService<ICacheManager>();
 
         var foo = new Foo();
-        var cut = context.RenderComponent<ValidateForm>(pb =>
+        var cut = context.Render<ValidateForm>(pb =>
         {
             pb.Add(v => v.Model, foo);
             pb.Add(a => a.OnInvalidSubmit, context =>
@@ -498,5 +513,8 @@ public class JsonStringLocalizerFactoryTest
         var localizer = provider.GetRequiredService<IStringLocalizer<Foo>>();
         var item = localizer["Foo.Name"];
         Assert.NotEqual("Foo.Name", item);
+
+        item = localizer["missing-item"];
+        Assert.True(item.ResourceNotFound);
     }
 }

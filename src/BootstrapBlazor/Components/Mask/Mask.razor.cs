@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the Apache 2.0 License
 // See the LICENSE file in the project root for more information.
 // Maintainer: Argo Zhang(argo@live.ca) Website: https://www.blazor.zone
@@ -6,7 +6,8 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Mask 组件
+/// <para lang="zh">Mask 组件</para>
+/// <para lang="en">Mask Component</para>
 /// </summary>
 public partial class Mask
 {
@@ -21,6 +22,7 @@ public partial class Mask
         .Build();
 
     private MaskOption? _options;
+    private bool _show = false;
 
     /// <summary>
     /// <inheritdoc/>
@@ -36,7 +38,6 @@ public partial class Mask
     /// <inheritdoc/>
     /// </summary>
     /// <param name="firstRender"></param>
-    /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -45,17 +46,46 @@ public partial class Mask
         {
             await InvokeVoidAsync("update", Id, new
             {
-                Show = _options != null,
+                Show = _show,
                 _options?.ContainerId,
-                _options?.Selector
+                _options?.Selector,
+                _options?.AppendToBody
             });
         }
     }
 
     private Task Show(MaskOption? option)
     {
-        _options = option;
+        if (option == null)
+        {
+            // 服务关闭遮罩调用
+            _options?.ChildContent = null;
+            _show = false;
+        }
+        else
+        {
+            // 服务打开遮罩调用
+            _options = option;
+            _show = true;
+        }
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private Task CloseAsync() => Show(null);
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    /// <param name="disposing"></param>
+    /// <returns></returns>
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        await base.DisposeAsync(disposing);
+
+        if (disposing)
+        {
+            MaskService.UnRegister(this);
+        }
     }
 }
