@@ -463,11 +463,11 @@ public partial class DatePickerBody
     public int Timezone { get; set; }
 
     /// <summary>
-    /// <para lang="zh">获得/设置 选择时间方式 默认使用 <see cref="PickTimeMode.Dropdown"/></para>
-    /// <para lang="en">Gets or sets Pick Time Mode. Default is <see cref="PickTimeMode.Dropdown"/></para>
+    /// <para lang="zh">获得/设置 选择时间方式 默认使用 <see cref="PickTimeMode.Clock"/></para>
+    /// <para lang="en">Gets or sets Pick Time Mode. Default is <see cref="PickTimeMode.Clock"/></para>
     /// </summary>
     [Parameter]
-    public PickTimeMode PickTimeMode { get; set; } = PickTimeMode.Dropdown;
+    public PickTimeMode PickTimeMode { get; set; } = PickTimeMode.Clock;
 
     [Inject]
     [NotNull]

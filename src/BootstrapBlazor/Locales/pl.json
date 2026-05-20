@@ -1,4 +1,4 @@
-﻿{
+{
   "BootstrapBlazor.Components.ValidatorBase": {
     "CommonValidator": "To pole jest wymagane.",
     "RequiredValidator": "{0} jest wymagane.",

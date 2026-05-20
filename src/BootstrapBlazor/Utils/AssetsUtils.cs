@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace BootstrapBlazor.Components;
 
 /// <summary>
@@ -7,36 +5,6 @@ namespace BootstrapBlazor.Components;
 /// </summary>
 public static class AssetsUtils
 {
-    private static string? _version;
-
-    public static string AssetsVersion
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(_version))
-            {
-#if DEBUG
-                _version = DateTime.Now.ToString("yyyyMMddHHmmss");
-                return _version;
-#endif
-                try
-                {
-                    // 获取当前程序集
-                    var assembly = Assembly.GetExecutingAssembly();
-                    // 获取程序集的版本号
-                    var version = assembly.GetName().Version;
-                    _version = version?.ToString() ?? "1.0";
-                }
-                catch
-                {
-                    _version = "_";
-                }
-            }
-
-            return _version;
-        }
-    }
-
     public static void SetCdnPath(string? cdnPath)
     {
         if (cdnPath == null)
@@ -49,8 +17,23 @@ public static class AssetsUtils
 
     private static string? _cdnPath = null;
 
-    public static string Path(string path, bool version = true)
+    public static string Path(string path)
     {
-        return version ? $"{_cdnPath}{path}?v={AssetsVersion}" : $"{_cdnPath}{path}";
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return path;
+        }
+
+        if (string.IsNullOrEmpty(_cdnPath))
+        {
+            return path;
+        }
+
+        if (Uri.TryCreate(path, UriKind.Absolute, out _))
+        {
+            return path;
+        }
+
+        return $"{_cdnPath}{path.TrimStart('/')}";
     }
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "BootstrapBlazor.Components.ValidatorBase": {
     "CommonValidator": "Ez a mező kötelező.",
     "RequiredValidator": "{0} kötelező.",

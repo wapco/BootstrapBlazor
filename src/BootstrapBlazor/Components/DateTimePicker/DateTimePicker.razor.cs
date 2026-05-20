@@ -160,11 +160,11 @@ public partial class DateTimePicker<TValue>
     public DatePickerViewMode ViewMode { get; set; } = DatePickerViewMode.Date;
 
     /// <summary>
-    /// <para lang="zh">获得/设置 选择时间方式 默认使用 <see cref="PickTimeMode.Dropdown"/></para>
-    /// <para lang="en">Gets or sets Pick Time Mode. Default is <see cref="PickTimeMode.Dropdown"/></para>
+    /// <para lang="zh">获得/设置 选择时间方式 默认使用 <see cref="PickTimeMode.Clock"/></para>
+    /// <para lang="en">Gets or sets Pick Time Mode. Default is <see cref="PickTimeMode.Clock"/></para>
     /// </summary>
     [Parameter]
-    public PickTimeMode PickTimeMode { get; set; } = PickTimeMode.Dropdown;
+    public PickTimeMode PickTimeMode { get; set; } = PickTimeMode.Clock;
 
     /// <summary>
     /// <para lang="zh">获得/设置 是否显示快捷侧边栏 默认不显示</para>
@@ -412,25 +412,25 @@ public partial class DateTimePicker<TValue>
         if (MinValue > SelectedValue)
         {
             SelectedValue = ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute ? MinValue.Value : MinValue.Value.Date;
-            CurrentValue = GetValue();
+            Value = GetValue();
         }
         else if (MaxValue < SelectedValue)
         {
             SelectedValue = ViewMode is DatePickerViewMode.DateTime or DatePickerViewMode.DateMinute ? MaxValue.Value : MaxValue.Value.Date;
-            CurrentValue = GetValue();
+            Value = GetValue();
         }
 
-        if (MinValueToToday(SelectedValue))
+        if (MinValueToEmpty(SelectedValue))
         {
             IsMinValue = true;
             InitSelectedValue();
-            CurrentValue = GetValue();
+            Value = default;
         }
-        else if (MinValueToEmpty(SelectedValue))
+        else if (MinValueToToday(SelectedValue))
         {
             IsMinValue = true;
             InitSelectedValue();
-            CurrentValue = default;
+            Value = GetValue();
         }
 
         LastValue = CurrentValueAsString;
@@ -551,7 +551,7 @@ public partial class DateTimePicker<TValue>
 
     private bool MinValueToEmpty(DateTime val) => val == DateTime.MinValue && AllowNull && DisplayMinValueAsEmpty;
 
-    private bool MinValueToToday(DateTime val) => val == DateTime.MinValue && AutoToday;
+    private bool MinValueToToday(DateTime val) => val == DateTime.MinValue && !AllowNull && AutoToday;
 
     /// <summary>
     /// <para lang="zh">清除内部缓存方法</para>

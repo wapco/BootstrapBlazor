@@ -1,4 +1,4 @@
-﻿{
+{
   "BootstrapBlazor.Components.ValidatorBase": {
     "CommonValidator": "当前字段为必填项.",
     "RequiredValidator": "{0}为必填项.",
