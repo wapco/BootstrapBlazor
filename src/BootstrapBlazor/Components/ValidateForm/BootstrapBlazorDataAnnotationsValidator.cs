@@ -48,5 +48,5 @@ public class BootstrapBlazorDataAnnotationsValidator : ComponentBase
     /// 手动验证表单方法
     /// </summary>
     /// <returns></returns>
-    internal bool Validate() => CurrentEditContext.Validate();
+    public bool Validate() => CurrentEditContext.Validate();
 }

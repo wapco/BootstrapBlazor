@@ -109,12 +109,12 @@ public partial class ValidateForm
     /// <summary>
     /// 验证组件缓存
     /// </summary>
-    private readonly ConcurrentDictionary<(string FieldName, Type ModelType), (FieldIdentifier FieldIdentifier, IValidateComponent ValidateComponent)> _validatorCache = new();
+    protected readonly ConcurrentDictionary<(string FieldName, Type ModelType), (FieldIdentifier FieldIdentifier, IValidateComponent ValidateComponent)> _validatorCache = new();
 
     /// <summary>
     /// 验证组件验证结果缓存
     /// </summary>
-    private readonly ConcurrentDictionary<IValidateComponent, List<ValidationResult>> _validateResults = new();
+    protected readonly ConcurrentDictionary<IValidateComponent, List<ValidationResult>> _validateResults = new();
 
     private string? DisableAutoSubmitString => (DisableAutoSubmitFormByEnter.HasValue && DisableAutoSubmitFormByEnter.Value) ? "true" : null;
 
@@ -261,7 +261,7 @@ public partial class ValidateForm
     /// </summary>
     /// <param name="context"></param>
     /// <param name="results"></param>
-    internal async Task ValidateObject(ValidationContext context, List<ValidationResult> results)
+    public virtual async Task ValidateObject(ValidationContext context, List<ValidationResult> results)
     {
         _validateResults.Clear();
 
@@ -460,7 +460,7 @@ public partial class ValidateForm
     /// </summary>
     /// <param name="context"></param>
     /// <param name="results"></param>
-    private async Task ValidateProperty(ValidationContext context, List<ValidationResult> results)
+    protected async Task ValidateProperty(ValidationContext context, List<ValidationResult> results)
     {
         // 获得所有可写属性
         var properties = context.ObjectType.GetRuntimeProperties().Where(p => IsPublic(p) && p.IsCanWrite() && p.GetIndexParameters().Length == 0);
@@ -506,7 +506,7 @@ public partial class ValidateForm
         }
     }
 
-    private async Task ValidateAsync(IValidateComponent validator, ValidationContext context, List<ValidationResult> messages, PropertyInfo pi, object? propertyValue)
+    protected async Task ValidateAsync(IValidateComponent validator, ValidationContext context, List<ValidationResult> messages, PropertyInfo pi, object? propertyValue)
     {
         // 单独处理 Upload 组件
         if (validator is IUpload uploader)
@@ -564,7 +564,7 @@ public partial class ValidateForm
         _invalid = messages.Count > 0;
     }
 
-    private bool _invalid = false;
+    protected bool _invalid = false;
 
     private List<ButtonBase> AsyncSubmitButtons { get; } = [];
 
@@ -640,13 +640,13 @@ public partial class ValidateForm
     }
 
     [NotNull]
-    private BootstrapBlazorDataAnnotationsValidator? Validator { get; set; }
+    protected BootstrapBlazorDataAnnotationsValidator? Validator { get; set; }
 
     /// <summary>
     /// 验证方法 用于代码调用触发表单验证
     /// </summary>
     /// <returns></returns>
-    public bool Validate()
+    public virtual bool Validate()
     {
         _invalid = true;
         return Validator.Validate() && !_invalid;
