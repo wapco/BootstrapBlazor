@@ -554,27 +554,6 @@ public partial class Table<TItem>
     /// </summary>
     public List<ITableColumn> GetVisibleColumns() => _visibleColumnsCache;
 
-    private void ResetVisibleColumnsCache()
-    {
-        _visibleColumnsCache.Clear();
-
-        for (var index = 0; index < _tableColumnStates.Count; index++)
-        {
-            var item = _tableColumnStates[index];
-            var col = Columns.Find(c => c.GetFieldName() == item.Name);
-            if (col != null)
-            {
-                item.DisplayName = col.GetDisplayName();
-
-                if (item.Visible)
-                {
-                    // 增加到可见列缓存集合
-                    _visibleColumnsCache.Add(col);
-                }
-            }
-        }
-    }
-
     private bool GetColumnsListState(TableColumnState item)
     {
         var items = _tableColumnStates.Where(i => i.Visible).Select(a => a.Name).ToHashSet();
@@ -1258,26 +1237,29 @@ public partial class Table<TItem>
         }
     }
 
-    private void QueryDynamicItems(QueryPageOptions queryOption, IDynamicObjectContext context, bool isAutoQuery = true)
+    private void QueryDynamicItems(QueryPageOptions queryOption, IDynamicObjectContext? context, bool isAutoQuery = true)
     {
         if (isAutoQuery)
         {
             _rowsCache = null;
-            var items = context.GetItems();
-            if (context.OnFilterCallback != null)
+            if (context != null)
             {
-                items = context.OnFilterCallback(queryOption, items);
-            }
-            if (IsPagination)
-            {
-                TotalCount = items.Count();
-                PageCount = (int)Math.Ceiling(TotalCount * 1.0 / Math.Max(1, _pageItems));
-                PageIndex = GetSafePageIndex();
-                items = items.Skip((PageIndex - 1) * _pageItems).Take(_pageItems);
-            }
-            QueryItems = items.Cast<TItem>().ToList();
+                var items = context.GetItems();
+                if (context.OnFilterCallback != null)
+                {
+                    items = context.OnFilterCallback(queryOption, items);
+                }
+                if (IsPagination)
+                {
+                    TotalCount = items.Count();
+                    PageCount = (int)Math.Ceiling(TotalCount * 1.0 / Math.Max(1, _pageItems));
+                    PageIndex = GetSafePageIndex();
+                    items = items.Skip((PageIndex - 1) * _pageItems).Take(_pageItems);
+                }
+                QueryItems = items.Cast<TItem>().ToList();
 
-            ResetSelectedRows(QueryItems);
+                ResetSelectedRows(QueryItems);
+            }
         }
     }
 

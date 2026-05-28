@@ -292,7 +292,7 @@
     "IntersectionObserver": "IntersectionObserver",
     "Introduction": "Introduction",
     "Ip": "IpAddress",
-    "JitViewer": "JitViewer",
+    "JitViewer": "Jit Viewer",
     "JSExtension": "JSRuntime Extensions",
     "Labels": "Labels",
     "Layout": "Layout",
@@ -471,7 +471,6 @@
   },
   "BootstrapBlazor.Server.Components.Layout.TutorialsNavMenu": {
     "AdminSummary": "Admin",
-    "CategoryTitle": "Bootstrap Blazor Practical Cases",
     "DashboardSummary": "Dashboard",
     "DrawingSummary": "Drawing",
     "LoginSummary": "Login&Register",
@@ -528,6 +527,15 @@
   "BootstrapBlazor.Server.Components.Pages.GlobalOption": {
     "SubTitle": "Added component <code>ErrorLogger</code> Through this component, global logs and exceptions can be output uniformly; currently, the <code>Blazor</code> framework does not provide a <code>MVC</code> like <b>Global exception</b> The overall solution",
     "Title": "Global exception"
+  },
+  "BootstrapBlazor.Server.Components.Pages.HostModel": {
+    "CreateProject": "When creating a new <code>Blazor</code> project with the latest <code>Visual Studio</code>, select <code>Blazor Web App</code>.",
+    "HostModelsIntro": "ASP.NET Core Blazor currently has three hosting models:",
+    "InteractivityLocationIntro": "<code>Interactivity Location</code> has the following options:",
+    "Recommended": "(strongly recommended for beginners)",
+    "RecommendServer": "We currently recommend using the <code>Blazor Server</code> hosting model.",
+    "RenderModeIntro": "<code>Interactive render mode</code> has the following options:",
+    "Title": "ASP.NET Core Blazor hosting models"
   },
   "BootstrapBlazor.Server.Components.Pages.Index": {
     "Docs": "Read the docs",
@@ -2816,7 +2824,7 @@
     "JitViewerDescription": "Supports online preview of Office documents, PDF, OFD, images, text, code, videos, and other file formats.",
     "JitViewerNormalTitle": "Basic usage",
     "JitViewerSubTitle": "A universal file preview component for viewing multiple file types directly on the page.",
-    "JitViewerTitle": "JitViewer File Previewer"
+    "JitViewerTitle": "JitViewer File Viewer"
   },
   "BootstrapBlazor.Server.Components.Samples.JSRuntimeExtensions": {
     "EvalIntro": "Dynamically run Java Script code within the current scope using the Eval function.",
