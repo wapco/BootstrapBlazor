@@ -307,14 +307,12 @@ public partial class ValidateForm
         else
         {
             // 遍历所有可验证组件进行数据验证
-            int skipValidateCount = 0;
             foreach (var key in _validatorCache.Keys)
             {
                 // 验证 DataAnnotations
                 var (fieldIdentifier, validator) = _validatorCache[key];
                 if (!validator.IsNeedValidate)
                 {
-                    skipValidateCount++;
                     continue;
                 }
 
@@ -335,11 +333,6 @@ public partial class ValidateForm
                 }
                 _validateResults.TryAdd(validator, messages);
                 results.AddRange(messages);
-            }
-
-            if (skipValidateCount == _validatorCache.Count)
-            {
-                _invalid = false;
             }
 
             // 验证 IValidatableObject
@@ -590,7 +583,6 @@ public partial class ValidateForm
         }
     }
 
-    protected bool _invalid = false;
     private List<ButtonBase> AsyncSubmitButtons { get; } = [];
 
     /// <summary>
@@ -684,11 +676,7 @@ public partial class ValidateForm
     /// <para lang="en">Synchronous validation method used to trigger form validation via code (does not support asynchronous validation for some components)</para>
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public virtual bool Validate()
-    {
-        _invalid = true;
-        return Validator.Validate() && !_invalid;
-    }
+    public bool Validate() => Validator.Validate();
 
     /// <summary>
     /// <para lang="zh">异步验证方法 用于代码调用触发表单验证（支持异步验证）</para>
