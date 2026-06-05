@@ -3487,6 +3487,59 @@ public class TableTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task DefaultSortOrder_FirstRenderQuery_Ok()
+    {
+        var sortName = string.Empty;
+        var sortOrder = SortOrder.Unset;
+        var isFirstQuery = false;
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.OnQueryAsync, option =>
+                {
+                    sortName = option.SortName;
+                    sortOrder = option.SortOrder;
+                    isFirstQuery = option.IsFirstQuery;
+                    var items = Foo.GenerateFoo(localizer, 5);
+                    return Task.FromResult(new QueryData<Foo>()
+                    {
+                        Items = items,
+                        TotalCount = items.Count,
+                        IsAdvanceSearch = true,
+                        IsFiltered = true,
+                        IsSearch = true,
+                        IsSorted = true
+                    });
+                });
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, "Field", "Name");
+                    builder.AddAttribute(2, "FieldExpression", Utility.GenerateValueExpression(foo, "Name", typeof(string)));
+                    builder.AddAttribute(3, "Sortable", true);
+                    builder.AddAttribute(4, "DefaultSort", true);
+                    builder.AddAttribute(5, "DefaultSortOrder", SortOrder.Desc);
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        Assert.True(isFirstQuery);
+        Assert.Equal(nameof(Foo.Name), sortName);
+        Assert.Equal(SortOrder.Desc, sortOrder);
+
+        // 模拟点击表头排序
+        var th = cut.Find("th");
+        await cut.InvokeAsync(() => th.Click());
+        Assert.False(isFirstQuery);
+        Assert.Equal(nameof(Foo.Name), sortName);
+        Assert.Equal(SortOrder.Unset, sortOrder);
+    }
+
+    [Fact]
     public async Task OnSort_Ok()
     {
         // 外部未排序，组件内部自动排序
@@ -8815,6 +8868,75 @@ public class TableTest : BootstrapBlazorTestBase
         {
             await table.Instance.DragColumnCallback(3, 4);
         });
+    }
+
+    [Fact]
+    public async Task AllowDragColumn_FixedColumn_Ok()
+    {
+        string? name = null;
+        var localizer = Context.Services.GetRequiredService<IStringLocalizer<Foo>>();
+        var cut = Context.Render<BootstrapBlazorRoot>(pb =>
+        {
+            pb.AddChildContent<Table<Foo>>(pb =>
+            {
+                pb.Add(a => a.RenderMode, TableRenderMode.Table);
+                pb.Add(a => a.AllowDragColumn, true);
+                pb.Add(a => a.Items, Foo.GenerateFoo(localizer, 2));
+                pb.Add(a => a.OnTableColumnClientStatusChanged, (fieldName, state) =>
+                {
+                    name = fieldName;
+                    return Task.CompletedTask;
+                });
+                pb.Add(a => a.TableColumns, foo => builder =>
+                {
+                    builder.OpenComponent<TableColumn<Foo, string>>(0);
+                    builder.AddAttribute(1, nameof(TableColumn<Foo, string>.Field), foo.Name);
+                    builder.AddAttribute(2, nameof(TableColumn<Foo, string>.FieldExpression), Utility.GenerateValueExpression(foo, nameof(Foo.Name), typeof(string)));
+                    builder.AddAttribute(3, nameof(TableColumn<Foo, string>.Fixed), true);
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, string>>(4);
+                    builder.AddAttribute(5, nameof(TableColumn<Foo, string>.Field), foo.Address);
+                    builder.AddAttribute(6, nameof(TableColumn<Foo, string>.FieldExpression), Utility.GenerateValueExpression(foo, nameof(Foo.Address), typeof(string)));
+                    builder.CloseComponent();
+
+                    builder.OpenComponent<TableColumn<Foo, int>>(7);
+                    builder.AddAttribute(8, nameof(TableColumn<Foo, int>.Field), foo.Count);
+                    builder.AddAttribute(9, nameof(TableColumn<Foo, int>.FieldExpression), Utility.GenerateValueExpression(foo, nameof(Foo.Count), typeof(int)));
+                    builder.CloseComponent();
+                });
+            });
+        });
+
+        var table = cut.FindComponent<Table<Foo>>();
+        var columns = cut.FindAll("th");
+        Assert.False(columns[0].HasAttribute("draggable"));
+        Assert.Equal("true", columns[1].GetAttribute("draggable"));
+        Assert.Equal("true", columns[2].GetAttribute("draggable"));
+
+        await cut.InvokeAsync(() => table.Instance.DragColumnCallback(1, 0));
+        Assert.Equal(nameof(Foo.Count), name);
+        columns = cut.FindAll("th");
+        Assert.Equal(nameof(Foo.Name), columns[0].GetAttribute("data-bb-field"));
+        Assert.Equal(nameof(Foo.Count), columns[1].GetAttribute("data-bb-field"));
+        Assert.Equal(nameof(Foo.Address), columns[2].GetAttribute("data-bb-field"));
+
+        await cut.InvokeAsync(() => table.Instance.DragColumnCallback(1, 0));
+        Assert.Equal(nameof(Foo.Address), name);
+        columns = cut.FindAll("th");
+        Assert.Equal(nameof(Foo.Name), columns[0].GetAttribute("data-bb-field"));
+        Assert.Equal(nameof(Foo.Address), columns[1].GetAttribute("data-bb-field"));
+        Assert.Equal(nameof(Foo.Count), columns[2].GetAttribute("data-bb-field"));
+
+        // 测试相同列拖动
+        await cut.InvokeAsync(() => table.Instance.DragColumnCallback(0, 0));
+
+        // 更改为不允许拖动
+        table.Render(pb =>
+        {
+            pb.Add(a => a.AllowDragColumn, false);
+        });
+        await cut.InvokeAsync(() => table.Instance.DragColumnCallback(1, 0));
     }
 
     [Fact]
