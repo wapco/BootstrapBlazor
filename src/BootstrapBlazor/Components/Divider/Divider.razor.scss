@@ -1,5 +1,15 @@
 ﻿@use "../../wwwroot/scss/variables" as *;
 
+.form-inline :has(> .divider + .divider-desc) {
+    display: flex;
+    flex-direction: column;
+}
+
+.divider-desc {
+    display: block;
+    margin-bottom: 0.8rem;
+}
+
 .divider {
     --bb-divider-margin: #{$bb-divider-margin};
     --bb-divider-text-padding: #{$bb-divider-text-padding};
@@ -9,10 +19,6 @@
     display: block;
     height: 1px;
     width: 100%;
-
-    .divider-desc {
-        margin-top: 0.8rem;
-    }
 
     .divider-mask {
         background-color: var(--bs-border-color);

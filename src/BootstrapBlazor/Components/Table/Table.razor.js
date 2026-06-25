@@ -1272,7 +1272,7 @@ const getSelectedRow = element => {
 
 const scrollToTop = (table, behavior) => {
     const el = table.el;
-    const scroll = el.querySelector('.scroll');
+    const scroll = table.body || el.querySelector('.scroll');
     if (scroll) {
         scroll.scrollTo({
             top: 0,
